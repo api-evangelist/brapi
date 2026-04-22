@@ -1,42 +1,36 @@
-# BrAPI (brapi)
-he Breeding API (BrAPI) Project is an effort to enable interoperability among agricultural databases and tools. BrAPI is a standardized RESTful web service API specification for exchanging scientific data. This community driven standard is free to be used by anyone interested in agricultural and scientific data management. 
+# brapi
 
-**URL:** [Visit APIs.json URL](https://raw.githubusercontent.com/api-evangelist/brapi/refs/heads/main/apis.yml)
-
-## Scope
-
-- **Type:** Index 
-- **Position:** Consumer 
-- **Access:** 3rd-Party 
-
-## Tags:
-
- - Agriculture, Breeding, Science
-
-## Timestamps
-
-- **Created:** 2025-03-01 
-- **Modified:** 2025-03-01 
+brapi.dev is a Brazilian financial data REST API aggregating public market data from B3 (stock exchange), CVM (securities commission), and Banco Central (central bank). With over 20,000 active developers, it provides standardized JSON access to Brazilian financial markets without web scraping.
 
 ## APIs
 
-### BrAPI
-he Breeding API (BrAPI) Project is an effort to enable interoperability among agricultural databases and tools. BrAPI is a standardized RESTful web service API specification for exchanging scientific data. This community driven standard is free to be used by anyone interested in agricultural and scientific data management. 
+- **Quotes API** - Real-time and historical OHLCV stock data for B3-listed securities
+- **Fundamentals API** - Balance sheets, income statements, cash flow statements from 2009
+- **Dividends API** - Complete dividend and distribution history for Brazilian equities
+- **Cryptocurrency API** - Crypto prices denominated in Brazilian Reals (BRL)
+- **Exchange Rates API** - BRL exchange rates against major global currencies
+- **Economic Indicators API** - IPCA, IGPM, INPC inflation indices and SELIC interest rates
 
-**Human URL:** [ https://brapi.org/]( https://brapi.org/)
+## Key Features
 
+- 99.9% uptime SLA
+- API key authentication
+- 15-minute to 5-minute data refresh depending on plan
+- Python, JavaScript, and cURL code examples
+- MCP protocol support for AI integration
+- No long-term contracts
 
-#### Tags:
+## Pricing
 
- - Agriculture, Breeding, Science
+| Plan | Monthly | Requests/month | Update Frequency |
+|------|---------|----------------|------------------|
+| Free | R$0 | Limited | 15 min |
+| Startup | R$49.99 | 150,000 | 15 min |
+| Pro | R$83.33 | 500,000 | 5 min |
 
-#### Properties
+## Links
 
-- [Documentation]( https://brapi.org/)
-
-## Maintainers
-
-**FN:** Kin Lane
-
-**Email:** info@apievangelist.com
-
+- [Website](https://brapi.dev)
+- [Documentation](https://brapi.dev/docs)
+- [Pricing](https://brapi.dev/pricing)
+- [Sign Up](https://brapi.dev/register)
