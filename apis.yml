@@ -35,6 +35,8 @@ apis:
     properties:
       - url: https://brapi.dev/docs
         type: Documentation
+      - url: openapi/brapi-openapi.yml
+        type: OpenAPI
     description: >-
       Retrieve real-time and historical OHLCV (Open, High, Low, Close, Volume)
       quote data for securities listed on the B3 Brazilian stock exchange. Supports

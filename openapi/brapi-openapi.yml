@@ -1,0 +1,224 @@
+openapi: 3.1.0
+info:
+  title: brapi API
+  version: 1.0.0
+  description: >-
+    brapi.dev Brazilian financial data REST API aggregating public market data
+    from B3, CVM and Banco Central. Provides stock quotes, real estate funds,
+    options, cryptocurrencies, currencies, inflation, and SELIC rate data.
+servers:
+  - url: https://brapi.dev
+x-generated-from: https://brapi.dev/docs
+x-generated-by: claude-crawl-2026-05-08
+paths:
+  /api/quote/{ticker}:
+    get:
+      summary: Stock quotations, dividends, and financial data
+      parameters:
+        - name: ticker
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/quote:
+    get:
+      summary: List all stock quotations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/opcoes/vencimentos:
+    get:
+      summary: List options expiration dates
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/opcoes/precos-de-exercicio:
+    get:
+      summary: List strike prices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/opcoes/series:
+    get:
+      summary: List traded series
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/opcoes/historico:
+    get:
+      summary: Query series historical data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/fiis/listagem:
+    get:
+      summary: Real estate funds listing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/fiis/indicadores:
+    get:
+      summary: Real estate funds indicators
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/fiis/indicadores-historico:
+    get:
+      summary: Historical fund indicators
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/fiis/historico:
+    get:
+      summary: Historical quotations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/fiis/relatorios:
+    get:
+      summary: CVM reports
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/fiis/dividendos:
+    get:
+      summary: Dividends
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/criptomoedas:
+    get:
+      summary: Cryptocurrency quotations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/criptomoedas/available:
+    get:
+      summary: List cryptocurrencies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/moedas:
+    get:
+      summary: Currency quotations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/moedas/available:
+    get:
+      summary: List currencies
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/inflacao:
+    get:
+      summary: Inflation data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/inflacao/available:
+    get:
+      summary: List countries with inflation data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/taxa-basica-de-juros:
+    get:
+      summary: SELIC rate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+  /api/taxa-basica-de-juros/available:
+    get:
+      summary: List countries with interest rate data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      additionalProperties: true
