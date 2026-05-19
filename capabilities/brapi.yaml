@@ -1,0 +1,683 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: brapi API
+  description: 'brapi API. 20 operations. Lead operation: Cryptocurrency quotations. Self-contained Naftiko capability covering
+    one Brapi business surface.'
+  tags:
+  - Brapi
+  - brapi API
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    BRAPI_API_KEY: BRAPI_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: brapi
+    baseUri: https://brapi.dev
+    description: brapi API business capability. Self-contained, no shared references.
+    resources:
+    - name: api-criptomoedas
+      path: /api/criptomoedas
+      operations:
+      - name: get
+        method: GET
+        description: Cryptocurrency quotations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-criptomoedas-available
+      path: /api/criptomoedas/available
+      operations:
+      - name: get
+        method: GET
+        description: List cryptocurrencies
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-fiis-dividendos
+      path: /api/fiis/dividendos
+      operations:
+      - name: get
+        method: GET
+        description: Dividends
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-fiis-historico
+      path: /api/fiis/historico
+      operations:
+      - name: get
+        method: GET
+        description: Historical quotations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-fiis-indicadores
+      path: /api/fiis/indicadores
+      operations:
+      - name: get
+        method: GET
+        description: Real estate funds indicators
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-fiis-indicadores-historico
+      path: /api/fiis/indicadores-historico
+      operations:
+      - name: get
+        method: GET
+        description: Historical fund indicators
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-fiis-listagem
+      path: /api/fiis/listagem
+      operations:
+      - name: get
+        method: GET
+        description: Real estate funds listing
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-fiis-relatorios
+      path: /api/fiis/relatorios
+      operations:
+      - name: get
+        method: GET
+        description: CVM reports
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-inflacao
+      path: /api/inflacao
+      operations:
+      - name: get
+        method: GET
+        description: Inflation data
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-inflacao-available
+      path: /api/inflacao/available
+      operations:
+      - name: get
+        method: GET
+        description: List countries with inflation data
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-moedas
+      path: /api/moedas
+      operations:
+      - name: get
+        method: GET
+        description: Currency quotations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-moedas-available
+      path: /api/moedas/available
+      operations:
+      - name: get
+        method: GET
+        description: List currencies
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-opcoes-historico
+      path: /api/opcoes/historico
+      operations:
+      - name: get
+        method: GET
+        description: Query series historical data
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-opcoes-precos-de-exercicio
+      path: /api/opcoes/precos-de-exercicio
+      operations:
+      - name: get
+        method: GET
+        description: List strike prices
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-opcoes-series
+      path: /api/opcoes/series
+      operations:
+      - name: get
+        method: GET
+        description: List traded series
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-opcoes-vencimentos
+      path: /api/opcoes/vencimentos
+      operations:
+      - name: get
+        method: GET
+        description: List options expiration dates
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-quote
+      path: /api/quote
+      operations:
+      - name: get
+        method: GET
+        description: List all stock quotations
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-quote-ticker
+      path: /api/quote/{ticker}
+      operations:
+      - name: get
+        method: GET
+        description: Stock quotations, dividends, and financial data
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: ticker
+          in: path
+          type: string
+          required: true
+    - name: api-taxa-basica-de-juros
+      path: /api/taxa-basica-de-juros
+      operations:
+      - name: get
+        method: GET
+        description: SELIC rate
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+    - name: api-taxa-basica-de-juros-available
+      path: /api/taxa-basica-de-juros/available
+      operations:
+      - name: get
+        method: GET
+        description: List countries with interest rate data
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+  exposes:
+  - type: rest
+    namespace: brapi-rest
+    port: 8080
+    description: REST adapter for brapi API. One Spectral-compliant resource per consumed operation, prefixed with /v1.
+    resources:
+    - path: /v1/api/criptomoedas
+      name: api-criptomoedas
+      description: REST surface for api-criptomoedas.
+      operations:
+      - method: GET
+        name: get
+        description: Cryptocurrency quotations
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/criptomoedas/available
+      name: api-criptomoedas-available
+      description: REST surface for api-criptomoedas-available.
+      operations:
+      - method: GET
+        name: get
+        description: List cryptocurrencies
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/fiis/dividendos
+      name: api-fiis-dividendos
+      description: REST surface for api-fiis-dividendos.
+      operations:
+      - method: GET
+        name: get
+        description: Dividends
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/fiis/historico
+      name: api-fiis-historico
+      description: REST surface for api-fiis-historico.
+      operations:
+      - method: GET
+        name: get
+        description: Historical quotations
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/fiis/indicadores
+      name: api-fiis-indicadores
+      description: REST surface for api-fiis-indicadores.
+      operations:
+      - method: GET
+        name: get
+        description: Real estate funds indicators
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/fiis/indicadores-historico
+      name: api-fiis-indicadores-historico
+      description: REST surface for api-fiis-indicadores-historico.
+      operations:
+      - method: GET
+        name: get
+        description: Historical fund indicators
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/fiis/listagem
+      name: api-fiis-listagem
+      description: REST surface for api-fiis-listagem.
+      operations:
+      - method: GET
+        name: get
+        description: Real estate funds listing
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/fiis/relatorios
+      name: api-fiis-relatorios
+      description: REST surface for api-fiis-relatorios.
+      operations:
+      - method: GET
+        name: get
+        description: CVM reports
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/inflacao
+      name: api-inflacao
+      description: REST surface for api-inflacao.
+      operations:
+      - method: GET
+        name: get
+        description: Inflation data
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/inflacao/available
+      name: api-inflacao-available
+      description: REST surface for api-inflacao-available.
+      operations:
+      - method: GET
+        name: get
+        description: List countries with inflation data
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/moedas
+      name: api-moedas
+      description: REST surface for api-moedas.
+      operations:
+      - method: GET
+        name: get
+        description: Currency quotations
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/moedas/available
+      name: api-moedas-available
+      description: REST surface for api-moedas-available.
+      operations:
+      - method: GET
+        name: get
+        description: List currencies
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/opcoes/historico
+      name: api-opcoes-historico
+      description: REST surface for api-opcoes-historico.
+      operations:
+      - method: GET
+        name: get
+        description: Query series historical data
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/opcoes/precos-de-exercicio
+      name: api-opcoes-precos-de-exercicio
+      description: REST surface for api-opcoes-precos-de-exercicio.
+      operations:
+      - method: GET
+        name: get
+        description: List strike prices
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/opcoes/series
+      name: api-opcoes-series
+      description: REST surface for api-opcoes-series.
+      operations:
+      - method: GET
+        name: get
+        description: List traded series
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/opcoes/vencimentos
+      name: api-opcoes-vencimentos
+      description: REST surface for api-opcoes-vencimentos.
+      operations:
+      - method: GET
+        name: get
+        description: List options expiration dates
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/quote
+      name: api-quote
+      description: REST surface for api-quote.
+      operations:
+      - method: GET
+        name: get
+        description: List all stock quotations
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/quote/{ticker}
+      name: api-quote-ticker
+      description: REST surface for api-quote-ticker.
+      operations:
+      - method: GET
+        name: get
+        description: Stock quotations, dividends, and financial data
+        call: brapi.get
+        with:
+          ticker: rest.ticker
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/taxa-basica-de-juros
+      name: api-taxa-basica-de-juros
+      description: REST surface for api-taxa-basica-de-juros.
+      operations:
+      - method: GET
+        name: get
+        description: SELIC rate
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/api/taxa-basica-de-juros/available
+      name: api-taxa-basica-de-juros-available
+      description: REST surface for api-taxa-basica-de-juros-available.
+      operations:
+      - method: GET
+        name: get
+        description: List countries with interest rate data
+        call: brapi.get
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: brapi-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for brapi API. One tool per consumed operation, routed inline through this capability's consumes
+      block.
+    tools:
+    - name: cryptocurrency-quotations
+      description: Cryptocurrency quotations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-cryptocurrencies
+      description: List cryptocurrencies
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: dividends
+      description: Dividends
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: historical-quotations
+      description: Historical quotations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: real-estate-funds-indicators
+      description: Real estate funds indicators
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: historical-fund-indicators
+      description: Historical fund indicators
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: real-estate-funds-listing
+      description: Real estate funds listing
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: cvm-reports
+      description: CVM reports
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: inflation-data
+      description: Inflation data
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-countries-inflation-data
+      description: List countries with inflation data
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: currency-quotations
+      description: Currency quotations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-currencies
+      description: List currencies
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: query-series-historical-data
+      description: Query series historical data
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-strike-prices
+      description: List strike prices
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-traded-series
+      description: List traded series
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-options-expiration-dates
+      description: List options expiration dates
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-all-stock-quotations
+      description: List all stock quotations
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: stock-quotations-dividends-and-financial
+      description: Stock quotations, dividends, and financial data
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      with:
+        ticker: tools.ticker
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: selic-rate
+      description: SELIC rate
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: list-countries-interest-rate-data
+      description: List countries with interest rate data
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: brapi.get
+      outputParameters:
+      - type: object
+        mapping: $.
