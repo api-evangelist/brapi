@@ -113,6 +113,8 @@ common:
     url: https://brapi.dev/docs
   - type: SignUp
     url: https://brapi.dev/register
+  - type: LLMsTxt
+    url: https://brapi.dev/llms.txt
 maintainers:
   - FN: Kin Lane
     email: info@apievangelist.com
