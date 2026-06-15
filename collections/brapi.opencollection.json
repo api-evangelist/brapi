@@ -1,0 +1,237 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Stock quotations, dividends, and financial data",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/quote/:ticker",
+        "params": [
+          {
+            "name": "ticker",
+            "value": "",
+            "type": "path"
+          }
+        ]
+      },
+      "docs": "Stock quotations, dividends, and financial data"
+    },
+    {
+      "info": {
+        "name": "List all stock quotations",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/quote"
+      },
+      "docs": "List all stock quotations"
+    },
+    {
+      "info": {
+        "name": "List options expiration dates",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/opcoes/vencimentos"
+      },
+      "docs": "List options expiration dates"
+    },
+    {
+      "info": {
+        "name": "List strike prices",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/opcoes/precos-de-exercicio"
+      },
+      "docs": "List strike prices"
+    },
+    {
+      "info": {
+        "name": "List traded series",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/opcoes/series"
+      },
+      "docs": "List traded series"
+    },
+    {
+      "info": {
+        "name": "Query series historical data",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/opcoes/historico"
+      },
+      "docs": "Query series historical data"
+    },
+    {
+      "info": {
+        "name": "Real estate funds listing",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/fiis/listagem"
+      },
+      "docs": "Real estate funds listing"
+    },
+    {
+      "info": {
+        "name": "Real estate funds indicators",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/fiis/indicadores"
+      },
+      "docs": "Real estate funds indicators"
+    },
+    {
+      "info": {
+        "name": "Historical fund indicators",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/fiis/indicadores-historico"
+      },
+      "docs": "Historical fund indicators"
+    },
+    {
+      "info": {
+        "name": "Historical quotations",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/fiis/historico"
+      },
+      "docs": "Historical quotations"
+    },
+    {
+      "info": {
+        "name": "CVM reports",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/fiis/relatorios"
+      },
+      "docs": "CVM reports"
+    },
+    {
+      "info": {
+        "name": "Dividends",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/fiis/dividendos"
+      },
+      "docs": "Dividends"
+    },
+    {
+      "info": {
+        "name": "Cryptocurrency quotations",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/criptomoedas"
+      },
+      "docs": "Cryptocurrency quotations"
+    },
+    {
+      "info": {
+        "name": "List cryptocurrencies",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/criptomoedas/available"
+      },
+      "docs": "List cryptocurrencies"
+    },
+    {
+      "info": {
+        "name": "Currency quotations",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/moedas"
+      },
+      "docs": "Currency quotations"
+    },
+    {
+      "info": {
+        "name": "List currencies",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/moedas/available"
+      },
+      "docs": "List currencies"
+    },
+    {
+      "info": {
+        "name": "Inflation data",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/inflacao"
+      },
+      "docs": "Inflation data"
+    },
+    {
+      "info": {
+        "name": "List countries with inflation data",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/inflacao/available"
+      },
+      "docs": "List countries with inflation data"
+    },
+    {
+      "info": {
+        "name": "SELIC rate",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/taxa-basica-de-juros"
+      },
+      "docs": "SELIC rate"
+    },
+    {
+      "info": {
+        "name": "List countries with interest rate data",
+        "type": "http"
+      },
+      "http": {
+        "method": "GET",
+        "url": "https://brapi.dev/api/taxa-basica-de-juros/available"
+      },
+      "docs": "List countries with interest rate data"
+    }
+  ],
+  "bundled": true
+}
