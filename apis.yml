@@ -116,9 +116,9 @@ common:
     url: https://brapi.dev/pricing
   - type: Authentication
     url: https://brapi.dev/docs
-  - type: SignUp
+  - type: Signup
     url: https://brapi.dev/register
-  - type: LLMsTxt
+  - type: LlmsText
     url: https://brapi.dev/llms.txt
 maintainers:
   - FN: Kin Lane
