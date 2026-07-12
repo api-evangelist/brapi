@@ -106,6 +106,10 @@ apis:
       Access Brazilian macroeconomic indicators including IPCA (consumer price index), IGPM (market general price
       index), INPC, and SELIC interest rate data published by Banco Central do Brasil.
 common:
+  - type: VulnerabilityDisclosure
+    url: security/brapi-vulnerability-disclosure.yml
+  - type: DomainSecurity
+    url: security/brapi-domain-security.yml
   - type: GitHubOrganization
     url: https://github.com/brapi-dev
   - type: Website
@@ -120,6 +124,8 @@ common:
     url: https://brapi.dev/register
   - type: LlmsText
     url: https://brapi.dev/llms.txt
+  - url: https://brapi.dev/blog
+    type: Blog
 maintainers:
   - FN: Kin Lane
     email: info@apievangelist.com
