@@ -1,0 +1,65 @@
+openapi: 3.1.0
+info:
+  title: brapi Criptomoedas Opcoes API
+  version: 1.0.0
+  description: brapi.dev Brazilian financial data REST API aggregating public market data from B3, CVM and Banco Central. Provides stock quotes, real estate funds, options, cryptocurrencies, currencies, inflation, and SELIC rate data.
+servers:
+- url: https://brapi.dev
+tags:
+- name: Opcoes
+paths:
+  /api/opcoes/vencimentos:
+    get:
+      summary: List options expiration dates
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Opcoes
+  /api/opcoes/precos-de-exercicio:
+    get:
+      summary: List strike prices
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Opcoes
+  /api/opcoes/series:
+    get:
+      summary: List traded series
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Opcoes
+  /api/opcoes/historico:
+    get:
+      summary: Query series historical data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Opcoes
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      additionalProperties: true
+x-generated-from: https://brapi.dev/docs
+x-generated-by: claude-crawl-2026-05-08

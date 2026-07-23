@@ -1,0 +1,89 @@
+openapi: 3.1.0
+info:
+  title: brapi Criptomoedas Fiis API
+  version: 1.0.0
+  description: brapi.dev Brazilian financial data REST API aggregating public market data from B3, CVM and Banco Central. Provides stock quotes, real estate funds, options, cryptocurrencies, currencies, inflation, and SELIC rate data.
+servers:
+- url: https://brapi.dev
+tags:
+- name: Fiis
+paths:
+  /api/fiis/listagem:
+    get:
+      summary: Real estate funds listing
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Fiis
+  /api/fiis/indicadores:
+    get:
+      summary: Real estate funds indicators
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Fiis
+  /api/fiis/indicadores-historico:
+    get:
+      summary: Historical fund indicators
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Fiis
+  /api/fiis/historico:
+    get:
+      summary: Historical quotations
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Fiis
+  /api/fiis/relatorios:
+    get:
+      summary: CVM reports
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Fiis
+  /api/fiis/dividendos:
+    get:
+      summary: Dividends
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Fiis
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      additionalProperties: true
+x-generated-from: https://brapi.dev/docs
+x-generated-by: claude-crawl-2026-05-08

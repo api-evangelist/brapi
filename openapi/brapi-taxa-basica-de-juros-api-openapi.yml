@@ -1,0 +1,41 @@
+openapi: 3.1.0
+info:
+  title: brapi Criptomoedas Taxa Basica De Juros API
+  version: 1.0.0
+  description: brapi.dev Brazilian financial data REST API aggregating public market data from B3, CVM and Banco Central. Provides stock quotes, real estate funds, options, cryptocurrencies, currencies, inflation, and SELIC rate data.
+servers:
+- url: https://brapi.dev
+tags:
+- name: Taxa Basica De Juros
+paths:
+  /api/taxa-basica-de-juros:
+    get:
+      summary: SELIC rate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Taxa Basica De Juros
+  /api/taxa-basica-de-juros/available:
+    get:
+      summary: List countries with interest rate data
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericResponse'
+      tags:
+      - Taxa Basica De Juros
+components:
+  schemas:
+    GenericResponse:
+      type: object
+      additionalProperties: true
+x-generated-from: https://brapi.dev/docs
+x-generated-by: claude-crawl-2026-05-08
