@@ -10,7 +10,19 @@ tags:
   - Cryptocurrency
 type: Index
 kind: company
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: freemium
+  onboarding: unknown
+  trial: false
+  try_now: false
+  public: false
+  label: Freemium
+  confidence: medium
+  source:
+  - plans
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/brapi.png
 access: 3rd-Party
 created: '2025-03-01'
 modified: '2026-05-19'
@@ -22,89 +34,151 @@ description: >-
   IGPM, and SELIC. With over 20,000 active developers, brapi.dev offers tiered subscription plans from free to Pro, with
   up to 500,000 requests per month and data updated every 5 minutes.
 apis:
-  - aid: brapi:quotes-api
-    name: brapi Quotes API
-    tags:
-      - Stock Quotes
-      - B3
-      - Real-Time Data
-      - Historical Data
-    humanURL: https://brapi.dev/docs
-    properties:
-      - url: https://brapi.dev/docs
-        type: Documentation
-      - url: openapi/brapi-openapi.yml
-        type: OpenAPI
-    description: >-
-      Retrieve real-time and historical OHLCV (Open, High, Low, Close, Volume) quote data for securities listed on the
-      B3 Brazilian stock exchange. Supports bulk asset requests and returns standardized JSON without web scraping.
-  - aid: brapi:fundamentals-api
-    name: brapi Fundamentals API
-    tags:
-      - Fundamentals
-      - Balance Sheet
-      - Income Statement
-      - Financial Statements
-    humanURL: https://brapi.dev/docs
-    properties:
-      - url: https://brapi.dev/docs
-        type: Documentation
-    description: >-
-      Access structured financial statement data for Brazilian listed companies including balance sheets (BP), income
-      statements (DRE), cash flow (DFC), and value added statements (DVA). Historical data available from 2009.
-  - aid: brapi:dividends-api
-    name: brapi Dividends API
-    tags:
-      - Dividends
-      - Distributions
-      - Corporate Actions
-    humanURL: https://brapi.dev/docs
-    properties:
-      - url: https://brapi.dev/docs
-        type: Documentation
-    description: >-
-      Retrieve complete dividend and earnings distribution history for B3-listed securities, enabling portfolio yield
-      analysis and income tracking.
-  - aid: brapi:crypto-api
-    name: brapi Cryptocurrency API
-    tags:
-      - Cryptocurrency
-      - BRL
-      - Digital Assets
-    humanURL: https://brapi.dev/docs
-    properties:
-      - url: https://brapi.dev/docs
-        type: Documentation
-    description: >-
-      Access cryptocurrency prices denominated in Brazilian Reals (BRL), supporting investment analysis and portfolio
-      management for Brazilian digital asset investors.
-  - aid: brapi:exchange-api
-    name: brapi Exchange Rates API
-    tags:
-      - Foreign Exchange
-      - Currency
-      - BRL
-    humanURL: https://brapi.dev/docs
-    properties:
-      - url: https://brapi.dev/docs
-        type: Documentation
-    description: >-
-      Retrieve Brazilian Real (BRL) exchange rates against major global currencies, sourced from Banco Central do Brasil
-      data.
-  - aid: brapi:indicators-api
-    name: brapi Economic Indicators API
-    tags:
-      - Inflation
-      - Interest Rates
-      - Economic Data
-      - SELIC
-    humanURL: https://brapi.dev/docs
-    properties:
-      - url: https://brapi.dev/docs
-        type: Documentation
-    description: >-
-      Access Brazilian macroeconomic indicators including IPCA (consumer price index), IGPM (market general price
-      index), INPC, and SELIC interest rate data published by Banco Central do Brasil.
+- aid: brapi:fundamentals-api
+  name: brapi Fundamentals API
+  tags:
+  - Fundamentals
+  - Balance Sheet
+  - Income Statement
+  - Financial Statements
+  humanURL: https://brapi.dev/docs
+  properties:
+  - url: https://brapi.dev/docs
+    type: Documentation
+  description: >-
+    Access structured financial statement data for Brazilian listed companies including balance sheets
+    (BP), income statements (DRE), cash flow (DFC), and value added statements (DVA). Historical data
+    available from 2009.
+- aid: brapi:dividends-api
+  name: brapi Dividends API
+  tags:
+  - Dividends
+  - Distributions
+  - Corporate Actions
+  humanURL: https://brapi.dev/docs
+  properties:
+  - url: https://brapi.dev/docs
+    type: Documentation
+  description: >-
+    Retrieve complete dividend and earnings distribution history for B3-listed securities, enabling portfolio
+    yield analysis and income tracking.
+- aid: brapi:crypto-api
+  name: brapi Cryptocurrency API
+  tags:
+  - Cryptocurrency
+  - BRL
+  - Digital Assets
+  humanURL: https://brapi.dev/docs
+  properties:
+  - url: https://brapi.dev/docs
+    type: Documentation
+  description: >-
+    Access cryptocurrency prices denominated in Brazilian Reals (BRL), supporting investment analysis
+    and portfolio management for Brazilian digital asset investors.
+- aid: brapi:exchange-api
+  name: brapi Exchange Rates API
+  tags:
+  - Foreign Exchange
+  - Currency
+  - BRL
+  humanURL: https://brapi.dev/docs
+  properties:
+  - url: https://brapi.dev/docs
+    type: Documentation
+  description: >-
+    Retrieve Brazilian Real (BRL) exchange rates against major global currencies, sourced from Banco Central
+    do Brasil data.
+- aid: brapi:indicators-api
+  name: brapi Economic Indicators API
+  tags:
+  - Inflation
+  - Interest Rates
+  - Economic Data
+  - SELIC
+  humanURL: https://brapi.dev/docs
+  properties:
+  - url: https://brapi.dev/docs
+    type: Documentation
+  description: >-
+    Access Brazilian macroeconomic indicators including IPCA (consumer price index), IGPM (market general
+    price index), INPC, and SELIC interest rate data published by Banco Central do Brasil.
+- aid: brapi:brapi-criptomoedas-api
+  name: brapi Criptomoedas API
+  description: The Criptomoedas API from brapi — 2 operation(s) for criptomoedas.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Criptomoedas
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-criptomoedas-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
+- aid: brapi:brapi-fiis-api
+  name: brapi Fiis API
+  description: The Fiis API from brapi — 6 operation(s) for fiis.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Fiis
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-fiis-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
+- aid: brapi:brapi-inflacao-api
+  name: brapi Inflacao API
+  description: The Inflacao API from brapi — 2 operation(s) for inflacao.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Inflacao
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-inflacao-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
+- aid: brapi:brapi-moedas-api
+  name: brapi Moedas API
+  description: The Moedas API from brapi — 2 operation(s) for moedas.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Moedas
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-moedas-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
+- aid: brapi:brapi-opcoes-api
+  name: brapi Opcoes API
+  description: The Opcoes API from brapi — 4 operation(s) for opcoes.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Opcoes
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-opcoes-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
+- aid: brapi:brapi-quote-api
+  name: brapi Quote API
+  description: The Quote API from brapi — 2 operation(s) for quote.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Quote
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-quote-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
+- aid: brapi:brapi-taxa-basica-de-juros-api
+  name: brapi Taxa Basica De Juros API
+  description: The Taxa Basica De Juros API from brapi — 2 operation(s) for taxa basica de juros.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Taxa Basica De Juros
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-taxa-basica-de-juros-api-openapi.yml
+  - type: Documentation
+    url: https://brapi.dev/docs
 common:
   - type: AgenticAccess
     url: agentic-access/brapi-agentic-access.yml
