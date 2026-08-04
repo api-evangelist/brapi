@@ -1,0 +1,26 @@
+{
+  "provider": "brapi",
+  "sources": [
+    "brapi-criptomoedas-api-openapi.yml",
+    "brapi-fiis-api-openapi.yml",
+    "brapi-inflacao-api-openapi.yml",
+    "brapi-moedas-api-openapi.yml",
+    "brapi-opcoes-api-openapi.yml",
+    "brapi-quote-api-openapi.yml",
+    "brapi-taxa-basica-de-juros-api-openapi.yml"
+  ],
+  "outputs": [
+    "brapi-criptomoedas-api-openapi.yml",
+    "brapi-fiis-api-openapi.yml",
+    "brapi-inflacao-api-openapi.yml",
+    "brapi-moedas-api-openapi.yml",
+    "brapi-opcoes-api-openapi.yml",
+    "brapi-quote-api-openapi.yml",
+    "brapi-taxa-basica-de-juros-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
