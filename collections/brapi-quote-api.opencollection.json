@@ -1,0 +1,47 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas Quote API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Quote",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Stock quotations, dividends, and financial data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/quote/:ticker",
+            "params": [
+              {
+                "name": "ticker",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stock quotations, dividends, and financial data"
+        },
+        {
+          "info": {
+            "name": "List all stock quotations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/quote"
+          },
+          "docs": "List all stock quotations"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

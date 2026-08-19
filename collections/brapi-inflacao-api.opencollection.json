@@ -1,0 +1,40 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas Inflacao API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Inflacao",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Inflation data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/inflacao"
+          },
+          "docs": "Inflation data"
+        },
+        {
+          "info": {
+            "name": "List countries with inflation data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/inflacao/available"
+          },
+          "docs": "List countries with inflation data"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

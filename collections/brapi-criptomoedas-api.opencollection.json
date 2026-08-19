@@ -1,0 +1,40 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Criptomoedas",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Cryptocurrency quotations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/criptomoedas"
+          },
+          "docs": "Cryptocurrency quotations"
+        },
+        {
+          "info": {
+            "name": "List cryptocurrencies",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/criptomoedas/available"
+          },
+          "docs": "List cryptocurrencies"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

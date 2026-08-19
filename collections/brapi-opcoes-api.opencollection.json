@@ -1,0 +1,62 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas Opcoes API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Opcoes",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List options expiration dates",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/opcoes/vencimentos"
+          },
+          "docs": "List options expiration dates"
+        },
+        {
+          "info": {
+            "name": "List strike prices",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/opcoes/precos-de-exercicio"
+          },
+          "docs": "List strike prices"
+        },
+        {
+          "info": {
+            "name": "List traded series",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/opcoes/series"
+          },
+          "docs": "List traded series"
+        },
+        {
+          "info": {
+            "name": "Query series historical data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/opcoes/historico"
+          },
+          "docs": "Query series historical data"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

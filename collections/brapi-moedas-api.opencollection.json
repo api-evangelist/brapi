@@ -1,0 +1,40 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas Moedas API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Moedas",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Currency quotations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/moedas"
+          },
+          "docs": "Currency quotations"
+        },
+        {
+          "info": {
+            "name": "List currencies",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/moedas/available"
+          },
+          "docs": "List currencies"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

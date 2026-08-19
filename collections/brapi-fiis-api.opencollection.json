@@ -1,0 +1,84 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas Fiis API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Fiis",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Real estate funds listing",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/fiis/listagem"
+          },
+          "docs": "Real estate funds listing"
+        },
+        {
+          "info": {
+            "name": "Real estate funds indicators",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/fiis/indicadores"
+          },
+          "docs": "Real estate funds indicators"
+        },
+        {
+          "info": {
+            "name": "Historical fund indicators",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/fiis/indicadores-historico"
+          },
+          "docs": "Historical fund indicators"
+        },
+        {
+          "info": {
+            "name": "Historical quotations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/fiis/historico"
+          },
+          "docs": "Historical quotations"
+        },
+        {
+          "info": {
+            "name": "CVM reports",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/fiis/relatorios"
+          },
+          "docs": "CVM reports"
+        },
+        {
+          "info": {
+            "name": "Dividends",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/fiis/dividendos"
+          },
+          "docs": "Dividends"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

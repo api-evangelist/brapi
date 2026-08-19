@@ -1,0 +1,40 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "brapi Criptomoedas Taxa Basica De Juros API",
+    "version": "1.0.0"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Taxa Basica De Juros",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "SELIC rate",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/taxa-basica-de-juros"
+          },
+          "docs": "SELIC rate"
+        },
+        {
+          "info": {
+            "name": "List countries with interest rate data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://brapi.dev/api/taxa-basica-de-juros/available"
+          },
+          "docs": "List countries with interest rate data"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
