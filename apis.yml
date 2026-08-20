@@ -162,6 +162,8 @@ apis:
   description: The Quote API from brapi — 2 operation(s) for quote.
   humanURL: https://brapi.dev/docs
   tags:
+  - Quotes
+  tags_raw:
   - Quote
   properties:
   - type: OpenAPI
