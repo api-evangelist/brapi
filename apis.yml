@@ -38,7 +38,7 @@ image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/brapi.png
 access: 3rd-Party
 created: '2025-03-01'
 modified: '2026-05-19'
-position: Consumer
+position: Consuming
 description: >-
   brapi.dev is a Brazilian financial data REST API aggregating public market data from B3 (stock exchange), CVM
   (securities commission), and Banco Central (central bank). It provides real-time and historical stock quotes,
