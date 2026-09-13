@@ -1,0 +1,57 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "brapi.dev",
+    "identifier": "did:web:brapi.dev"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:brapi.dev:server:finance-mcp",
+      "displayName": "brapi Financial Data MCP Server",
+      "type": "application/mcp-server-card+json",
+      "url": "https://brapi.dev/.well-known/mcp/server-card.json",
+      "description": "Read-only MCP tools for Brazilian stock quotes, dividends, fundamentals, FIIs, macroeconomics, and other market data.",
+      "capabilities": [
+        "StockQuotes",
+        "HistoricalPrices",
+        "Dividends",
+        "FinancialStatements",
+        "BrazilianMarketData"
+      ],
+      "representativeQueries": [
+        "What is the current price of PETR4?",
+        "Show the dividend history for VALE3.",
+        "Compare Brazilian FII indicators."
+      ],
+      "version": "1.0.0",
+      "trustManifest": {
+        "identity": "https://brapi.dev",
+        "identityType": "https"
+      }
+    },
+    {
+      "identifier": "urn:air:brapi.dev:api:financial-data",
+      "displayName": "brapi Financial Data REST API",
+      "type": "application/openapi+json",
+      "url": "https://brapi.dev/openapi.json",
+      "description": "Typed REST endpoints for current and historical Brazilian financial market data.",
+      "capabilities": [
+        "REST",
+        "OpenAPI",
+        "Stocks",
+        "FIIs",
+        "Currencies",
+        "Crypto"
+      ],
+      "representativeQueries": [
+        "Get a typed quote for PETR4.",
+        "Fetch historical prices for a B3 ticker."
+      ],
+      "version": "3.0.0",
+      "trustManifest": {
+        "identity": "https://brapi.dev",
+        "identityType": "https"
+      }
+    }
+  ]
+}
