@@ -1,13 +1,7 @@
 {
   "provider": "brapi",
   "sources": [
-    "brapi-criptomoedas-api-openapi.yml",
-    "brapi-fiis-api-openapi.yml",
-    "brapi-inflacao-api-openapi.yml",
-    "brapi-moedas-api-openapi.yml",
-    "brapi-opcoes-api-openapi.yml",
-    "brapi-quote-api-openapi.yml",
-    "brapi-taxa-basica-de-juros-api-openapi.yml"
+    "_ae-authored/brapi-openapi.yml"
   ],
   "outputs": [
     "brapi-criptomoedas-api-openapi.yml",
@@ -21,6 +15,45 @@
   "archived": [],
   "errors": [],
   "warnings": [],
-  "notes": [],
-  "skipped": []
+  "notes": [
+    "sourced from openapi/_original/ (0 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "brapi-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "brapi-openapi.yml: tagged paths GET /api/quote/{ticker} -> Quote",
+    "brapi-openapi.yml: tagged paths GET /api/quote -> Quote",
+    "brapi-openapi.yml: tagged paths GET /api/opcoes/vencimentos -> Opcoes",
+    "brapi-openapi.yml: tagged paths GET /api/opcoes/precos-de-exercicio -> Opcoes",
+    "brapi-openapi.yml: tagged paths GET /api/opcoes/series -> Opcoes",
+    "brapi-openapi.yml: tagged paths GET /api/opcoes/historico -> Opcoes",
+    "brapi-openapi.yml: tagged paths GET /api/fiis/listagem -> Fiis",
+    "brapi-openapi.yml: tagged paths GET /api/fiis/indicadores -> Fiis",
+    "brapi-openapi.yml: tagged paths GET /api/fiis/indicadores-historico -> Fiis",
+    "brapi-openapi.yml: tagged paths GET /api/fiis/historico -> Fiis",
+    "brapi-openapi.yml: tagged paths GET /api/fiis/relatorios -> Fiis",
+    "brapi-openapi.yml: tagged paths GET /api/fiis/dividendos -> Fiis",
+    "brapi-openapi.yml: tagged paths GET /api/criptomoedas -> Criptomoedas",
+    "brapi-openapi.yml: tagged paths GET /api/criptomoedas/available -> Criptomoedas",
+    "brapi-openapi.yml: tagged paths GET /api/moedas -> Moedas",
+    "brapi-openapi.yml: tagged paths GET /api/moedas/available -> Moedas",
+    "brapi-openapi.yml: tagged paths GET /api/inflacao -> Inflacao",
+    "brapi-openapi.yml: tagged paths GET /api/inflacao/available -> Inflacao",
+    "brapi-openapi.yml: tagged paths GET /api/taxa-basica-de-juros -> Taxa Basica De Juros",
+    "brapi-openapi.yml: tagged paths GET /api/taxa-basica-de-juros/available -> Taxa Basica De Juros",
+    "brapi-openapi.yml: declared missing tag: Criptomoedas",
+    "brapi-openapi.yml: declared missing tag: Fiis",
+    "brapi-openapi.yml: declared missing tag: Inflacao",
+    "brapi-openapi.yml: declared missing tag: Moedas",
+    "brapi-openapi.yml: declared missing tag: Opcoes",
+    "brapi-openapi.yml: declared missing tag: Quote",
+    "brapi-openapi.yml: declared missing tag: Taxa Basica De Juros",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "brapi-criptomoedas-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "brapi-fiis-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "brapi-inflacao-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "brapi-moedas-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "brapi-opcoes-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "brapi-quote-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "brapi-taxa-basica-de-juros-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }
