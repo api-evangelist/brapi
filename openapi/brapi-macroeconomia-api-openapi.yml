@@ -1,0 +1,651 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Macroeconomia…
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Macroeconomia
+  description: Acompanhe os principais indicadores macroeconômicos do Brasil, incluindo inflação (IPCA, IGP-M), Taxa Selic, agregados monetários e atividade.
+paths:
+  /api/v2/macro/available:
+    get:
+      tags:
+      - Macroeconomia
+      operationId: getMacroAvailable
+      summary: Listar séries macroeconômicas
+      description: 'Lista as séries macroeconômicas com código (campo `slug`), nome, descrição,
+
+        unidade, frequência, categoria e data de início do histórico.
+
+
+        Use para achar o código antes de chamar as
+
+        séries macroeconômicas ou o
+
+        último valor.
+
+
+        `q` e `category` funcionam juntos. Endpoint público, sem token.'
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          description: Texto buscado no código, nome alternativo, nome e descrição. Ignora maiúsculas e aceita parte da palavra.
+          example: juros
+        required: false
+        name: q
+        in: query
+      - schema:
+          type: string
+          description: 'Categoria da série: `interestRate`, `inflation`, `monetary`, `activity`, `labor`, `external`.'
+          example: interestRate
+        required: false
+        name: category
+        in: query
+      responses:
+        '200':
+          description: Lista de séries disponíveis retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroAvailableResponse'
+  /api/v2/macro:
+    get:
+      tags:
+      - Macroeconomia
+      operationId: getMacroSeries
+      summary: Séries macroeconômicas
+      description: 'Histórico de indicadores macroeconômicos do Brasil, como Selic, CDI, IPCA,
+
+        IGP-M, agregados monetários, atividade, emprego e setor externo. Cada série tem
+
+        um código, como `selic` ou `ipca`, que a resposta mostra no campo `slug`.
+
+
+        Use para gráficos de juros e inflação, modelos de renda fixa e análise de
+
+        cenário.
+
+
+        Peça até 20 séries por chamada em `symbols`, como
+
+        `symbols=selic,ipca`. Sem datas, a janela é dos últimos 12 meses. `limit`
+
+        corta os pontos de cada série e tem padrão 20. Com o padrão, uma
+
+        série diária não cobre os 12 meses. Aumente `limit` para ver a janela toda.
+
+
+        As séries têm frequências diferentes: a Selic e o CDI são diários, o IPCA e o
+
+        PIB mensal são mensais. Leia `series.frequency` antes de juntar duas séries.
+
+
+        Um nome alternativo no lugar do código, como `igp-m` para `igpm`, funciona e
+
+        gera um aviso em `warnings`. Um código desconhecido gera um item em
+
+        `errors` e não derruba as outras séries. Pares de
+
+        câmbio ficam no histórico de câmbio.
+
+
+        Veja os códigos em listar séries.
+
+        Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Códigos das séries separados por vírgula, até 20. Códigos por categoria: interestRate: `selic`, `selicovernight`, `cdi`, `tr`; inflation: `ipca`, `ipca12m`, `inpc`, `igpm`, `igpdi`; activity: `ibcbr`, `pibmensal`; labor: `desemprego`; monetary: `m1`, `m4`; external: `reservas`.'
+          example: selic,ipca
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2025-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-04-30'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem por data.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          description: 'Máximo de observações por série. Padrão: 20. Não há teto.'
+          example: 20
+        required: false
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: Observações retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroSeriesDataResponse'
+        '400':
+          description: Parâmetros inválidos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: Plano sem acesso ao módulo de macroeconomia.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/macro/latest:
+    get:
+      tags:
+      - Macroeconomia
+      operationId: getMacroSeriesLatest
+      summary: Último valor das séries
+      description: 'O valor mais recente de cada série macroeconômica pedida em `symbols`. Sem
+
+        `symbols`, devolve todas as séries.
+
+
+        Use para painéis com Selic, CDI e IPCA atuais sem baixar o histórico.
+
+
+        A data de cada valor segue a frequência da série. O IPCA mais recente pode ser
+
+        de um mês atrás e a Selic de ontem. `latest` é nulo quando a série não tem
+
+        dados.
+
+
+        Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Códigos das séries separados por vírgula, até 20. Sem valor, devolve todas as séries. Códigos: selic, selicovernight, cdi, tr, ipca, ipca12m, inpc, igpm, igpdi, ibcbr, pibmensal, desemprego, m1, m4, reservas.'
+          example: selic,cdi,ipca
+        required: false
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Snapshot retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroSeriesLatestResponse'
+        '400':
+          description: Parâmetros inválidos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: Plano sem acesso ao módulo de macroeconomia.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    MacroSeriesAliasWarning:
+      type: object
+      properties:
+        provided:
+          type: string
+          description: Nome alternativo enviado em `symbols`.
+        canonicalSlug:
+          type: string
+          description: Código oficial da série. Use este valor em integrações.
+        message:
+          type: string
+      required:
+      - provided
+      - canonicalSlug
+      - message
+    MacroSeriesPublic:
+      type: object
+      properties:
+        slug:
+          type: string
+          description: Código da série. Use este valor em `symbols`.
+        name:
+          type: string
+        description:
+          type: string
+        unit:
+          type: string
+        frequency:
+          type: string
+        category:
+          type: string
+        startDate:
+          type: string
+      required:
+      - slug
+      - name
+      - description
+      - unit
+      - frequency
+      - category
+      - startDate
+      example:
+        slug: selic
+        name: Taxa Selic
+        description: Taxa básica de juros da economia brasileira, definida pelo COPOM (Comitê de Política Monetária) do Banco Central. É a referência para todas as demais taxas de juros do país.
+        unit: percentPerYear
+        frequency: daily
+        category: interestRate
+        startDate: '1999-03-05'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    MacroSeriesLatest:
+      type: object
+      properties:
+        series:
+          $ref: '#/components/schemas/MacroSeriesPublic'
+        latest:
+          allOf:
+          - $ref: '#/components/schemas/MacroSeriesObservation'
+          - nullable: true
+      required:
+      - series
+      - latest
+      example:
+        series:
+          slug: selic
+          name: Taxa Selic
+          description: Taxa básica de juros da economia brasileira, definida pelo COPOM (Comitê de Política Monetária) do Banco Central. É a referência para todas as demais taxas de juros do país.
+          unit: percentPerYear
+          frequency: daily
+          category: interestRate
+          startDate: '1999-03-05'
+        latest:
+          date: '2026-04-30'
+          value: 14.5
+    MacroSeriesObservation:
+      type: object
+      properties:
+        date:
+          type: string
+          example: '2026-04-30'
+        value:
+          type: number
+          example: 14.75
+      required:
+      - date
+      - value
+    MacroSeriesError:
+      type: object
+      properties:
+        slug:
+          type: string
+          description: Código enviado em `symbols`.
+        code:
+          type: string
+        message:
+          type: string
+      required:
+      - slug
+      - code
+      - message
+    MacroAvailableResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesPublic'
+          description: 'Séries encontradas. Com `q`, a ordem é por relevância: código, nome alternativo, nome e descrição.'
+        categories:
+          type: array
+          items:
+            type: string
+          description: Todas as categorias. Os filtros não mudam esta lista.
+        count:
+          type: integer
+          description: Número de séries em `results`, depois dos filtros.
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - categories
+      - count
+      - requestedAt
+      - took
+      example:
+        results:
+        - slug: selic
+          name: Taxa Selic
+          description: Taxa básica de juros da economia brasileira, definida pelo COPOM (Comitê de Política Monetária) do Banco Central. É a referência para todas as demais taxas de juros do país.
+          unit: percentPerYear
+          frequency: daily
+          category: interestRate
+          startDate: '1999-03-05'
+        - slug: ipca12m
+          name: IPCA acumulado 12 meses
+          description: Variação acumulada em 12 meses do Índice Nacional de Preços ao Consumidor Amplo. Indicador oficial de inflação do Brasil.
+          unit: percent
+          frequency: monthly
+          category: inflation
+          startDate: '1981-01-01'
+        - slug: cdi
+          name: CDI
+          description: Certificado de Depósito Interbancário - taxa de juros das operações entre bancos. Principal benchmark de renda fixa no Brasil.
+          unit: percentPerDay
+          frequency: daily
+          category: interestRate
+          startDate: '1986-03-06'
+        categories:
+        - interestRate
+        - inflation
+        - monetary
+        - activity
+        - labor
+        - external
+        count: 15
+        requestedAt: '2026-04-30T12:00:00.000Z'
+        took: 4
+    MacroSeriesResult:
+      type: object
+      properties:
+        series:
+          $ref: '#/components/schemas/MacroSeriesPublic'
+        observations:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesObservation'
+      required:
+      - series
+      - observations
+      example:
+        series:
+          slug: selic
+          name: Taxa Selic
+          description: Taxa básica de juros da economia brasileira, definida pelo COPOM (Comitê de Política Monetária) do Banco Central. É a referência para todas as demais taxas de juros do país.
+          unit: percentPerYear
+          frequency: daily
+          category: interestRate
+          startDate: '1999-03-05'
+        observations:
+        - date: '2026-04-30'
+          value: 14.5
+        - date: '2026-04-29'
+          value: 14.75
+        - date: '2026-04-28'
+          value: 14.75
+    MacroSeriesLatestResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesLatest'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesAliasWarning'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesError'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - series:
+            slug: selic
+            name: Taxa Selic
+            description: Taxa básica de juros da economia brasileira, definida pelo COPOM (Comitê de Política Monetária) do Banco Central. É a referência para todas as demais taxas de juros do país.
+            unit: percentPerYear
+            frequency: daily
+            category: interestRate
+            startDate: '1999-03-05'
+          latest:
+            date: '2026-04-30'
+            value: 14.5
+        - series:
+            slug: ipca12m
+            name: IPCA acumulado 12 meses
+            description: Variação acumulada em 12 meses do Índice Nacional de Preços ao Consumidor Amplo. Indicador oficial de inflação do Brasil.
+            unit: percent
+            frequency: monthly
+            category: inflation
+            startDate: '1981-01-01'
+          latest:
+            date: '2026-03-01'
+            value: 4.14
+        - series:
+            slug: cdi
+            name: CDI
+            description: Certificado de Depósito Interbancário - taxa de juros das operações entre bancos. Principal benchmark de renda fixa no Brasil.
+            unit: percentPerDay
+            frequency: daily
+            category: interestRate
+            startDate: '1986-03-06'
+          latest:
+            date: '2026-04-30'
+            value: 0.054267
+        requestedAt: '2026-04-30T12:00:00.000Z'
+        took: 18
+    MacroSeriesDataResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesResult'
+        warnings:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesAliasWarning'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroSeriesError'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - series:
+            slug: selic
+            name: Taxa Selic
+            description: Taxa básica de juros da economia brasileira, definida pelo COPOM (Comitê de Política Monetária) do Banco Central. É a referência para todas as demais taxas de juros do país.
+            unit: percentPerYear
+            frequency: daily
+            category: interestRate
+            startDate: '1999-03-05'
+          observations:
+          - date: '2026-04-30'
+            value: 14.5
+          - date: '2026-04-29'
+            value: 14.75
+          - date: '2026-04-28'
+            value: 14.75
+          - date: '2026-04-25'
+            value: 14.75
+        - series:
+            slug: ipca12m
+            name: IPCA acumulado 12 meses
+            description: Variação acumulada em 12 meses do Índice Nacional de Preços ao Consumidor Amplo. Indicador oficial de inflação do Brasil.
+            unit: percent
+            frequency: monthly
+            category: inflation
+            startDate: '1981-01-01'
+          observations:
+          - date: '2026-03-01'
+            value: 4.14
+          - date: '2026-02-01'
+            value: 3.81
+          - date: '2026-01-01'
+            value: 4.44
+        requestedAt: '2026-04-30T12:00:00.000Z'
+        took: 23
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

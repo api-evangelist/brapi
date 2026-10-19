@@ -1,0 +1,563 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Câmbio API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Câmbio
+  description: Monitore taxas de câmbio entre moedas fiduciárias de todo o mundo, com atualizações frequentes e dados históricos.
+paths:
+  /api/v2/currency:
+    get:
+      tags:
+      - Câmbio
+      operationId: getCurrency
+      summary: Cotação de câmbio
+      description: 'Cotação atual de pares de moedas, com preço de compra, preço de venda, máxima,
+
+        mínima e variação do dia. Os pares cobertos pelo Banco Central usam a PTAX.
+
+
+        Use para converter valores, mostrar o dólar do dia e atualizar planilhas.
+
+
+        Informe os pares em `currency` no formato `ORIGEM-DESTINO`, como
+
+        `USD-BRL,EUR-BRL`. Os números vêm como texto.
+
+
+        A diferença entre `bidPrice` e `askPrice` é o spread de referência. Bancos e
+
+        casas de câmbio cobram um spread maior.
+
+
+        Veja os pares em listar pares e a
+
+        série diária em histórico de câmbio.
+
+        Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Pares no formato ORIGEM-DESTINO, separados por vírgula. Ex.: USD-BRL,EUR-BRL.'
+          example: USD-BRL
+        required: false
+        name: currency
+        in: query
+      responses:
+        '200':
+          description: Cotações dos pares de moedas solicitados retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyResponseSimple'
+        '400':
+          description: '**Requisição Inválida.** Parâmetro `currency` não fornecido ou formato inválido.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: '**Não Autorizado.** Token de autenticação não fornecido ou inválido.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: '**Acesso Proibido.** Seu plano não tem acesso ao módulo de câmbio.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: '**Erro Interno.** Erro interno ao processar a requisição.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: '**Serviço Indisponível.** Serviço externo temporariamente indisponível.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/currency/historical:
+    get:
+      tags:
+      - Câmbio
+      operationId: getCurrencyHistorical
+      summary: Histórico de câmbio
+      description: 'Série diária de câmbio pela PTAX de fechamento do Banco Central. Cobre USD, EUR,
+
+        GBP, JPY, CHF, CAD, AUD, DKK, NOK e SEK contra o real e entre si.
+
+
+        Use para backtests, conversão de valores em datas passadas e gráficos de câmbio.
+
+
+        Há três tipos de par:
+
+
+        - Direto, como `USD-BRL`: planos Startup e Pro.
+
+        - Inverso, como `BRL-USD`: calculado como `1 / USD-BRL`. Só no plano Pro.
+
+        - Cruzado, como `EUR-USD`: calculado como `EUR-BRL / USD-BRL` nas datas em
+
+        que as duas séries têm valor. Só no plano Pro.
+
+
+        Peça até 20 pares por chamada. Sem datas, a janela é dos últimos 12 meses. A
+
+        PTAX sai uma vez por dia útil, então não há pontos em fins de semana e
+
+        feriados.
+
+
+        Um par não aceito ou fora do plano gera um item em `errors` e não derruba os
+
+        outros pares. Para cripto, use a
+
+        cotação de criptomoedas.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Pares no formato ORIGEM-DESTINO, separados por vírgula, até 20. Ex.: USD-BRL,EUR-BRL.'
+          example: USD-BRL,EUR-BRL
+        required: true
+        name: currency
+        in: query
+      - schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          description: 'Data inicial no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          pattern: ^\d{4}-\d{2}-\d{2}$
+          description: 'Data final no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          description: 'Ordem por data. Padrão: desc.'
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          description: 'Máximo de pontos por par. Padrão: 365.'
+          example: 365
+        required: false
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: Histórico de cotações PTAX retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyHistoricalResponse'
+        '400':
+          description: '**Requisição Inválida.** Parâmetros ausentes ou inválidos.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: '**Não Autorizado.**'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: '**Acesso Proibido.** Plano sem acesso ao módulo de câmbio.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: '**Erro Interno.**'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/currency/available:
+    get:
+      tags:
+      - Câmbio
+      operationId: getCurrencyAvailable
+      summary: Listar pares de moedas
+      description: 'Lista os pares de moedas que a cotação de câmbio
+
+        aceita, no formato `ORIGEM-DESTINO`, com o nome de cada par.
+
+
+        Use para montar seletores de moeda e validar pares antes da chamada.
+
+
+        Filtre com `search`. Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Texto buscado no par e no nome das moedas.
+          example: USD
+        required: false
+        name: search
+        in: query
+      responses:
+        '200':
+          description: Lista de pares de moedas disponíveis retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencyAvailableResponse'
+components:
+  schemas:
+    CurrencyHistoricalPairResult:
+      type: object
+      properties:
+        pair:
+          type: string
+        fromCurrency:
+          type: string
+        toCurrency:
+          type: string
+        observations:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                example: '2026-04-30'
+              value:
+                type: number
+                example: 4.9886
+            required:
+            - date
+            - value
+      required:
+      - pair
+      - fromCurrency
+      - toCurrency
+      - observations
+      example:
+        pair: USD-BRL
+        fromCurrency: USD
+        toCurrency: BRL
+        observations:
+        - date: '2026-04-30'
+          value: 4.9886
+        - date: '2026-04-29'
+          value: 4.9712
+        - date: '2026-04-28'
+          value: 4.9854
+        - date: '2026-04-25'
+          value: 5.0123
+        - date: '2026-04-24'
+          value: 5.0218
+    CurrencyHistoricalError:
+      type: object
+      properties:
+        pair:
+          type: string
+          example: BTC-BRL
+        code:
+          type: string
+          example: UNSUPPORTED_PAIR
+        message:
+          type: string
+          example: Par `BTC-BRL` não suportado em /historical. Use /api/v2/crypto para criptomoedas.
+        details:
+          type: object
+          additionalProperties:
+            nullable: true
+      required:
+      - pair
+      - code
+      - message
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    CurrencyHistoricalResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CurrencyHistoricalPairResult'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CurrencyHistoricalError'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - pair: USD-BRL
+          fromCurrency: USD
+          toCurrency: BRL
+          observations:
+          - date: '2026-04-30'
+            value: 4.9886
+          - date: '2026-04-29'
+            value: 4.9712
+          - date: '2026-04-28'
+            value: 4.9854
+          - date: '2026-04-25'
+            value: 5.0123
+          - date: '2026-04-24'
+            value: 5.0218
+        - pair: EUR-BRL
+          fromCurrency: EUR
+          toCurrency: BRL
+          observations:
+          - date: '2026-04-30'
+            value: 5.6712
+          - date: '2026-04-29'
+            value: 5.6543
+          - date: '2026-04-28'
+            value: 5.6789
+        requestedAt: '2026-04-30T12:00:00.000Z'
+        took: 14
+    CurrencyResponseSimple:
+      type: object
+      properties:
+        currency:
+          type: array
+          items:
+            $ref: '#/components/schemas/CurrencyQuoteSimple'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - currency
+      - requestedAt
+      - took
+      example:
+        currency:
+        - fromCurrency: USD
+          toCurrency: BRL
+          name: Dólar Americano/Real Brasileiro
+          high: '5.343'
+          low: '5.20858'
+          bidVariation: '-0.0546'
+          percentageChange: '-1.035958'
+          bidPrice: '5.2159'
+          askPrice: '5.2189'
+          updatedAtTimestamp: '1770415348'
+          updatedAtDate: '2026-02-06 19:02:28'
+        - fromCurrency: EUR
+          toCurrency: BRL
+          name: Euro/Real Brasileiro
+          high: '6.1915'
+          low: '6.15764'
+          bidVariation: '0.03386'
+          percentageChange: '0.549886'
+          bidPrice: '6.1915'
+          askPrice: '6.2415'
+          updatedAtTimestamp: '1770527911'
+          updatedAtDate: '2026-02-08 02:18:31'
+        requestedAt: '2026-02-08T16:26:24.131Z'
+        took: 27
+    CurrencyQuoteSimple:
+      type: object
+      properties:
+        fromCurrency:
+          type: string
+        toCurrency:
+          type: string
+        name:
+          type: string
+        high:
+          type: string
+        low:
+          type: string
+        bidVariation:
+          type: string
+        percentageChange:
+          type: string
+        bidPrice:
+          type: string
+        askPrice:
+          type: string
+        updatedAtTimestamp:
+          type: string
+        updatedAtDate:
+          type: string
+      required:
+      - fromCurrency
+      - toCurrency
+      - name
+      - high
+      - low
+      - bidVariation
+      - percentageChange
+      - bidPrice
+      - askPrice
+      - updatedAtTimestamp
+      - updatedAtDate
+    CurrencyAvailableResponse:
+      type: object
+      properties:
+        currencies:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              currency:
+                type: string
+            required:
+            - name
+            - currency
+      required:
+      - currencies
+      example:
+        currencies:
+        - name: USD-BRL
+          currency: Dólar Americano/Real Brasileiro
+        - name: USD-BRLT
+          currency: Dólar Americano/Real Brasileiro Turismo
+        - name: CAD-BRL
+          currency: Dólar Canadense/Real Brasileiro
+        - name: EUR-BRL
+          currency: Euro/Real Brasileiro
+        - name: GBP-BRL
+          currency: Libra Esterlina/Real Brasileiro
+        - name: JPY-BRL
+          currency: Iene Japonês/Real Brasileiro
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

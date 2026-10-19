@@ -1,0 +1,2401 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Opções sobre…
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Opções sobre Futuros
+paths:
+  /api/v2/futures/options/expirations:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionExpirations
+      summary: Vencimentos de opções sobre futuros
+      description: 'Retorna as datas de vencimento de opções sobre um contrato futuro, como boi gordo (`BGI`), café arábica (`ICF`), milho (`CCM`) e soja (`SJC`). Por padrão, só vencimentos futuros.
+
+
+        Use para montar um seletor de vencimento, listar vencimentos passados em um backtest e escolher a data antes de consultar a cadeia de opções sobre futuros.
+
+
+        Passe `includeExpired=true` para incluir vencimentos passados. O vencimento da opção pode ser diferente do vencimento do futuro. Não calcule uma data a partir da outra.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`, `ICF`.'
+          example: BGI
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: '`true` inclui vencimentos passados. Padrão: `false`, só vencimentos futuros.'
+        required: false
+        name: includeExpired
+        in: query
+      responses:
+        '200':
+          description: Vencimentos retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionExpirationsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/strikes:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionStrikes
+      summary: Strikes de opções sobre futuros
+      description: 'Retorna os preços de exercício das séries de opções sobre futuro de um vencimento, em ordem crescente. Filtre por `call` ou `put` com `side`.
+
+
+        Use para montar um seletor de strike sem baixar a cadeia inteira.
+
+
+        Este passo é opcional: a cadeia de opções sobre futuros também aceita `minStrike` e `maxStrike`.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+          example: BGI
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2027-08-31'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      responses:
+        '200':
+          description: Preços de exercício retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionStrikesResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/chain:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionChain
+      summary: Cadeia de opções sobre futuros
+      description: 'Retorna as calls e puts de um vencimento de opções sobre futuro, com dados do contrato (`symbol`, `optionType`, `optionStyle`, `strike`, `contractMultiplier`) e a cotação do pregão: OHLC, `referencePrice`, volume e contratos em aberto.
+
+
+        Use para montar uma tela de opções por vencimento, comparar calls e puts por strike e filtrar séries por faixa de strike.
+
+
+        Todas as séries vêm do mesmo pregão: o último com dados até a data pedida, informado em `date`. Séries sem registro nesse pregão não aparecem.
+
+
+        Muitas séries não negociam todo dia. Sem negócio, `close` vem `null` e `referencePrice` costuma vir preenchido.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+          example: BGI
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2027-08-31'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data do pregão, no formato YYYY-MM-DD. Padrão: último pregão disponível.'
+        required: false
+        name: date
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike mínimo.
+        required: false
+        name: minStrike
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike máximo.
+        required: false
+        name: maxStrike
+        in: query
+      responses:
+        '200':
+          description: Séries retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionChainResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/positions:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionPositions
+      summary: Posições em aberto de opções sobre futuros
+      description: 'Retorna os contratos em aberto de cada série de opções sobre futuro de um vencimento.
+
+
+        Use para ver onde se concentram as posições por strike, comparar calls e puts e acompanhar a variação diária de contratos em aberto.
+
+
+        Use `openInterest` como número de contratos em aberto. Aqui ele repete `reportedOpenInterest`. Os campos de posição coberta, descoberta, bloqueada e de empréstimo vêm vazios na maior parte dos segmentos de futuros. Volume e contratos em aberto medem coisas diferentes: uma série pode ficar sem negócio e ter muitos contratos em aberto.
+
+
+        Os contratos em aberto são apurados uma vez por pregão. Sem apuração na data pedida, a resposta traz a anterior. Confira `openInterestDate` antes de comparar com o preço do dia.
+
+
+        Aceita os mesmos filtros da cadeia de opções sobre futuros: `side`, `minStrike` e `maxStrike`.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+          example: BGI
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2027-08-31'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data do pregão, no formato YYYY-MM-DD. Padrão: último pregão disponível.'
+        required: false
+        name: date
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike mínimo.
+        required: false
+        name: minStrike
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike máximo.
+        required: false
+        name: maxStrike
+        in: query
+      responses:
+        '200':
+          description: Posições retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionPositionsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/historical:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionHistorical
+      summary: Histórico de opção sobre futuro
+      description: 'Retorna o histórico diário de uma opção sobre futuro, identificada por `symbol`: dados do contrato e, por pregão, OHLC, `referencePrice`, `oscillationPct`, negócios e volume.
+
+
+        Use para montar gráficos de prêmio, fazer backtests e analisar a liquidez de uma série.
+
+
+        Encontre a série na cadeia de opções sobre futuros. Séries longe do preço do futuro quase não negociam, e o histórico pode ter poucos pregões.
+
+
+        Disponível no plano Pro. Sem token, aceita só `symbol` com prefixo `BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Código da série de opção.
+          example: BGIM26C028000
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial, no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2026-05-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final, no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-06-01'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem por data: `asc` do mais antigo ao mais recente, `desc` do mais recente ao mais antigo.'
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionHistoricalResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/positions/history:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionPositionsHistory
+      summary: Histórico de posições em aberto de opções sobre futuros
+      description: 'Retorna o histórico diário de contratos em aberto de uma opção sobre futuro, identificada por `symbol`.
+
+
+        Use para ver a montagem e a desmontagem de posições ao longo do tempo e comparar contratos em aberto com o preço.
+
+
+        Cada item é uma apuração diária. Pregão sem apuração não aparece.
+
+
+        Disponível no plano Pro. Sem token, aceita só `symbol` com prefixo `BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Código da série de opção.
+          example: BGIM26C028000
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial, no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2026-05-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final, no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-06-01'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem por data: `asc` do mais antigo ao mais recente, `desc` do mais recente ao mais antigo.'
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico de posições retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionPositionsHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/analytics:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionAnalytics
+      summary: Gregas e IV de opções sobre futuros
+      description: 'Retorna a volatilidade implícita e as gregas (delta, gamma, theta, vega e rho) de cada série de opções sobre futuro de um vencimento, calculadas sobre o preço de fechamento.
+
+
+        Use para comparar a IV entre strikes, montar um smile de volatilidade e medir a exposição de uma carteira de opções.
+
+
+        `timeToExpirationYears` usa dias corridos até o vencimento divididos por 365. Por exemplo, 17 dias correspondem a `17 / 365 = 0.04657534`.
+
+
+        `impliedVolatility` é anual, em decimal. Para um dia corrido, use `impliedVolatility / sqrt(365)`. Para `d` dias corridos, use `impliedVolatility * sqrt(d / 365)`.
+
+
+        A divisão por `sqrt(252)` pressupõe 252 pregões por ano. Ela expressa outra convenção diária e não altera o prazo usado no cálculo da opção.
+
+
+        Sem negócio no dia, o cálculo usa `referencePrice`. Nesses casos, `priceSource` vem `referencePrice` e `confidence` vem `low`. Sem preço, os campos calculados vêm `null` e `nullReason` diz o motivo.
+
+
+        `theta` vem por ano. `vega` e `rho` medem o efeito de uma variação de 1,00 na volatilidade e no juro. Divida por 100 para ter o efeito de 1 ponto percentual.
+
+
+        Séries americanas usam árvore binomial sobre o futuro. Séries europeias usam Black-76. A maioria das opções sobre futuros é americana.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+          example: BGI
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2027-08-31'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data do pregão, no formato YYYY-MM-DD. Padrão: último pregão disponível.'
+        required: false
+        name: date
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike mínimo.
+        required: false
+        name: minStrike
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike máximo.
+        required: false
+        name: maxStrike
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          description: 'Número máximo de séries na resposta. Padrão: todas as séries do filtro.'
+          example: 50
+        required: false
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: Análises retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionAnalyticsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/options/analytics/history:
+    get:
+      tags:
+      - Opções sobre Futuros
+      operationId: getFutureOptionAnalyticsHistory
+      summary: Histórico de gregas e IV de opções sobre futuros
+      description: 'Retorna o histórico diário de volatilidade implícita e gregas de uma opção sobre futuro, identificada por `symbol`.
+
+
+        Use para ver como a IV reagiu a eventos, como relatórios de safra ou o vencimento, e para testar estratégias com gregas.
+
+
+        Os campos seguem as regras de gregas e IV de opções sobre futuros.
+
+
+        Disponível no plano Pro. Sem token, aceita só `symbol` com prefixo `BGI`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Código da série de opção.
+          example: BGIM26C028000
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial, no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2026-05-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final, no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-06-01'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem por data: `asc` do mais antigo ao mais recente, `desc` do mais recente ao mais antigo.'
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico de análises retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureOptionAnalyticsHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    FutureOptionAnalyticsQuote:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: `BGIH27C028550`.'
+        underlyingAsset:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+        underlyingFuture:
+          type: string
+          nullable: true
+          description: Contrato futuro de base, quando informado.
+        optionType:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento.'
+        segment:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: 'Segmento do contrato: `financial` ou `agribusiness`.'
+        strike:
+          type: number
+          description: Preço de exercício da opção, na unidade de cotação do futuro.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          nullable: true
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          nullable: true
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        contractMultiplier:
+          type: number
+          nullable: true
+          description: 'Multiplicador do contrato, herdado do futuro. Ex.: 330 arrobas no boi gordo.'
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação.
+        exerciseType:
+          type: string
+          nullable: true
+          description: Tipo de exercício.
+        automaticExercise:
+          type: boolean
+          nullable: true
+          description: '`true` quando a opção é exercida automaticamente no vencimento.'
+        premiumUpfront:
+          type: boolean
+          nullable: true
+          description: '`true` se o prêmio é pago à vista, `false` se é diferido.'
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN da série de opção.
+        cficCode:
+          type: string
+          nullable: true
+          description: Código CFI.
+        date:
+          type: string
+          description: Data do pregão, no formato YYYY-MM-DD.
+        model:
+          type: string
+          enum:
+          - black-76
+          - cox-ross-rubinstein-futures
+          - unsupported
+          description: Modelo de cálculo. Séries americanas usam árvore binomial sobre o futuro (`cox-ross-rubinstein-futures`). Séries europeias usam `black-76`. `unsupported` quando o estilo da opção é desconhecido.
+        priceSource:
+          type: string
+          enum:
+          - close
+          - referencePrice
+          - none
+          description: Preço usado para calcular a IV. `close` é o fechamento negociado. Sem negócio, o cálculo usa `referencePrice`, com `confidence` igual a `low`.
+        underlyingPrice:
+          type: number
+          nullable: true
+          description: Preço do futuro subjacente usado no cálculo.
+        optionPrice:
+          type: number
+          nullable: true
+          description: Preço da opção usado para calcular a volatilidade implícita.
+        riskFreeRate:
+          type: number
+          nullable: true
+          description: 'Taxa livre de risco anual, em decimal. Ex.: 0.105 para 10,5%.'
+        dividendYield:
+          type: number
+          nullable: true
+          description: Sempre `0` em opções sobre futuros.
+        timeToExpirationYears:
+          type: number
+          nullable: true
+          description: Dias corridos até o vencimento divididos por 365, inclusive em anos bissextos.
+        impliedVolatility:
+          type: number
+          nullable: true
+          description: Volatilidade implícita anual, em decimal. O cálculo usa tempo em dias corridos dividido por 365.
+        delta:
+          type: number
+          nullable: true
+          description: Variação do prêmio para 1 unidade de variação no ativo subjacente.
+        gamma:
+          type: number
+          nullable: true
+          description: Variação do delta para 1 unidade de variação no ativo subjacente.
+        theta:
+          type: number
+          nullable: true
+          description: Variação do prêmio com a passagem do tempo, por ano.
+        vega:
+          type: number
+          nullable: true
+          description: Variação do prêmio para 1,00 de variação na volatilidade. Divida por 100 para 1 ponto percentual.
+        rho:
+          type: number
+          nullable: true
+          description: Variação do prêmio para 1,00 de variação na taxa de juro. Divida por 100 para 1 ponto percentual.
+        confidence:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+          - none
+          description: Confiança do cálculo. `none` indica IV e gregas nulas, com o motivo em `nullReason`. `low` indica cálculo sobre `referencePrice`.
+        nullReason:
+          type: string
+          nullable: true
+          description: 'Motivo dos campos calculados nulos. Ex.: `no_trades`, `missing_underlying_price`, `iv_not_converged`.'
+        openInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na série, na última apuração até a data pedida.
+        openInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto desde a apuração anterior.
+        openInterestDate:
+          type: string
+          nullable: true
+          description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+      required:
+      - symbol
+      - underlyingAsset
+      - underlyingFuture
+      - optionType
+      - optionStyle
+      - segment
+      - strike
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - contractMultiplier
+      - allocationRoundLot
+      - exerciseType
+      - automaticExercise
+      - premiumUpfront
+      - isin
+      - cficCode
+      - date
+      - model
+      - priceSource
+      - underlyingPrice
+      - optionPrice
+      - riskFreeRate
+      - dividendYield
+      - timeToExpirationYears
+      - impliedVolatility
+      - delta
+      - gamma
+      - theta
+      - vega
+      - rho
+      - confidence
+      - nullReason
+      - openInterest
+      - openInterestChange
+      - openInterestDate
+    FutureOptionPositionHistory:
+      allOf:
+      - $ref: '#/components/schemas/FutureOptionSpecs'
+      - type: object
+        properties:
+          positions:
+            type: array
+            items:
+              type: object
+              properties:
+                openInterest:
+                  type: number
+                  nullable: true
+                  description: Contratos em aberto na série, na última apuração até a data pedida.
+                openInterestChange:
+                  type: number
+                  nullable: true
+                  description: Variação de contratos em aberto desde a apuração anterior.
+                openInterestDate:
+                  type: string
+                  nullable: true
+                  description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+                reportDate:
+                  type: string
+                  description: Data da apuração, no formato YYYY-MM-DD.
+                isin:
+                  type: string
+                  nullable: true
+                  description: Código ISIN da série de opção, não do contrato futuro.
+                asset:
+                  type: string
+                  nullable: true
+                  description: 'Código raiz do ativo objeto. Ex.: BGI.'
+                expirationCode:
+                  type: string
+                  nullable: true
+                  description: 'Código de vencimento da apuração. Ex.: VVNK.'
+                reportSegment:
+                  type: string
+                  description: 'Segmento da apuração. Ex.: AGRIBUSINESS. É diferente do campo `segment` do contrato.'
+                reportedOpenInterest:
+                  type: number
+                  nullable: true
+                  description: Contratos em aberto na apuração do pregão. É a origem de `openInterest`.
+                reportedOpenInterestChange:
+                  type: number
+                  nullable: true
+                  description: Variação de contratos em aberto na apuração do pregão. É a origem de `openInterestChange`.
+                distributionId:
+                  type: string
+                  nullable: true
+                  description: Número de distribuição do ativo objeto. Vem vazio nas opções sobre futuros.
+                coveredQuantity:
+                  type: number
+                  nullable: true
+                  description: Contratos em posição coberta.
+                blockedQuantity:
+                  type: number
+                  nullable: true
+                  description: Contratos em posição bloqueada.
+                uncoveredQuantity:
+                  type: number
+                  nullable: true
+                  description: Contratos em posição descoberta.
+                totalPositionQuantity:
+                  type: number
+                  nullable: true
+                  description: Total de contratos em posição. Vem vazio na maior parte dos segmentos de futuros.
+                borrowerQuantity:
+                  type: number
+                  nullable: true
+                  description: Quantidade tomadora em empréstimo de ativos.
+                lenderQuantity:
+                  type: number
+                  nullable: true
+                  description: Quantidade doadora em empréstimo de ativos.
+                currentQuantity:
+                  type: number
+                  nullable: true
+                  description: Quantidade corrente. Preenchida só em alguns segmentos.
+                forwardPrice:
+                  type: number
+                  nullable: true
+                  description: Preço a termo. Preenchido só em alguns segmentos.
+              required:
+              - openInterest
+              - openInterestChange
+              - openInterestDate
+              - reportDate
+              - isin
+              - asset
+              - expirationCode
+              - reportSegment
+              - reportedOpenInterest
+              - reportedOpenInterestChange
+              - distributionId
+              - coveredQuantity
+              - blockedQuantity
+              - uncoveredQuantity
+              - totalPositionQuantity
+              - borrowerQuantity
+              - lenderQuantity
+              - currentQuantity
+              - forwardPrice
+        required:
+        - positions
+    FutureOptionSpecs:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: `BGIH27C028550`.'
+        underlyingAsset:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+        underlyingFuture:
+          type: string
+          nullable: true
+          description: Contrato futuro de base, quando informado.
+        optionType:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento.'
+        segment:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: 'Segmento do contrato: `financial` ou `agribusiness`.'
+        strike:
+          type: number
+          description: Preço de exercício da opção, na unidade de cotação do futuro.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          nullable: true
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          nullable: true
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        contractMultiplier:
+          type: number
+          nullable: true
+          description: 'Multiplicador do contrato, herdado do futuro. Ex.: 330 arrobas no boi gordo.'
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação.
+        exerciseType:
+          type: string
+          nullable: true
+          description: Tipo de exercício.
+        automaticExercise:
+          type: boolean
+          nullable: true
+          description: '`true` quando a opção é exercida automaticamente no vencimento.'
+        premiumUpfront:
+          type: boolean
+          nullable: true
+          description: '`true` se o prêmio é pago à vista, `false` se é diferido.'
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN da série de opção.
+        cficCode:
+          type: string
+          nullable: true
+          description: Código CFI.
+      required:
+      - symbol
+      - underlyingAsset
+      - underlyingFuture
+      - optionType
+      - optionStyle
+      - segment
+      - strike
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - contractMultiplier
+      - allocationRoundLot
+      - exerciseType
+      - automaticExercise
+      - premiumUpfront
+      - isin
+      - cficCode
+    FutureOptionHistoricalResponse:
+      type: object
+      properties:
+        option:
+          $ref: '#/components/schemas/FutureOptionWithHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - option
+      - requestedAt
+      - took
+      example:
+        option:
+          symbol: BGIM26C028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: call
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFCBMMP7
+          cficCode: OCAFPS
+          history:
+          - date: 1780272000
+            open: null
+            high: null
+            low: null
+            average: null
+            close: null
+            referencePrice: 68.57
+            oscillationPct: null
+            trades: null
+            volume: null
+            financialVolume: null
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 33
+    FutureOptionAnalyticsHistoryResponse:
+      type: object
+      properties:
+        option:
+          $ref: '#/components/schemas/FutureOptionWithAnalyticsHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - option
+      - requestedAt
+      - took
+      example:
+        option:
+          symbol: BGIM26C028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: call
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFCBMMP7
+          cficCode: OCAFPS
+          analytics:
+          - date: '2026-05-29'
+            model: cox-ross-rubinstein-futures
+            priceSource: referencePrice
+            underlyingPrice: 345.65
+            optionPrice: 65.66
+            riskFreeRate: 0.145
+            dividendYield: 0
+            timeToExpirationYears: 0.087671235
+            impliedVolatility: 0.33742568
+            delta: 0.99461865
+            gamma: 0.0014397058
+            theta: -1.7623149
+            vega: 1.3298614
+            rho: -0.4161327
+            confidence: low
+            nullReason: null
+            openInterest: 2441
+            openInterestChange: -22
+            openInterestDate: '2026-06-01'
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 35
+    FutureOptionPositionSnapshot:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: `BGIH27C028550`.'
+        underlyingAsset:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+        underlyingFuture:
+          type: string
+          nullable: true
+          description: Contrato futuro de base, quando informado.
+        optionType:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento.'
+        segment:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: 'Segmento do contrato: `financial` ou `agribusiness`.'
+        strike:
+          type: number
+          description: Preço de exercício da opção, na unidade de cotação do futuro.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          nullable: true
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          nullable: true
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        contractMultiplier:
+          type: number
+          nullable: true
+          description: 'Multiplicador do contrato, herdado do futuro. Ex.: 330 arrobas no boi gordo.'
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação.
+        exerciseType:
+          type: string
+          nullable: true
+          description: Tipo de exercício.
+        automaticExercise:
+          type: boolean
+          nullable: true
+          description: '`true` quando a opção é exercida automaticamente no vencimento.'
+        premiumUpfront:
+          type: boolean
+          nullable: true
+          description: '`true` se o prêmio é pago à vista, `false` se é diferido.'
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN da série de opção, não do contrato futuro.
+        cficCode:
+          type: string
+          nullable: true
+          description: Código CFI.
+        openInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na série, na última apuração até a data pedida.
+        openInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto desde a apuração anterior.
+        openInterestDate:
+          type: string
+          nullable: true
+          description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+        reportDate:
+          type: string
+          description: Data da apuração, no formato YYYY-MM-DD.
+        asset:
+          type: string
+          nullable: true
+          description: 'Código raiz do ativo objeto. Ex.: BGI.'
+        expirationCode:
+          type: string
+          nullable: true
+          description: 'Código de vencimento da apuração. Ex.: VVNK.'
+        reportSegment:
+          type: string
+          description: 'Segmento da apuração. Ex.: AGRIBUSINESS. É diferente do campo `segment` do contrato.'
+        reportedOpenInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na apuração do pregão. É a origem de `openInterest`.
+        reportedOpenInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto na apuração do pregão. É a origem de `openInterestChange`.
+        distributionId:
+          type: string
+          nullable: true
+          description: Número de distribuição do ativo objeto. Vem vazio nas opções sobre futuros.
+        coveredQuantity:
+          type: number
+          nullable: true
+          description: Contratos em posição coberta.
+        blockedQuantity:
+          type: number
+          nullable: true
+          description: Contratos em posição bloqueada.
+        uncoveredQuantity:
+          type: number
+          nullable: true
+          description: Contratos em posição descoberta.
+        totalPositionQuantity:
+          type: number
+          nullable: true
+          description: Total de contratos em posição. Vem vazio na maior parte dos segmentos de futuros.
+        borrowerQuantity:
+          type: number
+          nullable: true
+          description: Quantidade tomadora em empréstimo de ativos.
+        lenderQuantity:
+          type: number
+          nullable: true
+          description: Quantidade doadora em empréstimo de ativos.
+        currentQuantity:
+          type: number
+          nullable: true
+          description: Quantidade corrente. Preenchida só em alguns segmentos.
+        forwardPrice:
+          type: number
+          nullable: true
+          description: Preço a termo. Preenchido só em alguns segmentos.
+      required:
+      - symbol
+      - underlyingAsset
+      - underlyingFuture
+      - optionType
+      - optionStyle
+      - segment
+      - strike
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - contractMultiplier
+      - allocationRoundLot
+      - exerciseType
+      - automaticExercise
+      - premiumUpfront
+      - isin
+      - cficCode
+      - openInterest
+      - openInterestChange
+      - openInterestDate
+      - reportDate
+      - asset
+      - expirationCode
+      - reportSegment
+      - reportedOpenInterest
+      - reportedOpenInterestChange
+      - distributionId
+      - coveredQuantity
+      - blockedQuantity
+      - uncoveredQuantity
+      - totalPositionQuantity
+      - borrowerQuantity
+      - lenderQuantity
+      - currentQuantity
+      - forwardPrice
+    FutureOptionPricePoint:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Data do pregão, em timestamp Unix (segundos).
+        open:
+          type: number
+          nullable: true
+          description: Preço de abertura.
+        high:
+          type: number
+          nullable: true
+          description: Preço máximo.
+        low:
+          type: number
+          nullable: true
+          description: Preço mínimo.
+        average:
+          type: number
+          nullable: true
+          description: Preço médio.
+        close:
+          type: number
+          nullable: true
+          description: Preço de fechamento.
+        referencePrice:
+          type: number
+          nullable: true
+          description: Preço de referência do pregão. Costuma vir preenchido mesmo sem negócio.
+        oscillationPct:
+          type: number
+          nullable: true
+          description: Variação percentual em relação ao pregão anterior.
+        trades:
+          type: number
+          nullable: true
+          description: Número de negócios.
+        volume:
+          type: number
+          nullable: true
+          description: Número de contratos negociados.
+        financialVolume:
+          type: number
+          nullable: true
+          description: Volume financeiro, em reais.
+      required:
+      - date
+      - open
+      - high
+      - low
+      - average
+      - close
+      - referencePrice
+      - oscillationPct
+      - trades
+      - volume
+      - financialVolume
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    FutureOptionPositionsHistoryResponse:
+      type: object
+      properties:
+        option:
+          $ref: '#/components/schemas/FutureOptionPositionHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - option
+      - requestedAt
+      - took
+      example:
+        option:
+          symbol: BGIM26C028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: call
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFCBMMP7
+          cficCode: OCAFPS
+          positions:
+          - openInterest: 2441
+            openInterestChange: -22
+            openInterestDate: '2026-06-01'
+            reportDate: '2026-06-01'
+            isin: BRBMEFCBMMP7
+            asset: BGI
+            expirationCode: VVNK
+            reportSegment: AGRIBUSINESS
+            reportedOpenInterest: 2441
+            reportedOpenInterestChange: -22
+            distributionId: null
+            coveredQuantity: null
+            blockedQuantity: null
+            uncoveredQuantity: null
+            totalPositionQuantity: null
+            borrowerQuantity: null
+            lenderQuantity: null
+            currentQuantity: null
+            forwardPrice: null
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 13
+    FutureOptionWithAnalyticsHistory:
+      allOf:
+      - $ref: '#/components/schemas/FutureOptionSpecs'
+      - type: object
+        properties:
+          analytics:
+            type: array
+            items:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: Data do pregão, no formato YYYY-MM-DD.
+                model:
+                  type: string
+                  enum:
+                  - black-76
+                  - cox-ross-rubinstein-futures
+                  - unsupported
+                  description: Modelo de cálculo. Séries americanas usam árvore binomial sobre o futuro (`cox-ross-rubinstein-futures`). Séries europeias usam `black-76`. `unsupported` quando o estilo da opção é desconhecido.
+                priceSource:
+                  type: string
+                  enum:
+                  - close
+                  - referencePrice
+                  - none
+                  description: Preço usado para calcular a IV. `close` é o fechamento negociado. Sem negócio, o cálculo usa `referencePrice`, com `confidence` igual a `low`.
+                underlyingPrice:
+                  type: number
+                  nullable: true
+                  description: Preço do futuro subjacente usado no cálculo.
+                optionPrice:
+                  type: number
+                  nullable: true
+                  description: Preço da opção usado para calcular a volatilidade implícita.
+                riskFreeRate:
+                  type: number
+                  nullable: true
+                  description: 'Taxa livre de risco anual, em decimal. Ex.: 0.105 para 10,5%.'
+                dividendYield:
+                  type: number
+                  nullable: true
+                  description: Sempre `0` em opções sobre futuros.
+                timeToExpirationYears:
+                  type: number
+                  nullable: true
+                  description: Dias corridos até o vencimento divididos por 365, inclusive em anos bissextos.
+                impliedVolatility:
+                  type: number
+                  nullable: true
+                  description: Volatilidade implícita anual, em decimal. O cálculo usa tempo em dias corridos dividido por 365.
+                delta:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio para 1 unidade de variação no ativo subjacente.
+                gamma:
+                  type: number
+                  nullable: true
+                  description: Variação do delta para 1 unidade de variação no ativo subjacente.
+                theta:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio com a passagem do tempo, por ano.
+                vega:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio para 1,00 de variação na volatilidade. Divida por 100 para 1 ponto percentual.
+                rho:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio para 1,00 de variação na taxa de juro. Divida por 100 para 1 ponto percentual.
+                confidence:
+                  type: string
+                  enum:
+                  - high
+                  - medium
+                  - low
+                  - none
+                  description: Confiança do cálculo. `none` indica IV e gregas nulas, com o motivo em `nullReason`. `low` indica cálculo sobre `referencePrice`.
+                nullReason:
+                  type: string
+                  nullable: true
+                  description: 'Motivo dos campos calculados nulos. Ex.: `no_trades`, `missing_underlying_price`, `iv_not_converged`.'
+                openInterest:
+                  type: number
+                  nullable: true
+                  description: Contratos em aberto na série, na última apuração até a data pedida.
+                openInterestChange:
+                  type: number
+                  nullable: true
+                  description: Variação de contratos em aberto desde a apuração anterior.
+                openInterestDate:
+                  type: string
+                  nullable: true
+                  description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+              required:
+              - date
+              - model
+              - priceSource
+              - underlyingPrice
+              - optionPrice
+              - riskFreeRate
+              - dividendYield
+              - timeToExpirationYears
+              - impliedVolatility
+              - delta
+              - gamma
+              - theta
+              - vega
+              - rho
+              - confidence
+              - nullReason
+              - openInterest
+              - openInterestChange
+              - openInterestDate
+        required:
+        - analytics
+    FutureOptionAnalyticsResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirationDate:
+          type: string
+        date:
+          type: string
+        analytics:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureOptionAnalyticsQuote'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - date
+      - analytics
+      - requestedAt
+      - took
+      example:
+        underlying: BGI
+        expirationDate: '2027-08-31'
+        date: '2026-05-29'
+        analytics:
+        - symbol: BGIM26C028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: call
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFCBMMP7
+          cficCode: OCAFPS
+          date: '2026-05-29'
+          model: cox-ross-rubinstein-futures
+          priceSource: referencePrice
+          underlyingPrice: 345.65
+          optionPrice: 65.66
+          riskFreeRate: 0.145
+          dividendYield: 0
+          timeToExpirationYears: 0.087671235
+          impliedVolatility: 0.33742568
+          delta: 0.99461865
+          gamma: 0.0014397058
+          theta: -1.7623149
+          vega: 1.3298614
+          rho: -0.4161327
+          confidence: low
+          nullReason: null
+          openInterest: 2441
+          openInterestChange: -22
+          openInterestDate: '2026-06-01'
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 41
+    FutureOptionStrikesResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirationDate:
+          type: string
+        side:
+          type: string
+          nullable: true
+          enum:
+          - call
+          - put
+        strikes:
+          type: array
+          items:
+            type: number
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - side
+      - strikes
+      - requestedAt
+      - took
+      example:
+        underlying: BGI
+        expirationDate: '2027-08-31'
+        side: call
+        strikes:
+        - 280
+        - 285
+        - 290
+        - 300
+        - 305
+        - 308
+        - 310
+        - 312
+        - 315
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 18
+    FutureOptionChainResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirationDate:
+          type: string
+        date:
+          type: string
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureOptionQuote'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - date
+      - series
+      - requestedAt
+      - took
+      example:
+        underlying: BGI
+        expirationDate: '2027-08-31'
+        date: '2026-06-01'
+        series:
+        - symbol: BGIM26C028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: call
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFCBMMP7
+          cficCode: OCAFPS
+          date: 1780272000
+          open: null
+          high: null
+          low: null
+          average: null
+          close: null
+          referencePrice: 68.57
+          oscillationPct: null
+          trades: null
+          volume: null
+          financialVolume: null
+          openInterest: 2441
+          openInterestChange: -22
+          openInterestDate: '2026-06-01'
+        - symbol: BGIM26P028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: put
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFVBMMP7
+          cficCode: OPAFPS
+          date: 1780272000
+          open: null
+          high: null
+          low: null
+          average: null
+          close: null
+          referencePrice: 0.01
+          oscillationPct: null
+          trades: null
+          volume: null
+          financialVolume: null
+          openInterest: 2441
+          openInterestChange: -22
+          openInterestDate: '2026-06-01'
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 54
+    FutureOptionWithHistory:
+      allOf:
+      - $ref: '#/components/schemas/FutureOptionSpecs'
+      - type: object
+        properties:
+          history:
+            type: array
+            items:
+              $ref: '#/components/schemas/FutureOptionPricePoint'
+        required:
+        - history
+    FutureOptionQuote:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: `BGIH27C028550`.'
+        underlyingAsset:
+          type: string
+          description: 'Código do ativo do futuro. Ex.: `BGI`.'
+        underlyingFuture:
+          type: string
+          nullable: true
+          description: Contrato futuro de base, quando informado.
+        optionType:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento.'
+        segment:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: 'Segmento do contrato: `financial` ou `agribusiness`.'
+        strike:
+          type: number
+          description: Preço de exercício da opção, na unidade de cotação do futuro.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          nullable: true
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          nullable: true
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        contractMultiplier:
+          type: number
+          nullable: true
+          description: 'Multiplicador do contrato, herdado do futuro. Ex.: 330 arrobas no boi gordo.'
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação.
+        exerciseType:
+          type: string
+          nullable: true
+          description: Tipo de exercício.
+        automaticExercise:
+          type: boolean
+          nullable: true
+          description: '`true` quando a opção é exercida automaticamente no vencimento.'
+        premiumUpfront:
+          type: boolean
+          nullable: true
+          description: '`true` se o prêmio é pago à vista, `false` se é diferido.'
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN da série de opção.
+        cficCode:
+          type: string
+          nullable: true
+          description: Código CFI.
+        date:
+          type: integer
+          description: Data do pregão, em timestamp Unix (segundos).
+        open:
+          type: number
+          nullable: true
+          description: Preço de abertura.
+        high:
+          type: number
+          nullable: true
+          description: Preço máximo.
+        low:
+          type: number
+          nullable: true
+          description: Preço mínimo.
+        average:
+          type: number
+          nullable: true
+          description: Preço médio.
+        close:
+          type: number
+          nullable: true
+          description: Preço de fechamento.
+        referencePrice:
+          type: number
+          nullable: true
+          description: Preço de referência do pregão. Costuma vir preenchido mesmo sem negócio.
+        oscillationPct:
+          type: number
+          nullable: true
+          description: Variação percentual em relação ao pregão anterior.
+        trades:
+          type: number
+          nullable: true
+          description: Número de negócios.
+        volume:
+          type: number
+          nullable: true
+          description: Número de contratos negociados.
+        financialVolume:
+          type: number
+          nullable: true
+          description: Volume financeiro, em reais.
+        openInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na série, na última apuração até a data pedida.
+        openInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto desde a apuração anterior.
+        openInterestDate:
+          type: string
+          nullable: true
+          description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+      required:
+      - symbol
+      - underlyingAsset
+      - underlyingFuture
+      - optionType
+      - optionStyle
+      - segment
+      - strike
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - contractMultiplier
+      - allocationRoundLot
+      - exerciseType
+      - automaticExercise
+      - premiumUpfront
+      - isin
+      - cficCode
+      - date
+      - open
+      - high
+      - low
+      - average
+      - close
+      - referencePrice
+      - oscillationPct
+      - trades
+      - volume
+      - financialVolume
+      - openInterest
+      - openInterestChange
+      - openInterestDate
+    FutureOptionPositionsResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirationDate:
+          type: string
+        date:
+          type: string
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureOptionPositionSnapshot'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - date
+      - positions
+      - requestedAt
+      - took
+      example:
+        underlying: BGI
+        expirationDate: '2027-08-31'
+        date: '2026-06-01'
+        positions:
+        - symbol: BGIM26C028000
+          underlyingAsset: BGI
+          underlyingFuture: null
+          optionType: call
+          optionStyle: american
+          segment: agribusiness
+          strike: 280
+          expirationDate: '2027-08-31'
+          firstTradeDate: '2026-03-09'
+          lastTradeDate: '2027-08-31'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          exerciseType: null
+          automaticExercise: null
+          premiumUpfront: true
+          isin: BRBMEFCBMMP7
+          cficCode: OCAFPS
+          openInterest: 2441
+          openInterestChange: -22
+          openInterestDate: '2026-06-01'
+          reportDate: '2026-06-01'
+          asset: BGI
+          expirationCode: VVNK
+          reportSegment: AGRIBUSINESS
+          reportedOpenInterest: 2441
+          reportedOpenInterestChange: -22
+          distributionId: null
+          coveredQuantity: null
+          blockedQuantity: null
+          uncoveredQuantity: null
+          totalPositionQuantity: null
+          borrowerQuantity: null
+          lenderQuantity: null
+          currentQuantity: null
+          forwardPrice: null
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 14
+    FutureOptionExpirationsResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirations:
+          type: array
+          items:
+            type: string
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirations
+      - requestedAt
+      - took
+      example:
+        underlying: BGI
+        expirations:
+        - '2026-07-31'
+        - '2027-08-31'
+        - '2026-09-30'
+        - '2026-10-30'
+        - '2026-11-30'
+        - '2026-12-30'
+        - '2027-03-31'
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 22
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

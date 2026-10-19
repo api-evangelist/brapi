@@ -1,0 +1,1290 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Futuros API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Futuros
+paths:
+  /api/v2/futures/list:
+    get:
+      tags:
+      - Futuros
+      operationId: getFutureList
+      summary: Lista de contratos futuros
+      description: 'Contratos futuros com vencimento, multiplicador, lote e ISIN, sem preço.
+
+        Filtre por ativo, segmento e contratos vencidos.
+
+
+        Use para achar o código exato de um contrato, listar os vencimentos de um ativo
+
+        ou montar um seletor de contratos.
+
+
+        Um ativo tem vários contratos ao mesmo tempo, um por vencimento. `WINJ26` e
+
+        `WINM26` são o mesmo mini Ibovespa em meses diferentes. Veja como ler o
+
+        código em futuros.
+
+
+        Por padrão, a lista traz só contratos com vencimento a partir de hoje. Plano
+
+        Pro. Sem token, aceita só `asset=WIN` ou `asset=WDO`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo. Ex.: `WIN`, `BGI`, `DI1`.'
+          example: BGI
+        required: false
+        name: asset
+        in: query
+      - schema:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: Segmento do contrato.
+        required: false
+        name: segment
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: '`true` inclui contratos vencidos.'
+        required: false
+        name: includeExpired
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          default: 1
+          description: Número da página, a partir de 1.
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+          description: 'Itens por página. Máximo: 100.'
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: string
+          enum:
+          - symbol
+          - expirationDate
+          - underlyingAsset
+          default: expirationDate
+          description: Campo usado na ordenação.
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: asc
+          description: Direção da ordenação.
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Lista de contratos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureListResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/quote:
+    get:
+      tags:
+      - Futuros
+      operationId: getFutureQuotes
+      summary: Cotação de futuros
+      description: 'Dados do último pregão de até 20 contratos futuros: máxima, mínima,
+
+        fechamento, preço de ajuste, variação e volume.
+
+
+        Use para mostrar o ajuste do dia, marcar posições a mercado ou montar um
+
+        painel de futuros.
+
+
+        `settlement` é o preço de ajuste. A bolsa usa esse preço para acertar as
+
+        posições todo dia. `close` é o último negócio. Em contrato com pouca
+
+        negociação, `close`, `high` e `low` podem vir `null`, e
+
+        `settlement` continua preenchido.
+
+
+        Em contratos de juros, como DI1 e DAP (`quotationType=rate`), `close`,
+
+        `high`, `low` e `average` vêm em % a.a. `settlement` vem em reais, e
+
+        a taxa do ajuste fica em `settlementRate`.
+
+
+        Os dados são de fim de dia. Código desconhecido fica fora de `quotes`.
+
+        Plano Pro. Sem token, aceita só `symbols` que começam com `WIN` ou `WDO`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Contratos separados por vírgula, até 20. Ex.: WINM26,DI1F27.'
+          example: WINM26,BGIF27,DI1F27
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Cotações.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureQuoteResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/specs:
+    get:
+      tags:
+      - Futuros
+      operationId: getFutureSpecs
+      summary: Especificações de futuros
+      description: 'Dados fixos de até 20 contratos futuros, sem preço: vencimento, primeiro
+
+        e último pregão, multiplicador, lote, tipo de entrega, ISIN e código CFI.
+
+
+        Use para calcular o valor financeiro de uma posição, conferir vencimentos ou
+
+        cadastrar contratos no seu sistema.
+
+
+        `contractMultiplier` converte pontos em reais. Exemplos: `WIN` vale 0,2
+
+        por ponto, `WDO` vale 10 e `BGI` vale 330. Para o preço do dia, use a
+
+        cotação de futuros.
+
+
+        Plano Pro. Sem token, aceita só `symbols` que começam com `WIN` ou `WDO`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Contratos separados por vírgula, até 20. Ex.: WINM26,DI1F27.'
+          example: WINM26,BGIF27,DI1F27
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Especificações.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureSpecsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/historical:
+    get:
+      tags:
+      - Futuros
+      operationId: getFutureHistorical
+      summary: Histórico de futuros
+      description: 'Série diária de um contrato futuro: máxima, mínima, fechamento, preço de
+
+        ajuste, taxa de ajuste em contratos de juros, variação e volume.
+
+
+        Use para gráficos, backtests ou para estudar o ajuste diário de um vencimento.
+
+
+        Sem `startDate`, a série começa 12 meses antes de hoje. Sem `endDate`,
+
+        termina hoje. O histórico cobre cerca de 1 ano. `open` vem sempre `null`,
+
+        porque os dados de fim de dia não trazem abertura.
+
+
+        A série termina no vencimento do contrato. Para seguir um ativo por mais tempo,
+
+        junte contratos seguidos e trate o salto de preço na troca. Para vários
+
+        contratos, use a cotação ou a
+
+        curva de vencimentos.
+
+
+        Plano Pro. Sem token, aceita só `symbol` que começa com `WIN` ou `WDO`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do contrato. Ex.: `WINM26`.'
+          example: WINM26
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial no formato YYYY-MM-DD. Padrão: 12 meses antes de hoje.'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final no formato YYYY-MM-DD. Padrão: hoje.'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem das datas. `desc` traz o pregão mais recente primeiro.
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureHistoricalResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/futures/term-structure:
+    get:
+      tags:
+      - Futuros
+      operationId: getFutureTermStructure
+      summary: Curva de vencimentos
+      description: 'Todos os contratos futuros de um ativo com vencimento a partir de hoje,
+
+        do mais próximo ao mais distante, cada um com os dados do último pregão.
+
+
+        Use para montar a curva de juros do DI, ver a curva de preço de commodities ou
+
+        comparar vencimentos do mini Ibovespa.
+
+
+        Em `DI1`, a taxa de cada prazo fica em `settlementRate`. Nos contratos
+
+        cotados em preço, use `settlement`. Com `includeExpired=true`, a resposta
+
+        inclui contratos vencidos.
+
+
+        Ativos comuns: `DI1` (DI), `WIN` (mini Ibovespa), `WDO` (mini dólar),
+
+        `BGI` (boi gordo), `ICF` (café), `CCM` (milho) e `SJC` (soja).
+
+
+        Plano Pro. Sem token, aceita só `asset=WIN` ou `asset=WDO`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Código do ativo. Ex.: `DI1`, `WIN`, `BGI`.'
+          example: BGI
+        required: true
+        name: asset
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: '`true` inclui contratos vencidos.'
+        required: false
+        name: includeExpired
+        in: query
+      responses:
+        '200':
+          description: Curva de vencimentos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FutureTermStructureResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    FutureHistoricalResponse:
+      type: object
+      properties:
+        future:
+          $ref: '#/components/schemas/FutureWithHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - future
+      - requestedAt
+      - took
+      example:
+        future:
+          symbol: WINM26
+          underlyingAsset: WIN
+          assetDescription: Minicontrato de Ibovespa
+          segment: financial
+          quotationType: price
+          expirationDate: '2026-06-17'
+          firstTradeDate: '2024-04-29'
+          lastTradeDate: '2026-06-17'
+          contractMultiplier: 0.2
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Price
+          isin: BRBMEFWIN3O3
+          cficCode: FFICSX
+          history:
+          - date: 1779235200
+            open: null
+            high: 179945
+            low: 176180
+            average: 178583
+            close: 178650
+            settlement: 179115
+            settlementRate: null
+            referencePrice: null
+            oscillationPct: 1.59
+            trades: 4906603
+            volume: 17533842
+            financialVolume: 626250384171
+          - date: 1779148800
+            open: null
+            high: 178700
+            low: 175200
+            average: 176509
+            close: 176465
+            settlement: 175844
+            settlementRate: null
+            referencePrice: null
+            oscillationPct: -1.46
+            trades: 5563064
+            volume: 20252108
+            financialVolume: 714936160000
+        requestedAt: '2026-05-21T03:00:00.000Z'
+        took: 65
+    FuturePricePoint:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Data do pregão, em Unix timestamp (segundos).
+        open:
+          type: number
+          nullable: true
+          description: Preço de abertura. Sempre `null`, porque os dados de fim de dia não trazem abertura.
+        high:
+          type: number
+          nullable: true
+          description: Máxima do dia. Em % a.a. nos contratos de juros.
+        low:
+          type: number
+          nullable: true
+          description: Mínima do dia. Em % a.a. nos contratos de juros.
+        average:
+          type: number
+          nullable: true
+          description: Preço médio do dia. Em % a.a. nos contratos de juros.
+        close:
+          type: number
+          nullable: true
+          description: Último negócio do dia. Em % a.a. nos contratos de juros.
+        settlement:
+          type: number
+          nullable: true
+          description: Preço de ajuste oficial do dia. Nos contratos de juros, vem em reais, como preço unitário.
+        settlementRate:
+          type: number
+          nullable: true
+          description: Taxa do ajuste, em % a.a. Só vem em contratos de juros.
+        referencePrice:
+          type: number
+          nullable: true
+          description: Preço de referência oficial.
+        oscillationPct:
+          type: number
+          nullable: true
+          description: Variação em relação ao pregão anterior, em %.
+        trades:
+          type: number
+          nullable: true
+          description: Número de negócios.
+        volume:
+          type: number
+          nullable: true
+          description: Contratos negociados.
+        financialVolume:
+          type: number
+          nullable: true
+          description: Volume financeiro, em reais.
+      required:
+      - date
+      - open
+      - high
+      - low
+      - average
+      - close
+      - settlement
+      - settlementRate
+      - referencePrice
+      - oscillationPct
+      - trades
+      - volume
+      - financialVolume
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    FutureSpecsResponse:
+      type: object
+      properties:
+        specs:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureSpecs'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - specs
+      - requestedAt
+      - took
+      example:
+        specs:
+        - symbol: WINM26
+          underlyingAsset: WIN
+          assetDescription: Minicontrato de Ibovespa
+          segment: financial
+          quotationType: price
+          expirationDate: '2026-06-17'
+          firstTradeDate: '2024-04-29'
+          lastTradeDate: '2026-06-17'
+          contractMultiplier: 0.2
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Price
+          isin: BRBMEFWIN3O3
+          cficCode: FFICSX
+        - symbol: BGIF27
+          underlyingAsset: BGI
+          assetDescription: Boi Gordo
+          segment: agribusiness
+          quotationType: price
+          expirationDate: '2027-01-29'
+          firstTradeDate: '2026-02-27'
+          lastTradeDate: '2027-01-29'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Price
+          isin: BRBMEFBGI7Y7
+          cficCode: FCACSX
+        requestedAt: '2026-05-21T03:00:00.000Z'
+        took: 12
+    FutureListResponse:
+      type: object
+      properties:
+        futures:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureSpecs'
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+            limit:
+              type: integer
+            total:
+              type: integer
+            totalPages:
+              type: integer
+          required:
+          - page
+          - limit
+          - total
+          - totalPages
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - futures
+      - pagination
+      - requestedAt
+      - took
+      example:
+        futures:
+        - symbol: WINM26
+          underlyingAsset: WIN
+          assetDescription: Minicontrato de Ibovespa
+          segment: financial
+          quotationType: price
+          expirationDate: '2026-06-17'
+          firstTradeDate: '2024-04-29'
+          lastTradeDate: '2026-06-17'
+          contractMultiplier: 0.2
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Price
+          isin: BRBMEFWIN3O3
+          cficCode: FFICSX
+        - symbol: DI1F27
+          underlyingAsset: DI1
+          assetDescription: Taxa Média de Depósitos Interfinanceiros de Um Dia
+          segment: financial
+          quotationType: rate
+          expirationDate: '2027-01-04'
+          firstTradeDate: '2015-12-28'
+          lastTradeDate: '2026-12-30'
+          contractMultiplier: 1
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Rate
+          isin: BRBMEFD1I4Z0
+          cficCode: FFNCSX
+        - symbol: BGIF27
+          underlyingAsset: BGI
+          assetDescription: Boi Gordo
+          segment: agribusiness
+          quotationType: price
+          expirationDate: '2027-01-29'
+          firstTradeDate: '2026-02-27'
+          lastTradeDate: '2027-01-29'
+          contractMultiplier: 330
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Price
+          isin: BRBMEFBGI7Y7
+          cficCode: FCACSX
+        pagination:
+          page: 1
+          limit: 50
+          total: 1728
+          totalPages: 35
+        requestedAt: '2026-05-21T03:00:00.000Z'
+        took: 42
+    FutureQuoteResponse:
+      type: object
+      properties:
+        quotes:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureQuote'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - quotes
+      - requestedAt
+      - took
+      example:
+        quotes:
+        - symbol: WINM26
+          underlyingAsset: WIN
+          assetDescription: Minicontrato de Ibovespa
+          segment: financial
+          quotationType: price
+          expirationDate: '2026-06-17'
+          firstTradeDate: '2024-04-29'
+          lastTradeDate: '2026-06-17'
+          contractMultiplier: 0.2
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Price
+          isin: BRBMEFWIN3O3
+          cficCode: FFICSX
+          date: 1779235200
+          open: null
+          high: 179945
+          low: 176180
+          average: 178583
+          close: 178650
+          settlement: 179115
+          settlementRate: null
+          referencePrice: null
+          oscillationPct: 1.59
+          trades: 4906603
+          volume: 17533842
+          financialVolume: 626250384171
+        - symbol: DI1F27
+          underlyingAsset: DI1
+          assetDescription: Taxa Média de Depósitos Interfinanceiros de Um Dia
+          segment: financial
+          quotationType: rate
+          expirationDate: '2027-01-04'
+          firstTradeDate: '2015-12-28'
+          lastTradeDate: '2026-12-30'
+          contractMultiplier: 1
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Rate
+          isin: BRBMEFD1I4Z0
+          cficCode: FFNCSX
+          date: 1779235200
+          open: null
+          high: 14.16
+          low: 14.03
+          average: 14.09
+          close: 14.075
+          settlement: 92179.44
+          settlementRate: 14.059
+          referencePrice: null
+          oscillationPct: -0.51
+          trades: 28694
+          volume: 850519
+          financialVolume: 78386932604.68
+        requestedAt: '2026-05-21T03:00:00.000Z'
+        took: 28
+    FutureSpecs:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código do contrato. Ex.: `WINM26`, `BGIF27`, `DI1F27`.'
+        underlyingAsset:
+          type: string
+          description: 'Código do ativo, sem mês e ano. Ex.: `WIN`, `BGI`, `DI1`.'
+        assetDescription:
+          type: string
+          nullable: true
+          description: Nome do ativo em português.
+        segment:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: '`financial` para índices, juros e moedas. `agribusiness` para commodities.'
+        quotationType:
+          type: string
+          enum:
+          - price
+          - rate
+          description: '`rate` em contratos de juros, como DI1 e DAP, com preços em % a.a. `price` nos demais.'
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          nullable: true
+          description: Data do primeiro pregão, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          nullable: true
+          description: Data do último pregão, no formato YYYY-MM-DD.
+        contractMultiplier:
+          type: number
+          nullable: true
+          description: 'Valor de um ponto, em reais. Ex.: `WIN` 0,2, `BGI` 330, `DI1` 1.'
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Tamanho do lote, em contratos.
+        tradingCurrency:
+          type: string
+          nullable: true
+          description: Moeda de negociação. Quase sempre `BRL`.
+        deliveryType:
+          type: string
+          nullable: true
+          description: 'Tipo de entrega: `Financial` ou `Physical`.'
+        exerciseType:
+          type: string
+          nullable: true
+          description: 'Forma de cotação: `Price` ou `Rate`.'
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN.
+        cficCode:
+          type: string
+          nullable: true
+          description: Código CFI.
+      required:
+      - symbol
+      - underlyingAsset
+      - assetDescription
+      - segment
+      - quotationType
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - contractMultiplier
+      - allocationRoundLot
+      - tradingCurrency
+      - deliveryType
+      - exerciseType
+      - isin
+      - cficCode
+    FutureTermStructureResponse:
+      type: object
+      properties:
+        asset:
+          type: string
+        contracts:
+          type: array
+          items:
+            $ref: '#/components/schemas/FutureQuote'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - asset
+      - contracts
+      - requestedAt
+      - took
+      example:
+        asset: DI1
+        contracts:
+        - symbol: DI1M26
+          underlyingAsset: DI1
+          assetDescription: Taxa Média de Depósitos Interfinanceiros de Um Dia
+          segment: financial
+          quotationType: rate
+          expirationDate: '2026-06-01'
+          firstTradeDate: '2015-12-28'
+          lastTradeDate: '2026-05-29'
+          contractMultiplier: 1
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Rate
+          isin: BRBMEFD1I4M0
+          cficCode: FFNCSX
+          date: 1779235200
+          open: null
+          high: 14.41
+          low: 14.39
+          average: 14.4
+          close: 14.398
+          settlement: 98884.51
+          settlementRate: 14.4
+          referencePrice: null
+          oscillationPct: -0.02
+          trades: 12345
+          volume: 234567
+          financialVolume: 23194840000
+        - symbol: DI1F27
+          underlyingAsset: DI1
+          assetDescription: Taxa Média de Depósitos Interfinanceiros de Um Dia
+          segment: financial
+          quotationType: rate
+          expirationDate: '2027-01-04'
+          firstTradeDate: '2015-12-28'
+          lastTradeDate: '2026-12-30'
+          contractMultiplier: 1
+          allocationRoundLot: 1
+          tradingCurrency: BRL
+          deliveryType: Financial
+          exerciseType: Rate
+          isin: BRBMEFD1I4Z0
+          cficCode: FFNCSX
+          date: 1779235200
+          open: null
+          high: 14.16
+          low: 14.03
+          average: 14.09
+          close: 14.075
+          settlement: 92179.44
+          settlementRate: 14.059
+          referencePrice: null
+          oscillationPct: -0.51
+          trades: 28694
+          volume: 850519
+          financialVolume: 78386932604.68
+        requestedAt: '2026-05-21T03:00:00.000Z'
+        took: 137
+    FutureQuote:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código do contrato. Ex.: `WINM26`, `BGIF27`, `DI1F27`.'
+        underlyingAsset:
+          type: string
+          description: 'Código do ativo, sem mês e ano. Ex.: `WIN`, `BGI`, `DI1`.'
+        assetDescription:
+          type: string
+          nullable: true
+          description: Nome do ativo em português.
+        segment:
+          type: string
+          enum:
+          - financial
+          - agribusiness
+          description: '`financial` para índices, juros e moedas. `agribusiness` para commodities.'
+        quotationType:
+          type: string
+          enum:
+          - price
+          - rate
+          description: '`rate` em contratos de juros, como DI1 e DAP, com preços em % a.a. `price` nos demais.'
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          nullable: true
+          description: Data do primeiro pregão, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          nullable: true
+          description: Data do último pregão, no formato YYYY-MM-DD.
+        contractMultiplier:
+          type: number
+          nullable: true
+          description: 'Valor de um ponto, em reais. Ex.: `WIN` 0,2, `BGI` 330, `DI1` 1.'
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Tamanho do lote, em contratos.
+        tradingCurrency:
+          type: string
+          nullable: true
+          description: Moeda de negociação. Quase sempre `BRL`.
+        deliveryType:
+          type: string
+          nullable: true
+          description: 'Tipo de entrega: `Financial` ou `Physical`.'
+        exerciseType:
+          type: string
+          nullable: true
+          description: 'Forma de cotação: `Price` ou `Rate`.'
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN.
+        cficCode:
+          type: string
+          nullable: true
+          description: Código CFI.
+        date:
+          type: integer
+          description: Data do pregão, em Unix timestamp (segundos).
+        open:
+          type: number
+          nullable: true
+          description: Preço de abertura. Sempre `null`, porque os dados de fim de dia não trazem abertura.
+        high:
+          type: number
+          nullable: true
+          description: Máxima do dia. Em % a.a. nos contratos de juros.
+        low:
+          type: number
+          nullable: true
+          description: Mínima do dia. Em % a.a. nos contratos de juros.
+        average:
+          type: number
+          nullable: true
+          description: Preço médio do dia. Em % a.a. nos contratos de juros.
+        close:
+          type: number
+          nullable: true
+          description: Último negócio do dia. Em % a.a. nos contratos de juros.
+        settlement:
+          type: number
+          nullable: true
+          description: Preço de ajuste oficial do dia. Nos contratos de juros, vem em reais, como preço unitário.
+        settlementRate:
+          type: number
+          nullable: true
+          description: Taxa do ajuste, em % a.a. Só vem em contratos de juros.
+        referencePrice:
+          type: number
+          nullable: true
+          description: Preço de referência oficial.
+        oscillationPct:
+          type: number
+          nullable: true
+          description: Variação em relação ao pregão anterior, em %.
+        trades:
+          type: number
+          nullable: true
+          description: Número de negócios.
+        volume:
+          type: number
+          nullable: true
+          description: Contratos negociados.
+        financialVolume:
+          type: number
+          nullable: true
+          description: Volume financeiro, em reais.
+      required:
+      - symbol
+      - underlyingAsset
+      - assetDescription
+      - segment
+      - quotationType
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - contractMultiplier
+      - allocationRoundLot
+      - tradingCurrency
+      - deliveryType
+      - exerciseType
+      - isin
+      - cficCode
+      - date
+      - open
+      - high
+      - low
+      - average
+      - close
+      - settlement
+      - settlementRate
+      - referencePrice
+      - oscillationPct
+      - trades
+      - volume
+      - financialVolume
+    FutureWithHistory:
+      allOf:
+      - $ref: '#/components/schemas/FutureSpecs'
+      - type: object
+        properties:
+          history:
+            type: array
+            items:
+              $ref: '#/components/schemas/FuturePricePoint'
+            description: Um item por pregão no período pedido.
+        required:
+        - history
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

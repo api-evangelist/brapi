@@ -1,0 +1,3273 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Fundos…
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Fundos Imobiliários
+  description: 'Acesse dados completos de FIIs: cotações, indicadores fundamentalistas (P/VP, DY), relatórios gerenciais e histórico de proventos.'
+paths:
+  /api/v2/fii/list:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: listFii
+      summary: Listar FIIs
+      description: 'Lista paginada de FIIs com dados cadastrais, dados do administrador e indicadores atuais: preço, valor patrimonial por cota, P/VP, dividend yield de 12 meses e total de cotistas.
+
+
+        Use para montar um screener, filtrar fundos por segmento ou achar o ticker de um CNPJ.
+
+
+        `search` busca no nome, no ticker e no CNPJ. `segmentoAtuacao` aceita valores como Logística, Shoppings, Escritórios, Lajes Corporativas, Títulos e Val. Mob., Residencial, Hospital, Hotel, Educacional, Híbrido, Multicategoria, Varejo e Outros.
+
+
+        `sortBy` aceita `symbol`, `name`, `segmentoAtuacao`, `mandate`, `price`, `navPerShare`, `priceToNav`, `dividendYield12m` e `totalInvestors`. O padrão é `totalInvestors`.
+
+
+        Nem todo ticker terminado em 11 é FII. FI-Infra (como JURO11), FIAGRO, FIDC e FIP ficam em fundos.
+
+
+        Plano Pro. Sem token, aceita só `symbols` ou `cnpjs` de MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página. Não há limite máximo.
+          example: 20
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Campo de ordenação.
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          description: Tickers de FIIs separados por vírgula, até 20.
+          example: HGLG11,MXRF11
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs de FIIs separados por vírgula, até 20. Aceita com ou sem pontuação.
+          example: '11728688000147'
+        required: false
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Texto buscado no nome, no ticker ou no CNPJ.
+          example: hglg
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          enum:
+          - papel
+          - tijolo
+          - hibrido
+          - fof
+          description: 'Tipo do fundo: papel, tijolo, hibrido ou fof.'
+        required: false
+        name: segmentType
+        in: query
+      - schema:
+          type: string
+          description: 'Setor de atuação. Ex.: Logística, Shoppings, Escritórios.'
+        required: false
+        name: segmentoAtuacao
+        in: query
+      - schema:
+          type: string
+          description: 'Mandato do fundo. Ex.: Renda, Híbrido, Títulos e Valores Mobiliários.'
+        required: false
+        name: mandate
+        in: query
+      - schema:
+          type: string
+          description: 'Tipo de gestão: Ativa ou Definida.'
+        required: false
+        name: tipoGestao
+        in: query
+      responses:
+        '200':
+          description: Lista paginada de FIIs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiListResponse'
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/indicators:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiIndicators
+      summary: Indicadores de FIIs
+      description: 'Indicadores mais recentes de um ou mais FIIs: preço, valor patrimonial por cota, P/VP, dividend yield de 1 e 12 meses, retorno mensal, cotistas, cotas emitidas, patrimônio líquido, ativo total, segmento e dados do administrador.
+
+
+        Use para comparar FIIs, mostrar o P/VP e o yield de uma cota, ou montar a ficha de um fundo.
+
+
+        `priceToNav` abaixo de 1 indica que a cota negocia abaixo do valor patrimonial.
+
+
+        Para a série mensal, use o histórico de indicadores.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Indicadores atuais dos FIIs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiIndicatorsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/indicators/history:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiIndicatorsHistory
+      summary: Histórico de indicadores de FIIs
+      description: 'Série mensal dos indicadores de FIIs: um ponto por mês, com `referenceDate` no último dia do mês. O histórico começa em setembro de 2016.
+
+
+        Use para gráficos de P/VP e dividend yield, e para comparar um fundo com o próprio passado.
+
+
+        Sem `startDate` e `endDate`, retorna os últimos 12 meses. `sortBy` aceita `referenceDate` (padrão), `symbol`, `price`, `navPerShare`, `priceToNav`, `dividendYield12m`, `dividendYield1m`, `monthlyReturn` e `totalInvestors`.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: Campo de ordenação.
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Série mensal de indicadores.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiIndicatorsHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/historical:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiHistoricalPrice
+      summary: Histórico de preços de FIIs
+      description: 'Série diária de preços das cotas de FIIs: `open`, `high`, `low`, `close`, `volume` e `adjustedClose`, em reais. `date` é um timestamp UNIX em segundos.
+
+
+        Use para gráficos de preço, cálculo de retorno e backtests.
+
+
+        Use `adjustedClose` para calcular retorno. Ele considera desdobramentos e proventos. `close` não.
+
+
+        Sem `startDate` e `endDate`, retorna os últimos 12 meses. Cada símbolo tem a própria série em `historicalDataPrice`.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação por data.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Série diária de preços por FII.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiHistoricalResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/portfolio:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiPortfolio
+      summary: Carteira de FIIs
+      description: 'Composição da carteira de FIIs pelo informe trimestral da CVM: imóveis, CRIs e outros ativos financeiros, cotas de outros FIIs, terrenos e direitos, com totais em `summary`.
+
+
+        Use para analisar FIIs de papel e fundos de fundos, ver os CRIs de um fundo ou somar a exposição por classe de ativo.
+
+
+        `include` escolhe as listas. Sem `include`, retorna todas. `summary` sempre vem.
+
+
+        Em fundos de fundos, `fundHoldings` lista as cotas de outros FIIs. Em FIIs de papel, `financialAssets` lista os CRIs com emissor e valor. `allocations` resume a carteira por classe de ativo.
+
+
+        Sem `referenceDate`, retorna o trimestre mais recente de cada fundo. Informes podem ser retificados. O padrão retorna a versão mais recente, e `allVersions=true` retorna todas.
+
+
+        Para imóveis e vacância, use imóveis de FIIs. Para a série no tempo, use o histórico da carteira.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Fim do trimestre no formato YYYY-MM-DD. Sem valor, retorna o trimestre mais recente de cada FII.
+          example: '2025-03-31'
+        required: false
+        name: referenceDate
+        in: query
+      - schema:
+          type: string
+          description: 'Listas a retornar, separadas por vírgula: allocations, properties, financialAssets, fundHoldings, lands, rights. summary sempre vem. Sem valor, retorna todas.'
+          example: allocations,fundHoldings
+        required: false
+        name: include
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: true inclui todas as versões do trimestre. false retorna só a mais recente.
+          example: 'false'
+        required: false
+        name: allVersions
+        in: query
+      responses:
+        '200':
+          description: Carteira dos FIIs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiPortfolioResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/properties:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiProperties
+      summary: Imóveis e vacância de FIIs
+      description: 'Imóveis físicos de FIIs pelo informe trimestral da CVM, com área, endereço, classe, unidades, vacância, inadimplência e participação na receita de cada imóvel.
+
+
+        Use para analisar FIIs de tijolo, medir a vacância de um fundo e ver quanto da receita depende de cada imóvel.
+
+
+        `summary.vacancyRate` é a vacância do fundo, ponderada pela área quando o informe traz a área de cada imóvel. `vacancyRate`, `delinquencyRate` e `revenueShare` são frações decimais: `0.0328` é 3,28%.
+
+
+        Leia `vacancyRate` junto com `revenueShare`. Um imóvel vago com 2% da receita pesa menos que um com 30%.
+
+
+        Sem `referenceDate`, retorna o trimestre mais recente de cada fundo. O padrão retorna a versão mais recente do informe, e `allVersions=true` retorna todas. Para a série no tempo, use o histórico de imóveis.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Fim do trimestre no formato YYYY-MM-DD. Sem valor, retorna o trimestre mais recente de cada FII.
+          example: '2026-03-31'
+        required: false
+        name: referenceDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - revenueShare
+          - area
+          - vacancyRate
+          - name
+          default: revenueShare
+          description: Campo de ordenação dos imóveis.
+          example: revenueShare
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação dos imóveis.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: true inclui todas as versões do trimestre. false retorna só a mais recente.
+          example: 'false'
+        required: false
+        name: allVersions
+        in: query
+      responses:
+        '200':
+          description: Imóveis e vacância dos FIIs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiPropertiesResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/properties/history:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiPropertiesHistory
+      summary: Histórico de imóveis de FIIs
+      description: 'Série trimestral de imóveis e vacância de FIIs: um ponto por fundo, trimestre e versão do informe, com vacância, área total e quantidade de imóveis em `summary`.
+
+
+        Use para gráficos de vacância e para acompanhar o tamanho da carteira física no tempo.
+
+
+        A resposta não traz a lista de imóveis. Para os imóveis de um trimestre, use imóveis de FIIs com `referenceDate`.
+
+
+        Sem `startDate` e `endDate`, retorna os últimos 12 meses. `sortBy` aceita `referenceDate` (padrão), `symbol`, `version`, `count`, `totalArea`, `vacancyRate`, `averageVacancyRate` e `propertiesWithVacancy`. `allVersions=true` inclui as versões retificadas.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: Campo de ordenação.
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: true inclui todas as versões de cada trimestre. false retorna só a mais recente.
+          example: 'false'
+        required: false
+        name: allVersions
+        in: query
+      responses:
+        '200':
+          description: Série trimestral de imóveis e vacância.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiPropertiesHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/portfolio/history:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiPortfolioHistory
+      summary: Histórico da carteira de FIIs
+      description: 'Série trimestral da carteira de FIIs: um ponto por fundo, trimestre e versão do informe, com `summary` e `allocations` por classe de ativo.
+
+
+        Use para ver como a alocação de um fundo mudou no tempo, por exemplo entre imóveis, CRIs e cotas de outros FIIs.
+
+
+        A resposta não traz as listas item a item. Para o detalhe de um trimestre, use a carteira de FIIs com `referenceDate`.
+
+
+        Sem `startDate` e `endDate`, retorna os últimos 12 meses. `sortBy` aceita `referenceDate` (padrão), `symbol`, `version`, `totalItems`, `declaredValue` e `financialAssetsDeclaredValue`. `allVersions=true` inclui as versões retificadas.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: Campo de ordenação.
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: true inclui todas as versões de cada trimestre. false retorna só a mais recente.
+          example: 'false'
+        required: false
+        name: allVersions
+        in: query
+      responses:
+        '200':
+          description: Série trimestral da carteira.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiPortfolioHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/reports:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiReports
+      summary: Relatórios mensais de FIIs
+      description: 'Informe mensal que cada FII entrega à CVM: patrimônio, cotas, valor patrimonial por cota, taxa de administração, retorno e yield do mês, cotistas, e a composição do ativo e do passivo.
+
+
+        Use para ver a composição do patrimônio, acompanhar taxas e comparar o retorno mensal entre fundos.
+
+
+        O ativo separa caixa, títulos públicos e privados, fundos de renda fixa, imóveis, CRI, LCI, cotas de outros FIIs e recebíveis. O passivo separa distribuições a pagar, taxas a pagar e obrigações imobiliárias.
+
+
+        Sem `startDate` e `endDate`, retorna os últimos 12 meses. O padrão retorna a versão mais recente de cada mês, e `allVersions=true` inclui as versões retificadas. `sortBy` aceita `referenceDate` (padrão), `symbol`, `totalAssets`, `equity`, `navPerShare`, `monthlyReturn`, `monthlyDividendYield`, `totalInvestors` e `version`.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: Campo de ordenação.
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página. Não há limite máximo.
+          example: 20
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: true inclui todas as versões de cada mês. false retorna só a mais recente.
+          example: 'false'
+        required: false
+        name: allVersions
+        in: query
+      responses:
+        '200':
+          description: Relatórios mensais paginados.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiReportsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/dividends:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiDividends
+      summary: Dividendos de FIIs
+      description: 'Rendimentos e amortizações pagos por FIIs. Cada evento traz tipo (`label`), valor por cota em reais (`rate`), data-com (`lastDatePrior`), data de pagamento, data de aprovação e ISIN.
+
+
+        Use para calcular dividend yield, montar calendários de rendimentos e somar a renda de uma carteira.
+
+
+        `label` é RENDIMENTO ou AMORTIZAÇÃO. Amortização devolve capital e reduz o valor patrimonial da cota. Não some as duas para calcular yield.
+
+
+        Os dados vêm dos informes mensais da CVM e de comunicados dos administradores. Quando a fonte não tem as datas reais, `paymentDate` e `lastDatePrior` recebem a data de referência do informe mensal, e `remarks` indica a origem. A data inicial varia por fundo.
+
+
+        `startDate` e `endDate` filtram por `paymentDate`. Sem `startDate`, começa 12 meses atrás. Sem `endDate`, não tem limite final e inclui pagamentos já anunciados com data futura. `sortBy` aceita `paymentDate` (padrão), `lastDatePrior`, `approvedOn`, `rate` e `symbol`.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers de FIIs separados por vírgula, até 20. Ex.: HGLG11,MXRF11.'
+          example: HGLG11,MXRF11
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: Campo de ordenação.
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Rendimentos e amortizações dos FIIs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FiiDividendsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/financials:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiFinancials
+      summary: Demonstrações financeiras de FIIs
+      description: 'Demonstrações financeiras auditadas de FIIs, extraídas dos documentos DFIN entregues à CVM. Os valores vêm em `fields`, por ano e data de referência.
+
+
+        Use para analisar números auditados de um fundo e conferir os dados do relatório mensal.
+
+
+        Busque por `symbols` ou `cnpjs`. Filtre por `year` ou por `startDate` e `endDate`. A demonstração auditada sai depois do relatório mensal e prevalece quando os dois divergem.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Tickers de FIIs separados por vírgula, até 20.
+          example: HGLG11,MXRF11
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs de FIIs separados por vírgula, até 20. Aceita com ou sem pontuação.
+          example: '11728688000147'
+        required: false
+        name: cnpjs
+        in: query
+      - schema:
+          type: integer
+          nullable: true
+          description: Ano do exercício do documento.
+          example: 2025
+        required: false
+        name: year
+        in: query
+      - schema:
+          type: string
+          description: Data de referência inicial no formato YYYY-MM-DD.
+          example: '2025-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data de referência final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: 'Campo de ordenação: referenceDate, symbol, cnpj ou year.'
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+        required: false
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: Demonstrações financeiras paginadas.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  financials:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FiiFinancialReport'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - financials
+                - pagination
+                - requestedAt
+                - took
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/fii/annual-reports:
+    get:
+      tags:
+      - Fundos Imobiliários
+      operationId: getFiiAnnualReports
+      summary: Informes anuais de FIIs
+      description: 'Informe anual que cada FII entrega à CVM, com os dados consolidados do exercício em `fields`.
+
+
+        Use para consultar dados anuais oficiais de um fundo.
+
+
+        Busque por `symbols` ou `cnpjs`. Filtre por `year` ou por `startDate` e `endDate`. FIAGRO, FI-Infra, FIDC e FIP ficam em fundos.
+
+
+        Plano Pro. Sem token, aceita só `symbols` com MXRF11 e HGLG11.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Tickers de FIIs separados por vírgula, até 20.
+          example: HGLG11,MXRF11
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs de FIIs separados por vírgula, até 20. Aceita com ou sem pontuação.
+          example: '11728688000147'
+        required: false
+        name: cnpjs
+        in: query
+      - schema:
+          type: integer
+          nullable: true
+          description: Ano do exercício do documento.
+          example: 2025
+        required: false
+        name: year
+        in: query
+      - schema:
+          type: string
+          description: Data de referência inicial no formato YYYY-MM-DD.
+          example: '2025-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data de referência final no formato YYYY-MM-DD.
+          example: '2025-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: 'Campo de ordenação: referenceDate, symbol, cnpj ou year.'
+          example: referenceDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Seções opcionais conforme estrutura do informe anual
+          example: summary,governance
+        required: false
+        name: include
+        in: query
+      responses:
+        '200':
+          description: Informes anuais paginados.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FiiAnnualReport'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - reports
+                - pagination
+                - requestedAt
+                - took
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    FiiListResponse:
+      type: object
+      properties:
+        fiis:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiListItem'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - fiis
+      - pagination
+      - requestedAt
+      - took
+      example:
+        fiis:
+        - symbol: MXRF11
+          name: FII MAXI RENDA RL
+          cnpj: '97521225000125'
+          mandate: null
+          segmentoAtuacao: Logística
+          tipoGestao: Ativa
+          administratorName: BTG PACTUAL SERVICOS FINANCEIROS S/A DTVM
+          administratorCnpj: '59281253000123'
+          administratorAddress: Praia de Botafogo
+          administratorAddressNumber: '501'
+          administratorAddressComplement: 6 Andar
+          administratorDistrict: Botafogo
+          administratorCity: Rio de Janeiro
+          administratorState: RJ
+          administratorZipCode: '22250040'
+          administratorPhone1: 55 11 3383-3102
+          administratorPhone2: null
+          administratorPhone3: null
+          administratorWebsite: www.btgpactual.com
+          administratorEmail: ri.fundoslistados@btgpactual.com
+          price: 9.58
+          navPerShare: 9.409927
+          priceToNav: 1.0180738
+          dividendYield12m: 0.12381
+          totalInvestors: 1357621
+          segmentType: papel
+        - symbol: XPML11
+          name: XP MALLS FII
+          cnpj: '28757546000100'
+          mandate: null
+          segmentoAtuacao: Shoppings
+          tipoGestao: Ativa
+          administratorName: XP INVESTIMENTOS CCTVM S.A.
+          administratorCnpj: 02332886000104
+          administratorAddress: Avenida Afranio de Melo Franco
+          administratorAddressNumber: '290'
+          administratorAddressComplement: Sala 606
+          administratorDistrict: Leblon
+          administratorCity: Rio de Janeiro
+          administratorState: RJ
+          administratorZipCode: '22430060'
+          administratorPhone1: 55 21 3265-3700
+          administratorPhone2: null
+          administratorPhone3: null
+          administratorWebsite: www.xpi.com.br
+          administratorEmail: adm.fundos@xpi.com.br
+          price: 110.37
+          navPerShare: 108.160446
+          priceToNav: 1.0204285
+          dividendYield12m: 0.100098
+          totalInvestors: 633076
+          segmentType: tijolo
+        pagination:
+          page: 1
+          limit: 2
+          totalItems: 1545
+          totalPages: 773
+          hasNextPage: true
+        requestedAt: '2026-02-08T16:26:20.498Z'
+        took: 4
+    FiiMonthlyReport:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        administratorName:
+          type: string
+          nullable: true
+        administratorCnpj:
+          type: string
+          nullable: true
+        administratorAddress:
+          type: string
+          nullable: true
+        administratorAddressNumber:
+          type: string
+          nullable: true
+        administratorAddressComplement:
+          type: string
+          nullable: true
+        administratorDistrict:
+          type: string
+          nullable: true
+        administratorCity:
+          type: string
+          nullable: true
+        administratorState:
+          type: string
+          nullable: true
+        administratorZipCode:
+          type: string
+          nullable: true
+        administratorPhone1:
+          type: string
+          nullable: true
+        administratorPhone2:
+          type: string
+          nullable: true
+        administratorPhone3:
+          type: string
+          nullable: true
+        administratorWebsite:
+          type: string
+          nullable: true
+        administratorEmail:
+          type: string
+          nullable: true
+        referenceDate:
+          type: string
+        version:
+          type: number
+        totalAssets:
+          type: number
+          nullable: true
+        equity:
+          type: number
+          nullable: true
+        sharesOutstanding:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        adminFeeRate:
+          type: number
+          nullable: true
+        monthlyReturn:
+          type: number
+          nullable: true
+        monthlyPatrimonialReturn:
+          type: number
+          nullable: true
+        monthlyDividendYield:
+          type: number
+          nullable: true
+        amortizationRate:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        cash:
+          type: number
+          nullable: true
+        liquidityNeeds:
+          type: number
+          nullable: true
+        governmentBonds:
+          type: number
+          nullable: true
+        privateBonds:
+          type: number
+          nullable: true
+        fixedIncomeFunds:
+          type: number
+          nullable: true
+        totalInvested:
+          type: number
+          nullable: true
+        realEstateAssets:
+          type: number
+          nullable: true
+        realEstateCompanyShares:
+          type: number
+          nullable: true
+        realEstateCompanyUnits:
+          type: number
+          nullable: true
+        cri:
+          type: number
+          nullable: true
+        lci:
+          type: number
+          nullable: true
+        fiiHoldings:
+          type: number
+          nullable: true
+        receivables:
+          type: number
+          nullable: true
+        rentalReceivables:
+          type: number
+          nullable: true
+        otherReceivables:
+          type: number
+          nullable: true
+        distributionsPayable:
+          type: number
+          nullable: true
+        adminFeesPayable:
+          type: number
+          nullable: true
+        realEstateObligations:
+          type: number
+          nullable: true
+        totalLiabilities:
+          type: number
+          nullable: true
+      required:
+      - symbol
+      - name
+      - cnpj
+      - administratorName
+      - administratorCnpj
+      - administratorAddress
+      - administratorAddressNumber
+      - administratorAddressComplement
+      - administratorDistrict
+      - administratorCity
+      - administratorState
+      - administratorZipCode
+      - administratorPhone1
+      - administratorPhone2
+      - administratorPhone3
+      - administratorWebsite
+      - administratorEmail
+      - referenceDate
+      - version
+      - totalAssets
+      - equity
+      - sharesOutstanding
+      - navPerShare
+      - adminFeeRate
+      - monthlyReturn
+      - monthlyPatrimonialReturn
+      - monthlyDividendYield
+      - amortizationRate
+      - totalInvestors
+      - cash
+      - liquidityNeeds
+      - governmentBonds
+      - privateBonds
+      - fixedIncomeFunds
+      - totalInvested
+      - realEstateAssets
+      - realEstateCompanyShares
+      - realEstateCompanyUnits
+      - cri
+      - lci
+      - fiiHoldings
+      - receivables
+      - rentalReceivables
+      - otherReceivables
+      - distributionsPayable
+      - adminFeesPayable
+      - realEstateObligations
+      - totalLiabilities
+    FiiIndicator:
+      type: object
+      properties:
+        symbol:
+          type: string
+        asOfDate:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        priceToNav:
+          type: number
+          nullable: true
+        dividendYield12m:
+          type: number
+          nullable: true
+        dividendYield1m:
+          type: number
+          nullable: true
+        monthlyReturn:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        sharesOutstanding:
+          type: number
+          nullable: true
+        equity:
+          type: number
+          nullable: true
+        totalAssets:
+          type: number
+          nullable: true
+        segmentType:
+          type: string
+          nullable: true
+      required:
+      - symbol
+      - asOfDate
+      - price
+      - navPerShare
+      - priceToNav
+      - dividendYield12m
+      - dividendYield1m
+      - monthlyReturn
+      - totalInvestors
+      - sharesOutstanding
+      - equity
+      - totalAssets
+      - segmentType
+    FiiRight:
+      type: object
+      properties:
+        name:
+          type: string
+        identifier:
+          type: string
+          nullable: true
+        value:
+          type: number
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        confidential:
+          type: boolean
+      required:
+      - name
+      - identifier
+      - value
+      - description
+      - confidential
+    FiiIndicatorsResponse:
+      type: object
+      properties:
+        fiis:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiIndicatorWithInfo'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - fiis
+      - requestedAt
+      - took
+      example:
+        fiis:
+        - symbol: MXRF11
+          asOfDate: '2025-12-01 00:00:00+00'
+          price: 9.58
+          navPerShare: 9.409927
+          priceToNav: 1.0180738
+          dividendYield12m: 0.12381
+          dividendYield1m: 0.009328
+          monthlyReturn: 0.007876
+          totalInvestors: 1357621
+          sharesOutstanding: 460269540
+          equity: 4331102700
+          totalAssets: 4375755000
+          segmentType: papel
+          name: FII MAXI RENDA RL
+          cnpj: '97521225000125'
+          mandate: null
+          segmentoAtuacao: Logística
+          tipoGestao: Ativa
+          administratorName: BTG PACTUAL SERVICOS FINANCEIROS S/A DTVM
+          administratorCnpj: '59281253000123'
+          administratorAddress: Praia de Botafogo
+          administratorAddressNumber: '501'
+          administratorAddressComplement: 6 Andar
+          administratorDistrict: Botafogo
+          administratorCity: Rio de Janeiro
+          administratorState: RJ
+          administratorZipCode: '22250040'
+          administratorPhone1: 55 11 3383-3102
+          administratorPhone2: null
+          administratorPhone3: null
+          administratorWebsite: www.btgpactual.com
+          administratorEmail: ri.fundoslistados@btgpactual.com
+        requestedAt: '2026-02-08T16:25:18.077Z'
+        took: 47
+    FiiDividend:
+      type: object
+      properties:
+        symbol:
+          type: string
+        approvedOn:
+          type: string
+          nullable: true
+        label:
+          type: string
+        lastDatePrior:
+          type: string
+        exDate:
+          type: string
+          nullable: true
+        paymentDate:
+          type: string
+        rate:
+          type: number
+        relatedTo:
+          type: string
+          nullable: true
+        isinCode:
+          type: string
+          nullable: true
+        remarks:
+          type: string
+          nullable: true
+        verified:
+          type: boolean
+          description: '`true` quando o provento foi conferido em um documento publicado pela empresa ou pelo fundo. `false` quando vem de dados históricos que ainda não têm esse documento.'
+      required:
+      - symbol
+      - approvedOn
+      - label
+      - lastDatePrior
+      - exDate
+      - paymentDate
+      - rate
+      - relatedTo
+      - isinCode
+      - remarks
+      - verified
+    FiiIndicatorWithInfo:
+      allOf:
+      - $ref: '#/components/schemas/FiiIndicator'
+      - type: object
+        properties:
+          name:
+            type: string
+            nullable: true
+          cnpj:
+            type: string
+            nullable: true
+          mandate:
+            type: string
+            nullable: true
+          segmentoAtuacao:
+            type: string
+            nullable: true
+          tipoGestao:
+            type: string
+            nullable: true
+          administratorName:
+            type: string
+            nullable: true
+          administratorCnpj:
+            type: string
+            nullable: true
+          administratorAddress:
+            type: string
+            nullable: true
+          administratorAddressNumber:
+            type: string
+            nullable: true
+          administratorAddressComplement:
+            type: string
+            nullable: true
+          administratorDistrict:
+            type: string
+            nullable: true
+          administratorCity:
+            type: string
+            nullable: true
+          administratorState:
+            type: string
+            nullable: true
+          administratorZipCode:
+            type: string
+            nullable: true
+          administratorPhone1:
+            type: string
+            nullable: true
+          administratorPhone2:
+            type: string
+            nullable: true
+          administratorPhone3:
+            type: string
+            nullable: true
+          administratorWebsite:
+            type: string
+            nullable: true
+          administratorEmail:
+            type: string
+            nullable: true
+        required:
+        - name
+        - cnpj
+        - mandate
+        - segmentoAtuacao
+        - tipoGestao
+        - administratorName
+        - administratorCnpj
+        - administratorAddress
+        - administratorAddressNumber
+        - administratorAddressComplement
+        - administratorDistrict
+        - administratorCity
+        - administratorState
+        - administratorZipCode
+        - administratorPhone1
+        - administratorPhone2
+        - administratorPhone3
+        - administratorWebsite
+        - administratorEmail
+    FiiPropertiesResult:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        version:
+          type: number
+        summary:
+          $ref: '#/components/schemas/FiiPropertySummary'
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiProperty'
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - version
+      - summary
+      - properties
+    FiiPropertiesHistoryEntry:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        version:
+          type: number
+        summary:
+          $ref: '#/components/schemas/FiiPropertySummary'
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - version
+      - summary
+    FiiPropertiesResponse:
+      type: object
+      properties:
+        fiis:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiPropertiesResult'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - fiis
+      - requestedAt
+      - took
+      example:
+        fiis:
+        - symbol: HGLG11
+          cnpj: '11728688000147'
+          referenceDate: '2026-03-31'
+          version: 2
+          summary:
+            count: 37
+            totalArea: 2066028.32
+            vacancyRate: 0.032785
+            averageVacancyRate: 0.03787
+            propertiesWithVacancy: 37
+          properties:
+          - name: São José dos Campos
+            identifier: 322fab9c7769a894ed2736a77d73d9d1
+            address: Rua Ambrósio Molina, 1090/1100, São José dos Campos, SP
+            propertyClass: Imóveis para renda acabados
+            area: 72487.36
+            unitCount: 1
+            vacancyRate: 0.248282735086503
+            delinquencyRate: 0
+            revenueShare: 0.0241721159147739
+            leasedRate: null
+            soldRate: null
+            constructionProgressActual: null
+            constructionProgressExpected: null
+            constructionCostActual: null
+            constructionCostExpected: null
+            investedShare: null
+            confidential: false
+        requestedAt: '2026-02-08T16:25:24.456Z'
+        took: 8
+    FiiLand:
+      type: object
+      properties:
+        name:
+          type: string
+        identifier:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        area:
+          type: number
+          nullable: true
+        investedShare:
+          type: number
+          nullable: true
+        equityShare:
+          type: number
+          nullable: true
+        confidential:
+          type: boolean
+      required:
+      - name
+      - identifier
+      - address
+      - area
+      - investedShare
+      - equityShare
+      - confidential
+    FiiPortfolioHistoryResponse:
+      type: object
+      properties:
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiPortfolioHistoryEntry'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - history
+      - requestedAt
+      - took
+      example:
+        history:
+        - symbol: HGLG11
+          cnpj: '11728688000147'
+          referenceDate: '2026-03-31'
+          version: 2
+          summary:
+            totalItems: 57
+            declaredValue: 1256045042.52
+            properties:
+              count: 37
+              totalArea: 2066028.32
+              vacancyRate: 0.032785
+              averageVacancyRate: 0.03787
+              propertiesWithVacancy: 37
+            financialAssets:
+              count: 20
+              declaredValue: 1256045042.52
+            lands:
+              count: 0
+              totalArea: null
+            rights:
+              count: 0
+              declaredValue: null
+          allocations:
+          - assetClass: cri
+            count: 1
+            value: 106876.54
+          - assetClass: fii
+            count: 8
+            value: 232510079.3
+          - assetClass: real_estate_company
+            count: 11
+            value: 1023428086.68
+          - assetClass: real_estate
+            count: 37
+            value: null
+        requestedAt: '2026-02-08T16:25:27.456Z'
+        took: 7
+    FiiHistoricalPrice:
+      type: object
+      properties:
+        date:
+          type: integer
+        open:
+          type: number
+          nullable: true
+        high:
+          type: number
+          nullable: true
+        low:
+          type: number
+          nullable: true
+        close:
+          type: number
+          nullable: true
+        volume:
+          type: number
+          nullable: true
+        adjustedClose:
+          type: number
+          nullable: true
+      required:
+      - date
+      - open
+      - high
+      - low
+      - close
+      - volume
+      - adjustedClose
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: number
+        limit:
+          type: number
+        totalItems:
+          type: number
+        totalPages:
+          type: number
+        hasNextPage:
+          type: boolean
+      required:
+      - page
+      - limit
+      - totalItems
+      - totalPages
+      - hasNextPage
+    FiiFinancialReport:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        year:
+          type: number
+        referenceDate:
+          type: string
+        documentType:
+          type: string
+        fields:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+      required:
+      - symbol
+      - cnpj
+      - year
+      - referenceDate
+      - documentType
+      - fields
+    FiiPropertySummary:
+      type: object
+      properties:
+        count:
+          type: number
+        totalArea:
+          type: number
+          nullable: true
+        vacancyRate:
+          type: number
+          nullable: true
+        averageVacancyRate:
+          type: number
+          nullable: true
+        propertiesWithVacancy:
+          type: number
+      required:
+      - count
+      - totalArea
+      - vacancyRate
+      - averageVacancyRate
+      - propertiesWithVacancy
+    FiiAnnualReport:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        year:
+          type: number
+        referenceDate:
+          type: string
+        includeSections:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        fields:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+      required:
+      - symbol
+      - cnpj
+      - year
+      - referenceDate
+      - includeSections
+      - fields
+    FiiPortfolioSummary:
+      type: object
+      properties:
+        totalItems:
+          type: number
+        declaredValue:
+          type: number
+          nullable: true
+        properties:
+          $ref: '#/components/schemas/FiiPropertySummary'
+        financialAssets:
+          type: object
+          properties:
+            count:
+              type: number
+            declaredValue:
+              type: number
+              nullable: true
+          required:
+          - count
+          - declaredValue
+        lands:
+          type: object
+          properties:
+            count:
+              type: number
+            totalArea:
+              type: number
+              nullable: true
+          required:
+          - count
+          - totalArea
+        rights:
+          type: object
+          properties:
+            count:
+              type: number
+            declaredValue:
+              type: number
+              nullable: true
+          required:
+          - count
+          - declaredValue
+      required:
+      - totalItems
+      - declaredValue
+      - properties
+      - financialAssets
+      - lands
+      - rights
+    FiiIndicatorHistoryEntry:
+      type: object
+      properties:
+        symbol:
+          type: string
+        referenceDate:
+          type: string
+        price:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        priceToNav:
+          type: number
+          nullable: true
+        dividendYield12m:
+          type: number
+          nullable: true
+        dividendYield1m:
+          type: number
+          nullable: true
+        monthlyReturn:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        sharesOutstanding:
+          type: number
+          nullable: true
+        equity:
+          type: number
+          nullable: true
+        totalAssets:
+          type: number
+          nullable: true
+        segmentType:
+          type: string
+          nullable: true
+      required:
+      - symbol
+      - referenceDate
+      - price
+      - navPerShare
+      - priceToNav
+      - dividendYield12m
+      - dividendYield1m
+      - monthlyReturn
+      - totalInvestors
+      - sharesOutstanding
+      - equity
+      - totalAssets
+      - segmentType
+    FiiHistoricalSeries:
+      type: object
+      properties:
+        symbol:
+          type: string
+        historicalDataPrice:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiHistoricalPrice'
+      required:
+      - symbol
+      - historicalDataPrice
+    FiiPortfolioAllocation:
+      type: object
+      properties:
+        assetClass:
+          type: string
+        count:
+          type: number
+        value:
+          type: number
+          nullable: true
+      required:
+      - assetClass
+      - count
+      - value
+    FiiPortfolioHistoryEntry:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        version:
+          type: number
+        summary:
+          $ref: '#/components/schemas/FiiPortfolioSummary'
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiPortfolioAllocation'
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - version
+      - summary
+      - allocations
+    FiiPortfolioResponse:
+      type: object
+      properties:
+        fiis:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiPortfolio'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - fiis
+      - requestedAt
+      - took
+      example:
+        fiis:
+        - symbol: HGLG11
+          cnpj: '11728688000147'
+          referenceDate: '2026-03-31'
+          version: 2
+          summary:
+            totalItems: 40
+            declaredValue: 3349501.49
+            properties:
+              count: 37
+              totalArea: 2066028.32
+              vacancyRate: 0.032785
+              averageVacancyRate: 0.03787
+              propertiesWithVacancy: 37
+            financialAssets:
+              count: 3
+              declaredValue: 3349501.49
+            lands:
+              count: 0
+              totalArea: null
+            rights:
+              count: 0
+              declaredValue: null
+          allocations:
+          - assetClass: real_estate
+            count: 37
+            value: null
+          - assetClass: cri
+            count: 3
+            value: 3349501.49
+          properties:
+          - name: DCR
+            identifier: 925452ac11b478196d767981dee8ecaf
+            address: Av. Hélio Ossamu Daikuara, nº 1.445, Jardim Vista Alegre, Embu das Artes
+            propertyClass: Imóveis para renda acabados
+            area: 77587.2
+            unitCount: 1
+            vacancyRate: 0.135305823641013
+            delinquencyRate: 0
+            revenueShare: 0.0398709781486898
+            leasedRate: null
+            soldRate: null
+            constructionProgressActual: null
+            constructionProgressExpected: null
+            constructionCostActual: null
+            constructionCostExpected: null
+            investedShare: null
+            confidential: false
+          financialAssets:
+          - assetClass: cri
+            name: VIRGO COMPANHIA DE SECURITIZAÇÃO
+            issuer: VIRGO COMPANHIA DE SECURITIZAÇÃO
+            issuerCnpj: 08769451000108
+            identifier: 8d612f6e7e4fb1da2d668f07c4f91420
+            quantity: 35
+            value: 3349501.49
+            issue: '4'
+            series: '124'
+            ticker: null
+            maturityDate: null
+            confidential: false
+          fundHoldings: []
+          lands: []
+          rights: []
+        requestedAt: '2026-02-08T16:25:24.456Z'
+        took: 8
+    FiiListItem:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+          nullable: true
+        mandate:
+          type: string
+          nullable: true
+        segmentoAtuacao:
+          type: string
+          nullable: true
+        tipoGestao:
+          type: string
+          nullable: true
+        administratorName:
+          type: string
+          nullable: true
+        administratorCnpj:
+          type: string
+          nullable: true
+        administratorAddress:
+          type: string
+          nullable: true
+        administratorAddressNumber:
+          type: string
+          nullable: true
+        administratorAddressComplement:
+          type: string
+          nullable: true
+        administratorDistrict:
+          type: string
+          nullable: true
+        administratorCity:
+          type: string
+          nullable: true
+        administratorState:
+          type: string
+          nullable: true
+        administratorZipCode:
+          type: string
+          nullable: true
+        administratorPhone1:
+          type: string
+          nullable: true
+        administratorPhone2:
+          type: string
+          nullable: true
+        administratorPhone3:
+          type: string
+          nullable: true
+        administratorWebsite:
+          type: string
+          nullable: true
+        administratorEmail:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        priceToNav:
+          type: number
+          nullable: true
+        dividendYield12m:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        segmentType:
+          type: string
+          nullable: true
+      required:
+      - symbol
+      - name
+      - cnpj
+      - mandate
+      - segmentoAtuacao
+      - tipoGestao
+      - administratorName
+      - administratorCnpj
+      - administratorAddress
+      - administratorAddressNumber
+      - administratorAddressComplement
+      - administratorDistrict
+      - administratorCity
+      - administratorState
+      - administratorZipCode
+      - administratorPhone1
+      - administratorPhone2
+      - administratorPhone3
+      - administratorWebsite
+      - administratorEmail
+      - price
+      - navPerShare
+      - priceToNav
+      - dividendYield12m
+      - totalInvestors
+      - segmentType
+    FiiFinancialAsset:
+      type: object
+      properties:
+        assetClass:
+          type: string
+        name:
+          type: string
+        issuer:
+          type: string
+          nullable: true
+        issuerCnpj:
+          type: string
+          nullable: true
+        identifier:
+          type: string
+          nullable: true
+        quantity:
+          type: number
+          nullable: true
+        value:
+          type: number
+          nullable: true
+        issue:
+          type: string
+          nullable: true
+        series:
+          type: string
+          nullable: true
+        ticker:
+          type: string
+          nullable: true
+        maturityDate:
+          type: string
+          nullable: true
+        confidential:
+          type: boolean
+      required:
+      - assetClass
+      - name
+      - issuer
+      - issuerCnpj
+      - identifier
+      - quantity
+      - value
+      - issue
+      - series
+      - ticker
+      - maturityDate
+      - confidential
+    FiiHistoricalResponse:
+      type: object
+      properties:
+        fiis:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiHistoricalSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - fiis
+      - requestedAt
+      - took
+      example:
+        fiis:
+        - symbol: MXRF11
+          historicalDataPrice:
+          - date: 1736478000
+            open: 9.33
+            high: 9.37
+            low: 9.3
+            close: 9.35
+            volume: 1027483
+            adjustedClose: 8.3454485
+          - date: 1736391600
+            open: 9.42
+            high: 9.44
+            low: 9.29
+            close: 9.33
+            volume: 1203345
+            adjustedClose: 8.327598
+          - date: 1736305200
+            open: 9.44
+            high: 9.47
+            low: 9.34
+            close: 9.42
+            volume: 1558708
+            adjustedClose: 8.407928
+        requestedAt: '2026-02-08T16:25:22.456Z'
+        took: 8
+    FiiReportsResponse:
+      type: object
+      properties:
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiMonthlyReport'
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - reports
+      - pagination
+      - requestedAt
+      - took
+      example:
+        reports:
+        - symbol: MXRF11
+          name: null
+          cnpj: '97521225000125'
+          administratorName: BTG PACTUAL SERVICOS FINANCEIROS S/A DTVM
+          administratorCnpj: '59281253000123'
+          administratorAddress: Praia de Botafogo
+          administratorAddressNumber: '501'
+          administratorAddressComplement: 6 Andar
+          administratorDistrict: Botafogo
+          administratorCity: Rio de Janeiro
+          administratorState: RJ
+          administratorZipCode: '22250040'
+          administratorPhone1: 55 11 3383-3102
+          administratorPhone2: null
+          administratorPhone3: null
+          administratorWebsite: www.btgpactual.com
+          administratorEmail: ri.fundoslistados@btgpactual.com
+          referenceDate: '2025-12-01 00:00:00+00'
+          version: 2
+          totalAssets: 4375755000
+          equity: 4331102700
+          sharesOutstanding: 460269540
+          navPerShare: 9.409927
+          adminFeeRate: 0.000753
+          monthlyReturn: 0.007876
+          monthlyPatrimonialReturn: -0.001452
+          monthlyDividendYield: 0.009328
+          amortizationRate: 0
+          totalInvestors: 1357621
+          cash: 0
+          liquidityNeeds: 24506374
+          governmentBonds: 0
+          privateBonds: 0
+          fixedIncomeFunds: 24506374
+          totalInvested: 4326274600
+          realEstateAssets: 9147060
+          realEstateCompanyShares: 0
+          realEstateCompanyUnits: 0
+          cri: 3354012400
+          lci: 0
+          fiiHoldings: 538337660
+          receivables: 24973770
+          rentalReceivables: 0
+          otherReceivables: 24973770
+          distributionsPayable: 41155660
+          adminFeesPayable: 3260833.2
+          realEstateObligations: 0
+          totalLiabilities: 44652356
+        pagination:
+          page: 1
+          limit: 1
+          totalItems: 10
+          totalPages: 10
+          hasNextPage: true
+        requestedAt: '2026-02-08T16:25:27.115Z'
+        took: 5
+    FiiPropertiesHistoryResponse:
+      type: object
+      properties:
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiPropertiesHistoryEntry'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - history
+      - requestedAt
+      - took
+      example:
+        history:
+        - symbol: HGLG11
+          cnpj: '11728688000147'
+          referenceDate: '2026-03-31'
+          version: 2
+          summary:
+            count: 37
+            totalArea: 2066028.32
+            vacancyRate: 0.032785
+            averageVacancyRate: 0.03787
+            propertiesWithVacancy: 37
+        - symbol: HGLG11
+          cnpj: '11728688000147'
+          referenceDate: '2025-12-31'
+          version: 2
+          summary:
+            count: 28
+            totalArea: 1628383.15
+            vacancyRate: 0.029088
+            averageVacancyRate: 0.04282
+            propertiesWithVacancy: 28
+        requestedAt: '2026-02-08T16:25:26.456Z'
+        took: 6
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    FiiIndicatorsHistoryResponse:
+      type: object
+      properties:
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiIndicatorHistoryEntry'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - history
+      - requestedAt
+      - took
+      example:
+        history:
+        - symbol: MXRF11
+          referenceDate: '2025-12-01 00:00:00+00'
+          price: 9.411791
+          navPerShare: 9.409927
+          priceToNav: 1.0001981
+          dividendYield12m: 0.12381
+          dividendYield1m: 0.009328
+          monthlyReturn: 0.007876
+          totalInvestors: 1357621
+          sharesOutstanding: 460269540
+          equity: 4331102700
+          totalAssets: 4375755000
+          segmentType: papel
+        - symbol: MXRF11
+          referenceDate: '2025-11-01 00:00:00+00'
+          price: 9.463164
+          navPerShare: 9.42361
+          priceToNav: 1.0041974
+          dividendYield12m: 0.125273
+          dividendYield1m: 0.010665
+          monthlyReturn: 0.010727
+          totalInvestors: 1339326
+          sharesOutstanding: 460269540
+          equity: 4337401000
+          totalAssets: 4386052600
+          segmentType: papel
+        requestedAt: '2026-02-08T16:25:20.123Z'
+        took: 12
+    FiiPortfolio:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        version:
+          type: number
+        summary:
+          $ref: '#/components/schemas/FiiPortfolioSummary'
+        allocations:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiPortfolioAllocation'
+        properties:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiProperty'
+        financialAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiFinancialAsset'
+        fundHoldings:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiFinancialAsset'
+        lands:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiLand'
+        rights:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiRight'
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - version
+      - summary
+      - allocations
+      - properties
+      - financialAssets
+      - fundHoldings
+      - lands
+      - rights
+    FiiDividendsResponse:
+      type: object
+      properties:
+        dividends:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiiDividend'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - dividends
+      - requestedAt
+      - took
+      example:
+        dividends:
+        - symbol: MXRF11
+          approvedOn: null
+          label: RENDIMENTO
+          lastDatePrior: '2025-12-01 00:00:00+00'
+          exDate: '2025-12-01 00:00:00+00'
+          paymentDate: '2025-12-01 00:00:00+00'
+          rate: 0.08941643
+          relatedTo: null
+          isinCode: null
+          remarks: backfilled from FiiMonthlyReports
+        - symbol: MXRF11
+          approvedOn: null
+          label: RENDIMENTO
+          lastDatePrior: '2025-11-01 00:00:00+00'
+          exDate: '2025-11-01 00:00:00+00'
+          paymentDate: '2025-11-01 00:00:00+00'
+          rate: 0.098144606
+          relatedTo: null
+          isinCode: null
+          remarks: backfilled from FiiMonthlyReports
+        requestedAt: '2026-02-08T16:25:19.026Z'
+        took: 23
+    FiiProperty:
+      type: object
+      properties:
+        name:
+          type: string
+        identifier:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        propertyClass:
+          type: string
+          nullable: true
+        area:
+          type: number
+          nullable: true
+        unitCount:
+          type: number
+          nullable: true
+        vacancyRate:
+          type: number
+          nullable: true
+        delinquencyRate:
+          type: number
+          nullable: true
+        revenueShare:
+          type: number
+          nullable: true
+        leasedRate:
+          type: number
+          nullable: true
+        soldRate:
+          type: number
+          nullable: true
+        constructionProgressActual:
+          type: number
+          nullable: true
+        constructionProgressExpected:
+          type: number
+          nullable: true
+        constructionCostActual:
+          type: number
+          nullable: true
+        constructionCostExpected:
+          type: number
+          nullable: true
+        investedShare:
+          type: number
+          nullable: true
+        confidential:
+          type: boolean
+      required:
+      - name
+      - identifier
+      - address
+      - propertyClass
+      - area
+      - unitCount
+      - vacancyRate
+      - delinquencyRate
+      - revenueShare
+      - leasedRate
+      - soldRate
+      - constructionProgressActual
+      - constructionProgressExpected
+      - constructionCostActual
+      - constructionCostExpected
+      - investedShare
+      - confidential
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

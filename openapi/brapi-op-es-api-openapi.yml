@@ -1,0 +1,2302 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Opções API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Opções
+  description: Consulte contratos, cadeias EOD negociadas e histórico de opções.
+paths:
+  /api/v2/options/expirations:
+    get:
+      tags:
+      - Opções
+      operationId: listOptionExpirations
+      summary: Vencimentos de opções
+      description: 'Retorna as datas de vencimento de opções de um ativo subjacente: ação, ETF, índice, `DOL` ou `WDO`. Por padrão, só vencimentos futuros.
+
+
+        Use para montar um seletor de vencimento, listar vencimentos passados em um backtest e escolher a data antes de consultar a cadeia de opções.
+
+
+        Passe `includeExpired=true` para incluir vencimentos passados.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=PETR4`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Ticker do ativo subjacente: ação, ETF, índice, `DOL` ou `WDO`.'
+          example: PETR4
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+          description: '`true` inclui vencimentos passados. Padrão: `false`, só vencimentos futuros.'
+        required: false
+        name: includeExpired
+        in: query
+      responses:
+        '200':
+          description: Vencimentos retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionExpirationsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/options/strikes:
+    get:
+      tags:
+      - Opções
+      operationId: listOptionStrikes
+      summary: Strikes de opções
+      description: 'Retorna os preços de exercício das séries negociadas de um vencimento, em ordem crescente. Filtre por `call` ou `put` com `side`.
+
+
+        Use para montar um seletor de strike sem baixar a cadeia inteira.
+
+
+        Este passo é opcional: a cadeia de opções também aceita `minStrike` e `maxStrike`.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=PETR4`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Ticker do ativo subjacente: ação, ETF, índice, `DOL` ou `WDO`.'
+          example: PETR4
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      responses:
+        '200':
+          description: Preços de exercício retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionStrikesResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/options/chain:
+    get:
+      tags:
+      - Opções
+      operationId: getOptionSeries
+      summary: Cadeia de opções
+      description: 'Retorna as séries de opções de um vencimento, com dados do contrato (`symbol`, `side`, `strike`, `optionStyle`) e a cotação do último pregão até `date`: OHLC, bid, ask, volume e contratos em aberto.
+
+
+        Use para montar uma tela de opções por vencimento, comparar calls e puts por strike e filtrar séries por faixa de strike.
+
+
+        A lista traz só séries com cotação nos 10 dias até `date`. Cada série traz a cotação do seu último pregão nessa janela, que pode ser anterior a `date`. Confira o campo `date` de cada série antes de usar o preço como atual.
+
+
+        Nas séries de `DOL` e `WDO`, `referencePrice` pode vir preenchido com `close`, `high` e `low` nulos, porque muitas séries não negociam no dia.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=PETR4`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Ticker do ativo subjacente: ação, ETF, índice, `DOL` ou `WDO`.'
+          example: PETR4
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data do pregão, no formato YYYY-MM-DD. Padrão: último pregão disponível.'
+          example: '2026-06-01'
+        required: false
+        name: date
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike mínimo.
+        required: false
+        name: minStrike
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike máximo.
+        required: false
+        name: maxStrike
+        in: query
+      responses:
+        '200':
+          description: Séries retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionSeriesResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Serviço temporariamente indisponível. Tente de novo em alguns minutos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/options/positions:
+    get:
+      tags:
+      - Opções
+      operationId: getOptionPositions
+      summary: Posições em aberto de opções
+      description: 'Retorna os contratos em aberto de cada série de um vencimento, com a divisão entre posição coberta, descoberta e bloqueada.
+
+
+        Use para ver onde se concentram as posições por strike, comparar calls e puts e acompanhar a variação diária de contratos em aberto.
+
+
+        Use `openInterest` como número de contratos em aberto. Nas opções sobre ações, ele vem de `totalPositionQuantity`, porque `reportedOpenInterest` vem vazio. Volume e contratos em aberto medem coisas diferentes: uma série pode ficar sem negócio e ter muitos contratos em aberto.
+
+
+        Os contratos em aberto são apurados uma vez por pregão. Sem apuração na data pedida, a resposta traz a anterior. Confira `openInterestDate` antes de comparar com o preço do dia.
+
+
+        Aceita os mesmos filtros da cadeia de opções: `side`, `minStrike` e `maxStrike`.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=PETR4`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Ticker do ativo subjacente: ação, ETF, índice, `DOL` ou `WDO`.'
+          example: PETR4
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data do pregão, no formato YYYY-MM-DD. Padrão: último pregão disponível.'
+          example: '2026-06-01'
+        required: false
+        name: date
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike mínimo.
+        required: false
+        name: minStrike
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike máximo.
+        required: false
+        name: maxStrike
+        in: query
+      responses:
+        '200':
+          description: Posições retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionPositionsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/options/historical:
+    get:
+      tags:
+      - Opções
+      operationId: getOptionHistorical
+      summary: Histórico de opção
+      description: 'Retorna o histórico diário de uma série de opção, identificada por `symbol` e `expirationDate`: OHLC, bid, ask, negócios e volume por pregão.
+
+
+        Use para montar gráficos de prêmio, fazer backtests e analisar a liquidez de uma série.
+
+
+        Se o mesmo `symbol` aparece duas vezes no vencimento, passe também `strike`. Encontre a série na cadeia de opções.
+
+
+        Séries fora do dinheiro passam dias sem negócio. Um pregão sem negócio não aparece no histórico.
+
+
+        Disponível no plano Pro. Sem token, aceita só `symbol` com prefixo `PETR`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Código da série de opção.
+          example: PETRF783
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento da série, no formato YYYY-MM-DD.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Preço de exercício. Use quando o mesmo `symbol` aparece mais de uma vez no vencimento.
+          example: 7.29
+        required: false
+        name: strike
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial, no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2026-05-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final, no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-06-01'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem por data: `asc` do mais antigo ao mais recente, `desc` do mais recente ao mais antigo.'
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionHistoricalResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/options/positions/history:
+    get:
+      tags:
+      - Opções
+      operationId: getOptionPositionsHistory
+      summary: Histórico de posições em aberto
+      description: 'Retorna o histórico diário de contratos em aberto de uma série de opção, identificada por `symbol` e `expirationDate`.
+
+
+        Use para ver a montagem e a desmontagem de posições ao longo do tempo e comparar contratos em aberto com o preço.
+
+
+        Cada item é uma apuração diária. Pregão sem apuração não aparece. Se o mesmo `symbol` aparece duas vezes no vencimento, passe também `strike`.
+
+
+        Disponível no plano Pro. Sem token, aceita só `symbol` com prefixo `PETR`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Código da série de opção.
+          example: PETRF783
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento da série, no formato YYYY-MM-DD.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Preço de exercício. Use quando o mesmo `symbol` aparece mais de uma vez no vencimento.
+          example: 7.29
+        required: false
+        name: strike
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial, no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2026-05-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final, no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-06-01'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem por data: `asc` do mais antigo ao mais recente, `desc` do mais recente ao mais antigo.'
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico de posições retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionPositionsHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/options/analytics:
+    get:
+      tags:
+      - Opções
+      operationId: getOptionAnalytics
+      summary: Gregas e IV de opções
+      description: 'Retorna a volatilidade implícita e as gregas (delta, gamma, theta, vega e rho) de cada série de um vencimento, calculadas sobre o preço de fechamento.
+
+
+        Use para comparar a IV entre strikes, montar um smile de volatilidade e medir a exposição de uma carteira de opções.
+
+
+        `timeToExpirationYears` usa dias corridos até o vencimento divididos por 365. Por exemplo, 17 dias correspondem a `17 / 365 = 0.04657534`.
+
+
+        `impliedVolatility` é anual, em decimal. Para um dia corrido, use `impliedVolatility / sqrt(365)`. Para `d` dias corridos, use `impliedVolatility * sqrt(d / 365)`.
+
+
+        A divisão por `sqrt(252)` pressupõe 252 pregões por ano. Ela expressa outra convenção diária e não altera o prazo usado no cálculo da opção.
+
+
+        O cálculo usa só o fechamento negociado. Série sem negócio no dia não tem cálculo: os campos calculados vêm `null` e `nullReason` diz o motivo.
+
+
+        `theta` vem por ano. `vega` e `rho` medem o efeito de uma variação de 1,00 na volatilidade e no juro. Divida por 100 para ter o efeito de 1 ponto percentual.
+
+
+        Séries americanas usam árvore binomial. Séries europeias usam Black-Scholes-Merton. `dividendYield` considera só os dividendos anunciados até a data do cálculo.
+
+
+        Disponível no plano Pro. Sem token, aceita só `underlying=PETR4`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Ticker do ativo subjacente: ação, ETF, índice, `DOL` ou `WDO`.'
+          example: PETR4
+        required: true
+        name: underlying
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD. Veja os vencimentos em `/expirations`.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data do pregão, no formato YYYY-MM-DD. Padrão: último pregão disponível.'
+          example: '2026-06-01'
+        required: false
+        name: date
+        in: query
+      - schema:
+          type: string
+          enum:
+          - call
+          - put
+          description: Filtra por `call` ou `put`. Sem o filtro, retorna os dois.
+        required: false
+        name: side
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike mínimo.
+        required: false
+        name: minStrike
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Strike máximo.
+        required: false
+        name: maxStrike
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          description: 'Número máximo de séries na resposta. Padrão: todas as séries do filtro.'
+          example: 50
+        required: false
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: Análises retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionAnalyticsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/options/analytics/history:
+    get:
+      tags:
+      - Opções
+      operationId: getOptionAnalyticsHistory
+      summary: Histórico de gregas e IV
+      description: 'Retorna o histórico diário de volatilidade implícita e gregas de uma série de opção, identificada por `symbol` e `expirationDate`.
+
+
+        Use para ver como a IV reagiu a eventos, como balanço, decisão de juros ou o vencimento, e para testar estratégias com gregas.
+
+
+        Os campos seguem as regras de gregas e IV. Se o mesmo `symbol` aparece duas vezes no vencimento, passe também `strike`.
+
+
+        Disponível no plano Pro. Sem token, aceita só `symbol` com prefixo `PETR`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Código da série de opção.
+          example: PETRF783
+        required: true
+        name: symbol
+        in: query
+      - schema:
+          type: string
+          description: Data de vencimento da série, no formato YYYY-MM-DD.
+          example: '2026-12-18'
+        required: true
+        name: expirationDate
+        in: query
+      - schema:
+          type: number
+          nullable: true
+          description: Preço de exercício. Use quando o mesmo `symbol` aparece mais de uma vez no vencimento.
+          example: 7.29
+        required: false
+        name: strike
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial, no formato YYYY-MM-DD. Padrão: 12 meses atrás.'
+          example: '2026-05-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final, no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-06-01'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem por data: `asc` do mais antigo ao mais recente, `desc` do mais recente ao mais antigo.'
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico de análises retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionAnalyticsHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    OptionPositionsResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirationDate:
+          type: string
+        date:
+          type: string
+        positions:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionPositionSnapshot'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - date
+      - positions
+      - requestedAt
+      - took
+      example:
+        underlying: PETR4
+        expirationDate: '2026-12-18'
+        date: '2026-06-01'
+        positions:
+        - symbol: PETRF783
+          underlyingSymbol: PETR4
+          side: call
+          market: equity
+          optionStyle: european
+          strike: 7.29
+          allocationRoundLot: 100
+          expirationDate: '2026-12-18'
+          firstTradeDate: '2026-04-24'
+          lastTradeDate: '2026-06-01'
+          openInterest: 12500
+          openInterestChange: 350
+          openInterestDate: '2026-06-01'
+          reportDate: '2026-06-01'
+          isin: BRPETR4F1RM1
+          asset: PETR
+          expirationCode: null
+          segment: EQUITY CALL
+          reportedOpenInterest: null
+          reportedOpenInterestChange: null
+          distributionId: '228'
+          coveredQuantity: 0
+          blockedQuantity: 1200
+          uncoveredQuantity: 11300
+          totalPositionQuantity: 12500
+          borrowerQuantity: 1
+          lenderQuantity: 3
+          currentQuantity: null
+          forwardPrice: null
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 12
+    OptionPricePoint:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Data do pregão, em timestamp Unix (segundos).
+        open:
+          type: number
+          nullable: true
+          description: Preço de abertura.
+        high:
+          type: number
+          nullable: true
+          description: Preço máximo.
+        low:
+          type: number
+          nullable: true
+          description: Preço mínimo.
+        average:
+          type: number
+          nullable: true
+          description: Preço médio.
+        close:
+          type: number
+          nullable: true
+          description: Preço de fechamento.
+        referencePrice:
+          type: number
+          nullable: true
+          description: Preço de referência do pregão.
+        bid:
+          type: number
+          nullable: true
+          description: Melhor oferta de compra no fechamento.
+        ask:
+          type: number
+          nullable: true
+          description: Melhor oferta de venda no fechamento.
+        trades:
+          type: number
+          nullable: true
+          description: Número de negócios.
+        volume:
+          type: number
+          nullable: true
+          description: Número de contratos negociados.
+        financialVolume:
+          type: number
+          nullable: true
+          description: Volume financeiro, em reais.
+      required:
+      - date
+      - open
+      - high
+      - low
+      - average
+      - close
+      - referencePrice
+      - bid
+      - ask
+      - trades
+      - volume
+      - financialVolume
+    OptionAnalyticsResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+        expirationDate:
+          type: string
+        date:
+          type: string
+        analytics:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionAnalyticsSnapshot'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - date
+      - analytics
+      - requestedAt
+      - took
+      example:
+        underlying: PETR4
+        expirationDate: '2026-12-18'
+        date: '2026-05-29'
+        analytics:
+        - symbol: PETRF783
+          underlyingSymbol: PETR4
+          side: call
+          market: equity
+          optionStyle: european
+          strike: 7.29
+          allocationRoundLot: 100
+          expirationDate: '2026-12-18'
+          firstTradeDate: '2026-04-24'
+          lastTradeDate: '2026-06-01'
+          openInterest: 12500
+          openInterestChange: 350
+          openInterestDate: '2026-06-01'
+          date: '2026-05-29'
+          model: black-scholes-merton
+          priceSource: close
+          underlyingPrice: 42
+          optionPrice: 34.8
+          riskFreeRate: 0.145
+          dividendYield: 0
+          timeToExpirationYears: 0.057534248
+          impliedVolatility: 3.0155768
+          delta: 0.99739844
+          gamma: 0.0002648198
+          theta: -3.1521828
+          vega: 0.08104867
+          rho: 0.4079601
+          confidence: medium
+          nullReason: null
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 9
+    OptionSeriesWithHistory:
+      allOf:
+      - $ref: '#/components/schemas/OptionSeries'
+      - type: object
+        properties:
+          history:
+            type: array
+            items:
+              $ref: '#/components/schemas/OptionPricePoint'
+            description: Um ponto por pregão no intervalo pedido.
+        required:
+        - history
+      description: Dados da série e `history`, com um ponto por pregão no intervalo pedido.
+    OptionPositionSnapshot:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: PETRF783.'
+        underlyingSymbol:
+          type: string
+          nullable: true
+          description: 'Ativo subjacente da opção. Ex.: PETR4.'
+        side:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        market:
+          type: string
+          enum:
+          - equity
+          - index
+          - currency
+          description: 'Mercado da opção: `equity` para ação ou ETF, `index` para índice, `currency` para DOL e WDO.'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento. Nulo quando o cadastro da série não informa o estilo.'
+        strike:
+          type: number
+          nullable: true
+          description: Preço de exercício da opção.
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação. Em geral, 100 nas opções sobre ações.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        openInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na série, na última apuração até a data pedida.
+        openInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto desde a apuração anterior.
+        openInterestDate:
+          type: string
+          nullable: true
+          description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+        reportDate:
+          type: string
+          description: Data da apuração, no formato YYYY-MM-DD.
+        isin:
+          type: string
+          nullable: true
+          description: Código ISIN da série de opção, não do ativo objeto.
+        asset:
+          type: string
+          nullable: true
+          description: 'Código raiz do ativo objeto, sem o dígito da classe. Ex.: PETR.'
+        expirationCode:
+          type: string
+          nullable: true
+          description: Código de vencimento da apuração. Vem vazio nas opções sobre ações.
+        segment:
+          type: string
+          description: 'Segmento da apuração. Ex.: EQUITY CALL.'
+        reportedOpenInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na apuração do pregão. Vem vazio nas opções sobre ações. Use `openInterest`.
+        reportedOpenInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto na apuração do pregão. Vem vazia nas opções sobre ações. Use `openInterestChange`.
+        distributionId:
+          type: string
+          nullable: true
+          description: Número de distribuição do ativo objeto.
+        coveredQuantity:
+          type: number
+          nullable: true
+          description: Contratos em posição coberta.
+        blockedQuantity:
+          type: number
+          nullable: true
+          description: Contratos em posição bloqueada.
+        uncoveredQuantity:
+          type: number
+          nullable: true
+          description: Contratos em posição descoberta.
+        totalPositionQuantity:
+          type: number
+          nullable: true
+          description: Total de contratos em posição. É a origem de `openInterest` nas opções sobre ações.
+        borrowerQuantity:
+          type: number
+          nullable: true
+          description: Quantidade tomadora em empréstimo de ativos.
+        lenderQuantity:
+          type: number
+          nullable: true
+          description: Quantidade doadora em empréstimo de ativos.
+        currentQuantity:
+          type: number
+          nullable: true
+          description: Quantidade corrente. Preenchida só em alguns segmentos.
+        forwardPrice:
+          type: number
+          nullable: true
+          description: Preço a termo. Preenchido só em alguns segmentos.
+      required:
+      - symbol
+      - underlyingSymbol
+      - side
+      - market
+      - optionStyle
+      - strike
+      - allocationRoundLot
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - openInterest
+      - openInterestChange
+      - openInterestDate
+      - reportDate
+      - isin
+      - asset
+      - expirationCode
+      - segment
+      - reportedOpenInterest
+      - reportedOpenInterestChange
+      - distributionId
+      - coveredQuantity
+      - blockedQuantity
+      - uncoveredQuantity
+      - totalPositionQuantity
+      - borrowerQuantity
+      - lenderQuantity
+      - currentQuantity
+      - forwardPrice
+    OptionSeriesResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+          description: Ativo subjacente consultado, em maiúsculas.
+        expirationDate:
+          type: string
+          description: Vencimento consultado, no formato YYYY-MM-DD.
+        date:
+          type: string
+          description: Último pregão com dados até a data pedida, no formato YYYY-MM-DD.
+        tradedOnly:
+          type: boolean
+          enum:
+          - true
+          description: 'Sempre `true`: a lista traz só séries com cotação nos 10 dias até `date`.'
+        series:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionSeriesSnapshot'
+          description: Séries do vencimento. Cada uma traz a cotação do seu último pregão até `date`.
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - date
+      - tradedOnly
+      - series
+      - requestedAt
+      - took
+      example:
+        underlying: PETR4
+        expirationDate: '2026-12-18'
+        date: '2026-06-01'
+        tradedOnly: true
+        series:
+        - symbol: PETRF783
+          underlyingSymbol: PETR4
+          side: call
+          market: equity
+          optionStyle: european
+          strike: 7.29
+          allocationRoundLot: 100
+          expirationDate: '2026-12-18'
+          firstTradeDate: '2026-04-24'
+          lastTradeDate: '2026-06-01'
+          openInterest: 12500
+          openInterestChange: 350
+          openInterestDate: '2026-06-01'
+          date: 1780282800
+          open: 35.15
+          high: 35.15
+          low: 35.15
+          average: 35.15
+          close: 35.15
+          referencePrice: null
+          bid: 0
+          ask: 0
+          trades: 1
+          volume: 500
+          financialVolume: 17575
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 7
+    OptionHistoricalResponse:
+      type: object
+      properties:
+        option:
+          $ref: '#/components/schemas/OptionSeriesWithHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - option
+      - requestedAt
+      - took
+      example:
+        option:
+          symbol: PETRF783
+          underlyingSymbol: PETR4
+          side: call
+          market: equity
+          optionStyle: european
+          strike: 7.29
+          allocationRoundLot: 100
+          expirationDate: '2026-12-18'
+          firstTradeDate: '2026-04-24'
+          lastTradeDate: '2026-06-01'
+          history:
+          - date: 1780282800
+            open: 35.15
+            high: 35.15
+            low: 35.15
+            average: 35.15
+            close: 35.15
+            referencePrice: null
+            bid: 0
+            ask: 0
+            trades: 1
+            volume: 500
+            financialVolume: 17575
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 8
+    OptionStrikesResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+          description: Ativo subjacente consultado, em maiúsculas.
+        expirationDate:
+          type: string
+          description: Vencimento consultado, no formato YYYY-MM-DD.
+        side:
+          type: string
+          nullable: true
+          enum:
+          - call
+          - put
+          description: 'Lado filtrado: `call`, `put` ou `null` sem filtro.'
+        tradedOnly:
+          type: boolean
+          enum:
+          - true
+          description: 'Sempre `true`: os strikes vêm das séries negociadas.'
+        strikes:
+          type: array
+          items:
+            type: number
+          description: Preços de exercício em ordem crescente.
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - expirationDate
+      - side
+      - tradedOnly
+      - strikes
+      - requestedAt
+      - took
+      example:
+        underlying: PETR4
+        expirationDate: '2026-12-18'
+        side: call
+        tradedOnly: true
+        strikes:
+        - 1.19
+        - 7.29
+        - 9.29
+        - 10.69
+        - 13.44
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 4
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    OptionSeries:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: PETRF783.'
+        underlyingSymbol:
+          type: string
+          nullable: true
+          description: 'Ativo subjacente da opção. Ex.: PETR4.'
+        side:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        market:
+          type: string
+          enum:
+          - equity
+          - index
+          - currency
+          description: 'Mercado da opção: `equity` para ação ou ETF, `index` para índice, `currency` para DOL e WDO.'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento. Nulo quando o cadastro da série não informa o estilo.'
+        strike:
+          type: number
+          nullable: true
+          description: Preço de exercício da opção.
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação. Em geral, 100 nas opções sobre ações.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+      required:
+      - symbol
+      - underlyingSymbol
+      - side
+      - market
+      - optionStyle
+      - strike
+      - allocationRoundLot
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+    OptionPositionsHistoryResponse:
+      type: object
+      properties:
+        option:
+          $ref: '#/components/schemas/OptionPositionHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - option
+      - requestedAt
+      - took
+      example:
+        option:
+          symbol: PETRF783
+          underlyingSymbol: PETR4
+          side: call
+          market: equity
+          optionStyle: european
+          strike: 7.29
+          allocationRoundLot: 100
+          expirationDate: '2026-12-18'
+          firstTradeDate: '2026-04-24'
+          lastTradeDate: '2026-06-01'
+          positions:
+          - openInterest: 12500
+            openInterestChange: 350
+            openInterestDate: '2026-06-01'
+            reportDate: '2026-06-01'
+            isin: BRPETR4F1RM1
+            asset: PETR
+            expirationCode: null
+            segment: EQUITY CALL
+            reportedOpenInterest: null
+            reportedOpenInterestChange: null
+            distributionId: '228'
+            coveredQuantity: 0
+            blockedQuantity: 1200
+            uncoveredQuantity: 11300
+            totalPositionQuantity: 12500
+            borrowerQuantity: 1
+            lenderQuantity: 3
+            currentQuantity: null
+            forwardPrice: null
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 11
+    OptionExpirationsResponse:
+      type: object
+      properties:
+        underlying:
+          type: string
+          description: Ativo subjacente consultado, em maiúsculas.
+        tradedOnly:
+          type: boolean
+          enum:
+          - true
+          description: 'Sempre `true`: a lista vem das séries negociadas.'
+        expirations:
+          type: array
+          items:
+            type: string
+          description: Datas de vencimento em ordem crescente, no formato YYYY-MM-DD.
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - underlying
+      - tradedOnly
+      - expirations
+      - requestedAt
+      - took
+      example:
+        underlying: PETR4
+        tradedOnly: true
+        expirations:
+        - '2026-12-04'
+        - '2026-12-11'
+        - '2026-12-18'
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 4
+    OptionAnalyticsSnapshot:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: PETRF783.'
+        underlyingSymbol:
+          type: string
+          nullable: true
+          description: 'Ativo subjacente da opção. Ex.: PETR4.'
+        side:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        market:
+          type: string
+          enum:
+          - equity
+          - index
+          - currency
+          description: 'Mercado da opção: `equity` para ação ou ETF, `index` para índice, `currency` para DOL e WDO.'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento. Nulo quando o cadastro da série não informa o estilo.'
+        strike:
+          type: number
+          nullable: true
+          description: Preço de exercício da opção.
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação. Em geral, 100 nas opções sobre ações.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        date:
+          type: string
+          description: Data do pregão, no formato YYYY-MM-DD.
+        model:
+          type: string
+          enum:
+          - black-scholes-merton
+          - barone-adesi-whaley
+          - cox-ross-rubinstein
+          - unsupported
+          description: Modelo de cálculo. Séries americanas usam árvore binomial (`cox-ross-rubinstein`). Séries europeias usam `black-scholes-merton`. `unsupported` quando o estilo da opção é desconhecido.
+        priceSource:
+          type: string
+          enum:
+          - close
+          - referencePrice
+          - none
+          description: Preço usado para calcular a IV. Aqui é sempre `close` ou `none`. Sem negócio no dia, não há cálculo.
+        underlyingPrice:
+          type: number
+          nullable: true
+          description: Preço do ativo subjacente usado no cálculo.
+        optionPrice:
+          type: number
+          nullable: true
+          description: Preço da opção usado para calcular a volatilidade implícita.
+        riskFreeRate:
+          type: number
+          nullable: true
+          description: 'Taxa livre de risco anual, em decimal. Ex.: 0.105 para 10,5%.'
+        dividendYield:
+          type: number
+          nullable: true
+          description: Yield contínuo dos dividendos anunciados até a data do cálculo. `0` sem dividendo anunciado. Não inclui estimativas.
+        timeToExpirationYears:
+          type: number
+          nullable: true
+          description: Dias corridos até o vencimento divididos por 365, inclusive em anos bissextos.
+        impliedVolatility:
+          type: number
+          nullable: true
+          description: Volatilidade implícita anual, em decimal. O cálculo usa tempo em dias corridos dividido por 365.
+        delta:
+          type: number
+          nullable: true
+          description: Variação do prêmio para 1 unidade de variação no ativo subjacente.
+        gamma:
+          type: number
+          nullable: true
+          description: Variação do delta para 1 unidade de variação no ativo subjacente.
+        theta:
+          type: number
+          nullable: true
+          description: Variação do prêmio com a passagem do tempo, por ano.
+        vega:
+          type: number
+          nullable: true
+          description: Variação do prêmio para 1,00 de variação na volatilidade. Divida por 100 para 1 ponto percentual.
+        rho:
+          type: number
+          nullable: true
+          description: Variação do prêmio para 1,00 de variação na taxa de juro. Divida por 100 para 1 ponto percentual.
+        confidence:
+          type: string
+          enum:
+          - high
+          - medium
+          - low
+          - none
+          description: Confiança do cálculo. `none` indica IV e gregas nulas, com o motivo em `nullReason`.
+        nullReason:
+          type: string
+          nullable: true
+          description: 'Motivo dos campos calculados nulos. Ex.: `no_trades`, `missing_underlying_price`, `iv_not_converged`.'
+        openInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na série, na última apuração até a data pedida.
+        openInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto desde a apuração anterior.
+        openInterestDate:
+          type: string
+          nullable: true
+          description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+      required:
+      - symbol
+      - underlyingSymbol
+      - side
+      - market
+      - optionStyle
+      - strike
+      - allocationRoundLot
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - date
+      - model
+      - priceSource
+      - underlyingPrice
+      - optionPrice
+      - riskFreeRate
+      - dividendYield
+      - timeToExpirationYears
+      - impliedVolatility
+      - delta
+      - gamma
+      - theta
+      - vega
+      - rho
+      - confidence
+      - nullReason
+      - openInterest
+      - openInterestChange
+      - openInterestDate
+    OptionPositionHistory:
+      allOf:
+      - $ref: '#/components/schemas/OptionSeries'
+      - type: object
+        properties:
+          positions:
+            type: array
+            items:
+              type: object
+              properties:
+                openInterest:
+                  type: number
+                  nullable: true
+                  description: Contratos em aberto na série, na última apuração até a data pedida.
+                openInterestChange:
+                  type: number
+                  nullable: true
+                  description: Variação de contratos em aberto desde a apuração anterior.
+                openInterestDate:
+                  type: string
+                  nullable: true
+                  description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+                reportDate:
+                  type: string
+                  description: Data da apuração, no formato YYYY-MM-DD.
+                isin:
+                  type: string
+                  nullable: true
+                  description: Código ISIN da série de opção, não do ativo objeto.
+                asset:
+                  type: string
+                  nullable: true
+                  description: 'Código raiz do ativo objeto, sem o dígito da classe. Ex.: PETR.'
+                expirationCode:
+                  type: string
+                  nullable: true
+                  description: Código de vencimento da apuração. Vem vazio nas opções sobre ações.
+                segment:
+                  type: string
+                  description: 'Segmento da apuração. Ex.: EQUITY CALL.'
+                reportedOpenInterest:
+                  type: number
+                  nullable: true
+                  description: Contratos em aberto na apuração do pregão. Vem vazio nas opções sobre ações. Use `openInterest`.
+                reportedOpenInterestChange:
+                  type: number
+                  nullable: true
+                  description: Variação de contratos em aberto na apuração do pregão. Vem vazia nas opções sobre ações. Use `openInterestChange`.
+                distributionId:
+                  type: string
+                  nullable: true
+                  description: Número de distribuição do ativo objeto.
+                coveredQuantity:
+                  type: number
+                  nullable: true
+                  description: Contratos em posição coberta.
+                blockedQuantity:
+                  type: number
+                  nullable: true
+                  description: Contratos em posição bloqueada.
+                uncoveredQuantity:
+                  type: number
+                  nullable: true
+                  description: Contratos em posição descoberta.
+                totalPositionQuantity:
+                  type: number
+                  nullable: true
+                  description: Total de contratos em posição. É a origem de `openInterest` nas opções sobre ações.
+                borrowerQuantity:
+                  type: number
+                  nullable: true
+                  description: Quantidade tomadora em empréstimo de ativos.
+                lenderQuantity:
+                  type: number
+                  nullable: true
+                  description: Quantidade doadora em empréstimo de ativos.
+                currentQuantity:
+                  type: number
+                  nullable: true
+                  description: Quantidade corrente. Preenchida só em alguns segmentos.
+                forwardPrice:
+                  type: number
+                  nullable: true
+                  description: Preço a termo. Preenchido só em alguns segmentos.
+              required:
+              - openInterest
+              - openInterestChange
+              - openInterestDate
+              - reportDate
+              - isin
+              - asset
+              - expirationCode
+              - segment
+              - reportedOpenInterest
+              - reportedOpenInterestChange
+              - distributionId
+              - coveredQuantity
+              - blockedQuantity
+              - uncoveredQuantity
+              - totalPositionQuantity
+              - borrowerQuantity
+              - lenderQuantity
+              - currentQuantity
+              - forwardPrice
+        required:
+        - positions
+    OptionSeriesWithAnalyticsHistory:
+      allOf:
+      - $ref: '#/components/schemas/OptionSeries'
+      - type: object
+        properties:
+          analytics:
+            type: array
+            items:
+              type: object
+              properties:
+                date:
+                  type: string
+                  description: Data do pregão, no formato YYYY-MM-DD.
+                model:
+                  type: string
+                  enum:
+                  - black-scholes-merton
+                  - barone-adesi-whaley
+                  - cox-ross-rubinstein
+                  - unsupported
+                  description: Modelo de cálculo. Séries americanas usam árvore binomial (`cox-ross-rubinstein`). Séries europeias usam `black-scholes-merton`. `unsupported` quando o estilo da opção é desconhecido.
+                priceSource:
+                  type: string
+                  enum:
+                  - close
+                  - referencePrice
+                  - none
+                  description: Preço usado para calcular a IV. Aqui é sempre `close` ou `none`. Sem negócio no dia, não há cálculo.
+                underlyingPrice:
+                  type: number
+                  nullable: true
+                  description: Preço do ativo subjacente usado no cálculo.
+                optionPrice:
+                  type: number
+                  nullable: true
+                  description: Preço da opção usado para calcular a volatilidade implícita.
+                riskFreeRate:
+                  type: number
+                  nullable: true
+                  description: 'Taxa livre de risco anual, em decimal. Ex.: 0.105 para 10,5%.'
+                dividendYield:
+                  type: number
+                  nullable: true
+                  description: Yield contínuo dos dividendos anunciados até a data do cálculo. `0` sem dividendo anunciado. Não inclui estimativas.
+                timeToExpirationYears:
+                  type: number
+                  nullable: true
+                  description: Dias corridos até o vencimento divididos por 365, inclusive em anos bissextos.
+                impliedVolatility:
+                  type: number
+                  nullable: true
+                  description: Volatilidade implícita anual, em decimal. O cálculo usa tempo em dias corridos dividido por 365.
+                delta:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio para 1 unidade de variação no ativo subjacente.
+                gamma:
+                  type: number
+                  nullable: true
+                  description: Variação do delta para 1 unidade de variação no ativo subjacente.
+                theta:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio com a passagem do tempo, por ano.
+                vega:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio para 1,00 de variação na volatilidade. Divida por 100 para 1 ponto percentual.
+                rho:
+                  type: number
+                  nullable: true
+                  description: Variação do prêmio para 1,00 de variação na taxa de juro. Divida por 100 para 1 ponto percentual.
+                confidence:
+                  type: string
+                  enum:
+                  - high
+                  - medium
+                  - low
+                  - none
+                  description: Confiança do cálculo. `none` indica IV e gregas nulas, com o motivo em `nullReason`.
+                nullReason:
+                  type: string
+                  nullable: true
+                  description: 'Motivo dos campos calculados nulos. Ex.: `no_trades`, `missing_underlying_price`, `iv_not_converged`.'
+                openInterest:
+                  type: number
+                  nullable: true
+                  description: Contratos em aberto na série, na última apuração até a data pedida.
+                openInterestChange:
+                  type: number
+                  nullable: true
+                  description: Variação de contratos em aberto desde a apuração anterior.
+                openInterestDate:
+                  type: string
+                  nullable: true
+                  description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+              required:
+              - date
+              - model
+              - priceSource
+              - underlyingPrice
+              - optionPrice
+              - riskFreeRate
+              - dividendYield
+              - timeToExpirationYears
+              - impliedVolatility
+              - delta
+              - gamma
+              - theta
+              - vega
+              - rho
+              - confidence
+              - nullReason
+              - openInterest
+              - openInterestChange
+              - openInterestDate
+            description: Um ponto de IV e gregas por pregão no intervalo pedido.
+        required:
+        - analytics
+    OptionSeriesSnapshot:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código da série de opção. Ex.: PETRF783.'
+        underlyingSymbol:
+          type: string
+          nullable: true
+          description: 'Ativo subjacente da opção. Ex.: PETR4.'
+        side:
+          type: string
+          enum:
+          - call
+          - put
+          description: '`call` (opção de compra) ou `put` (opção de venda).'
+        market:
+          type: string
+          enum:
+          - equity
+          - index
+          - currency
+          description: 'Mercado da opção: `equity` para ação ou ETF, `index` para índice, `currency` para DOL e WDO.'
+        optionStyle:
+          type: string
+          nullable: true
+          enum:
+          - american
+          - european
+          description: '`american` permite exercício até o vencimento. `european` permite exercício só no vencimento. Nulo quando o cadastro da série não informa o estilo.'
+        strike:
+          type: number
+          nullable: true
+          description: Preço de exercício da opção.
+        allocationRoundLot:
+          type: integer
+          nullable: true
+          description: Lote padrão de negociação. Em geral, 100 nas opções sobre ações.
+        expirationDate:
+          type: string
+          description: Data de vencimento, no formato YYYY-MM-DD.
+        firstTradeDate:
+          type: string
+          description: Data do primeiro pregão da série, no formato YYYY-MM-DD.
+        lastTradeDate:
+          type: string
+          description: Data do último pregão da série, no formato YYYY-MM-DD.
+        date:
+          type: integer
+          description: Data do pregão, em timestamp Unix (segundos).
+        open:
+          type: number
+          nullable: true
+          description: Preço de abertura.
+        high:
+          type: number
+          nullable: true
+          description: Preço máximo.
+        low:
+          type: number
+          nullable: true
+          description: Preço mínimo.
+        average:
+          type: number
+          nullable: true
+          description: Preço médio.
+        close:
+          type: number
+          nullable: true
+          description: Preço de fechamento.
+        referencePrice:
+          type: number
+          nullable: true
+          description: Preço de referência do pregão.
+        bid:
+          type: number
+          nullable: true
+          description: Melhor oferta de compra no fechamento.
+        ask:
+          type: number
+          nullable: true
+          description: Melhor oferta de venda no fechamento.
+        trades:
+          type: number
+          nullable: true
+          description: Número de negócios.
+        volume:
+          type: number
+          nullable: true
+          description: Número de contratos negociados.
+        financialVolume:
+          type: number
+          nullable: true
+          description: Volume financeiro, em reais.
+        openInterest:
+          type: number
+          nullable: true
+          description: Contratos em aberto na série, na última apuração até a data pedida.
+        openInterestChange:
+          type: number
+          nullable: true
+          description: Variação de contratos em aberto desde a apuração anterior.
+        openInterestDate:
+          type: string
+          nullable: true
+          description: Data da apuração usada, no formato YYYY-MM-DD. Pode ser anterior à data do pregão.
+      required:
+      - symbol
+      - underlyingSymbol
+      - side
+      - market
+      - optionStyle
+      - strike
+      - allocationRoundLot
+      - expirationDate
+      - firstTradeDate
+      - lastTradeDate
+      - date
+      - open
+      - high
+      - low
+      - average
+      - close
+      - referencePrice
+      - bid
+      - ask
+      - trades
+      - volume
+      - financialVolume
+      - openInterest
+      - openInterestChange
+      - openInterestDate
+    OptionAnalyticsHistoryResponse:
+      type: object
+      properties:
+        option:
+          $ref: '#/components/schemas/OptionSeriesWithAnalyticsHistory'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - option
+      - requestedAt
+      - took
+      example:
+        option:
+          symbol: PETRF783
+          underlyingSymbol: PETR4
+          side: call
+          market: equity
+          optionStyle: european
+          strike: 7.29
+          allocationRoundLot: 100
+          expirationDate: '2026-12-18'
+          firstTradeDate: '2026-04-24'
+          lastTradeDate: '2026-06-01'
+          analytics:
+          - date: '2026-05-29'
+            model: black-scholes-merton
+            priceSource: close
+            underlyingPrice: 42
+            optionPrice: 34.8
+            riskFreeRate: 0.145
+            dividendYield: 0
+            timeToExpirationYears: 0.057534248
+            impliedVolatility: 3.0155768
+            delta: 0.99739844
+            gamma: 0.0002648198
+            theta: -3.1521828
+            vega: 0.08104867
+            rho: 0.4079601
+            confidence: medium
+            nullReason: null
+            openInterest: 12500
+            openInterestChange: 350
+            openInterestDate: '2026-06-01'
+        requestedAt: '2026-06-02T12:00:00.000Z'
+        took: 10
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

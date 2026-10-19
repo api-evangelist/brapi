@@ -1,13 +1,248 @@
 openapi: 3.2.0
 info:
-  title: brapi Criptomoedas API
-  version: 1.0.0
-  description: brapi.dev Brazilian financial data REST API aggregating public market data from B3, CVM and Banco Central. Provides stock quotes, real estate funds, options, cryptocurrencies, currencies, inflation, and SELIC rate data.
+  title: Brapi Criptomoedas API
+  x-refined-note:
+  - x-brapi-versioning differs across the merged source definitions and was not carried
+  version: '1.0'
+  description: 'Operations tagged Criptomoedas across 2 of this provider''s published API definitions: brapi-openapi.json, brapi-openapi.yml. Each path carries the servers of the definition it was published in.'
 servers:
 - url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
 tags:
 - name: Criptomoedas
+  description: Obtenha cotações em tempo real e dados históricos de criptomoedas, disponíveis em diversas moedas de referência.
 paths:
+  /api/v2/crypto:
+    get:
+      tags:
+      - Criptomoedas
+      operationId: getCrypto
+      summary: Cotação de criptomoedas
+      description: 'Cotação de uma ou mais criptomoedas, com preço, variação, máxima, mínima e
+
+        volume de 24 horas. O preço vem na moeda de `currency`, com BRL como padrão.
+
+
+        Use para mostrar preços de cripto, montar carteiras e gerar gráficos.
+
+
+        Peça várias moedas em `coin`, como `coin=BTC,ETH,SOL`. Para o histórico,
+
+        passe `range` ou `interval`, como `range=1mo&interval=1d`. A resposta
+
+        traz os pontos em `historicalDataPrice` e o período aplicado em
+
+        `usedRange` e `usedInterval`. Intervalos curtos limitam o período.
+
+
+        O histórico diário aceita `startDate` e `endDate` no formato YYYY-MM-DD,
+
+        com `interval=1d` ou sem intervalo. Use datas sem `range`.
+
+        Sem data inicial, o período é de 30 dias até a data final.
+
+        As datas são inclusivas. `usedRange` vem como `custom` em consultas por data.
+
+        `range=max&interval=1d` retorna todos os dias disponíveis, sem limite de
+
+        1.000 pontos. O histórico diário inclui somente dias completos em UTC.
+
+        A primeira data depende da criptomoeda. Se a cotação atual estiver
+
+        indisponível, os campos de cotação usam o último dia completo disponível.
+
+        Nesse caso, a variação e o volume também correspondem a esse dia em UTC.
+
+        Confira a data em `regularMarketTime`.
+
+
+        Cripto negocia 24 horas por dia. A variação é uma janela móvel de 24 horas.
+
+        O histórico usa o câmbio diário da data de fechamento em UTC. Em dias sem
+
+        cotação de câmbio, usa a última cotação disponível até essa data. Todos os
+
+        preços de um ponto usam esse câmbio. Moedas vinculadas ao dólar usam
+
+        paridade de 1:1 com USD. A conversão histórica aceita BRL, USD, EUR, GBP,
+
+        JPY, CHF, CAD, AUD, DKK, NOK e SEK. Sem câmbio histórico disponível, os
+
+        preços do ponto vêm como `null`. O campo `currencyRateFromUSD` informa
+
+        o câmbio atual, não o câmbio de cada ponto histórico.
+
+        `marketCap` vem sempre como 0.
+
+
+        Uma sigla indisponível retorna 400, inclusive em chamadas com várias siglas. Uma cotação ausente ou inválida retorna 503.
+
+
+        Veja as siglas em listar criptomoedas.
+
+        Planos Startup e Pro. Os períodos e intervalos aceitos dependem do plano.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Siglas das criptomoedas, separadas por vírgula. Ex.: BTC,ETH.'
+          example: BTC,ETH
+        required: false
+        name: coin
+        in: query
+      - schema:
+          type: string
+          description: 'Moeda da cotação, como BRL, USD ou EUR. Padrão: BRL.'
+          example: BRL
+        required: false
+        name: currency
+        in: query
+      - schema:
+          type: string
+          description: Data inicial do histórico diário no formato YYYY-MM-DD. Use sem range.
+          example: '2020-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final inclusiva do histórico diário no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-10-04'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: 'Período do histórico, como 5d, 1mo ou 1y. Padrão: 1mo quando há histórico.'
+        required: false
+        name: range
+        in: query
+      - schema:
+          type: string
+          description: 'Intervalo entre os pontos do histórico, como 1h ou 1d. Padrão: 1d.'
+        required: false
+        name: interval
+        in: query
+      responses:
+        '200':
+          description: Cotações das criptomoedas solicitadas na moeda especificada retornadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CryptoResponseSimple'
+        '400':
+          description: '**Requisição Inválida.** Parâmetro `coin` não fornecido ou inválido.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: '**Não Autorizado.** Token de autenticação não fornecido ou inválido.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: '**Acesso Proibido.** Seu plano não tem acesso ao módulo de criptomoedas.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: '**Erro Interno.** Erro interno ao processar a requisição.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: '**Serviço Indisponível.** Cotação ausente, inválida ou serviço temporariamente indisponível.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+    servers:
+    - url: https://brapi.dev
+      description: Servidor principal da API brapi
+    - url: http://localhost:3001
+      description: Servidor local para desenvolvimento
+  /api/v2/crypto/available:
+    get:
+      tags:
+      - Criptomoedas
+      operationId: getCryptoAvailable
+      summary: Listar criptomoedas
+      description: 'Lista as siglas de criptomoedas que a
+
+        cotação de criptomoedas aceita.
+
+
+        Use para montar seletores e validar siglas antes da chamada.
+
+
+        `coins` é uma lista de siglas. Passe cada sigla no parâmetro `coin` da
+
+        cotação. Filtre com `search`. Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Texto buscado na sigla da criptomoeda.
+          example: BTC
+        required: false
+        name: search
+        in: query
+      responses:
+        '200':
+          description: Lista de símbolos de criptomoedas disponíveis retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CryptoAvailableResponse'
+    servers:
+    - url: https://brapi.dev
+      description: Servidor principal da API brapi
+    - url: http://localhost:3001
+      description: Servidor local para desenvolvimento
   /api/criptomoedas:
     get:
       summary: Cryptocurrency quotations
@@ -22,6 +257,8 @@ paths:
       - Criptomoedas
       operationId: getApiCriptomoedas
       x-operation-id-source: derived
+    servers:
+    - url: https://brapi.dev
   /api/criptomoedas/available:
     get:
       summary: List cryptocurrencies
@@ -36,10 +273,194 @@ paths:
       - Criptomoedas
       operationId: getApiCriptomoedasAvailable
       x-operation-id-source: derived
+    servers:
+    - url: https://brapi.dev
 components:
   schemas:
+    CryptoCoinSimple:
+      type: object
+      properties:
+        currency:
+          type: string
+        currencyRateFromUSD:
+          type: number
+        coinName:
+          type: string
+        coinImageUrl:
+          type: string
+        coin:
+          type: string
+        regularMarketChange:
+          type: number
+        regularMarketPrice:
+          type: number
+        regularMarketChangePercent:
+          type: number
+        regularMarketDayLow:
+          type: number
+        regularMarketDayHigh:
+          type: number
+        regularMarketDayRange:
+          type: string
+        regularMarketVolume:
+          type: number
+        marketCap:
+          type: number
+        regularMarketTime:
+          type: string
+        usedInterval:
+          type: string
+        usedRange:
+          type: string
+        historicalDataPrice:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: integer
+              open:
+                type: number
+                nullable: true
+              high:
+                type: number
+                nullable: true
+              low:
+                type: number
+                nullable: true
+              close:
+                type: number
+                nullable: true
+              volume:
+                type: number
+                nullable: true
+              adjustedClose:
+                type: number
+                nullable: true
+            required:
+            - date
+            - open
+            - high
+            - low
+            - close
+            - volume
+            - adjustedClose
+        validRanges:
+          type: array
+          items:
+            type: string
+        validIntervals:
+          type: array
+          items:
+            type: string
+      required:
+      - currency
+      - currencyRateFromUSD
+      - coinName
+      - coin
+      - regularMarketChange
+      - regularMarketPrice
+      - regularMarketChangePercent
+      - regularMarketDayLow
+      - regularMarketDayHigh
+      - regularMarketDayRange
+      - regularMarketVolume
+      - marketCap
+      - regularMarketTime
+    CryptoAvailableResponse:
+      type: object
+      properties:
+        coins:
+          type: array
+          items:
+            type: string
+      required:
+      - coins
+      example:
+        coins:
+        - BTC
+        - ETH
+        - ADA
+        - BNB
+        - USDT
+        - XRP
+        - DOGE
+        - SOL
+        - USDC
+        - DOT1
+        - UNI3
+        - BCH
+        - LTC
+        - LINK
+        - MATIC
+        - AVAX
+    CryptoResponseSimple:
+      type: object
+      properties:
+        coins:
+          type: array
+          items:
+            $ref: '#/components/schemas/CryptoCoinSimple'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - coins
+      - requestedAt
+      - took
+      example:
+        coins:
+        - currency: BRL
+          currencyRateFromUSD: 5.2159
+          coinName: Bitcoin
+          coinImageUrl: https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/svg/color/btc.svg
+          coin: BTC
+          regularMarketChange: 9553.84
+          regularMarketPrice: 371028.28
+          regularMarketChangePercent: 2.64
+          regularMarketDayLow: 359613.69
+          regularMarketDayHigh: 372616.12
+          regularMarketDayRange: 359613.69 - 372616.12
+          regularMarketVolume: 199263021357.47
+          marketCap: 0
+          regularMarketTime: '2026-02-08T16:24:00.000Z'
+        requestedAt: '2026-02-08T16:26:22.155Z'
+        took: 350
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
     GenericResponse:
       type: object
       additionalProperties: true
-x-generated-from: https://brapi.dev/docs
-x-generated-by: claude-crawl-2026-05-08
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard
+x-refined-from:
+- brapi-openapi.json
+- brapi-openapi.yml

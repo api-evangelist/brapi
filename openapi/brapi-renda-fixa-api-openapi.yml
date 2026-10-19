@@ -1,0 +1,869 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Renda Fixa API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Renda Fixa
+  description: Consulte dados de títulos públicos e outros instrumentos de renda fixa brasileira.
+paths:
+  /api/v2/treasury/list:
+    get:
+      tags:
+      - Renda Fixa
+      operationId: listTreasury
+      summary: Lista de títulos do Tesouro Direto
+      description: 'Títulos do Tesouro Direto da data-base mais recente, com taxa e preço
+
+        indicativos de compra e venda. Filtre por indexador, tipo de cupom ou nome.
+
+
+        Use para achar o `symbol` de cada título, montar uma tabela de títulos ou
+
+        comparar taxas entre vencimentos.
+
+
+        Cada item traz `rateInfo`, que diz como ler `buyRate` e `sellRate`
+
+        para aquele indexador.
+
+
+        Plano Pro. Sem token, `search` precisa ser um destes códigos:
+
+        `tesouro-selic-01032031`, `tesouro-prefixado-com-juros-semestrais-01012037`
+
+        ou `tesouro-ipca-com-juros-semestrais-15082060`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: 'Busca por parte do código ou do nome do título. Ex.: tesouro-selic-01032031.'
+          example: tesouro-selic-01032031
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          enum:
+          - selic
+          - prefixado
+          - ipca
+          - igpm
+          description: Indexador do título.
+          example: selic
+        required: false
+        name: indexer
+        in: query
+      - schema:
+          type: string
+          enum:
+          - zero
+          - semestral
+          description: Tipo de cupom do título.
+          example: zero
+        required: false
+        name: couponType
+        in: query
+      - schema:
+          type: string
+          enum:
+          - symbol
+          - bondType
+          - maturityDate
+          - durationDays
+          - baseDate
+          - buyRate
+          - sellRate
+          - buyPrice
+          - sellPrice
+          - basePrice
+          default: maturityDate
+          description: Campo usado na ordenação.
+          example: maturityDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: asc
+          description: Direção da ordenação.
+          example: asc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Lista paginada de títulos do Tesouro Direto
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreasuryListResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Serviço temporariamente indisponível. Tente de novo em alguns minutos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/treasury/indicators:
+    get:
+      tags:
+      - Renda Fixa
+      operationId: getTreasuryIndicators
+      summary: Taxas do Tesouro Direto
+      description: 'Taxa e preço indicativos mais recentes de até 20 títulos do Tesouro Direto,
+
+        com vencimento, indexador, tipo de cupom e dias até o vencimento.
+
+
+        Use para mostrar a taxa do dia de um título, calcular o valor de uma posição ou
+
+        avisar quando a taxa passa de um limite.
+
+
+        As taxas vêm em % a.a., mas o sentido muda por indexador. No Tesouro Selic, são
+
+        o spread sobre a Selic. No Prefixado, a taxa nominal. No IPCA+ e no IGP-M, a
+
+        taxa real acima da inflação. Leia `rateInfo` antes de formatar o número.
+
+
+        Código desconhecido não gera erro. Ele fica fora de `results`.
+
+
+        Plano Pro. Sem token, todos os `symbols` precisam estar entre os três
+
+        títulos liberados, listados em Tesouro Direto.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Códigos dos títulos separados por vírgula, até 20. Ex.: tesouro-selic-01032031,tesouro-ipca-15052035.'
+          example: tesouro-selic-01032031,tesouro-ipca-15052035
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Indicadores atuais retornados com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreasuryIndicatorsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Serviço temporariamente indisponível. Tente de novo em alguns minutos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/treasury/indicators/history:
+    get:
+      tags:
+      - Renda Fixa
+      operationId: getTreasuryIndicatorsHistory
+      summary: Histórico do Tesouro Direto
+      description: 'Série diária de taxas e preços indicativos de até 20 títulos do Tesouro Direto,
+
+        com uma série por `symbol`.
+
+
+        Use para gráficos de taxa, estudo de marcação a mercado ou backtests de renda
+
+        fixa.
+
+
+        Sem `startDate`, a série começa 12 meses antes de hoje. Sem `endDate`,
+
+        termina hoje. O preço de um título prefixado sobe quando a taxa cai. Quem vende
+
+        antes do vencimento recebe esse preço.
+
+
+        Cada série traz `rateInfo`, que diz como ler `buyRate` e `sellRate`.
+
+        Título sem dados no período fica fora de `results`.
+
+
+        Plano Pro. Sem token, todos os `symbols` precisam estar entre os três
+
+        títulos liberados, listados em Tesouro Direto.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Códigos dos títulos separados por vírgula, até 20. Ex.: tesouro-selic-01032031,tesouro-ipca-15052035.'
+          example: tesouro-selic-01032031,tesouro-ipca-15052035
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial no formato YYYY-MM-DD. Padrão: 12 meses antes de hoje.'
+          example: '2025-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final no formato YYYY-MM-DD. Padrão: hoje.'
+          example: '2026-05-15'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - baseDate
+          - buyRate
+          - sellRate
+          - buyPrice
+          - sellPrice
+          - basePrice
+          default: baseDate
+          description: Campo usado na ordenação da série.
+          example: baseDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Direção da ordenação.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico diário retornado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TreasuryIndicatorsHistoryResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Serviço temporariamente indisponível. Tente de novo em alguns minutos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+components:
+  schemas:
+    TreasuryIndicatorsResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreasuryListItem'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+    TreasuryHistoryPoint:
+      type: object
+      properties:
+        baseDate:
+          type: string
+          description: Data da taxa e do preço, no formato YYYY-MM-DD.
+          example: '2026-05-15'
+        buyRate:
+          type: number
+          nullable: true
+          description: Taxa indicativa de compra, em % a.a. O sentido muda por indexador. Veja `rateInfo`.
+          example: 0.08
+        sellRate:
+          type: number
+          nullable: true
+          description: Taxa indicativa de venda, em % a.a. O sentido muda por indexador. Veja `rateInfo`.
+          example: 0.09
+        buyPrice:
+          type: number
+          nullable: true
+          description: Preço unitário indicativo de compra, em reais.
+          example: 18944.78
+        sellPrice:
+          type: number
+          nullable: true
+          description: Preço unitário indicativo de venda, em reais.
+          example: 18925.53
+        basePrice:
+          type: number
+          nullable: true
+          description: Preço unitário base, em reais.
+          example: 18925.53
+      required:
+      - baseDate
+      - buyRate
+      - sellRate
+      - buyPrice
+      - sellPrice
+      - basePrice
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    TreasuryListItem:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: 'Código do título: nome e vencimento em DDMMAAAA.'
+          example: tesouro-selic-01032031
+        bondType:
+          type: string
+          description: Nome do título no Tesouro Direto.
+          example: Tesouro Selic
+        indexer:
+          type: string
+          enum:
+          - selic
+          - prefixado
+          - ipca
+          - igpm
+          description: Indexador do título. Renda+ e Educa+ usam `ipca`.
+          example: selic
+        couponType:
+          type: string
+          enum:
+          - zero
+          - semestral
+          description: '`semestral` para títulos com juros semestrais, `zero` para os demais.'
+          example: zero
+        maturityDate:
+          type: string
+          nullable: true
+          description: Data de vencimento, no formato YYYY-MM-DD.
+          example: '2031-03-01'
+        durationDays:
+          type: number
+          nullable: true
+          description: Dias corridos da data-base até o vencimento.
+          example: 1751
+        baseDate:
+          type: string
+          nullable: true
+          description: Data da taxa e do preço, no formato YYYY-MM-DD.
+          example: '2026-05-15'
+        buyRate:
+          type: number
+          nullable: true
+          description: Taxa indicativa de compra, em % a.a. O sentido muda por indexador. Veja `rateInfo`.
+          example: 0.08
+        sellRate:
+          type: number
+          nullable: true
+          description: Taxa indicativa de venda, em % a.a. O sentido muda por indexador. Veja `rateInfo`.
+          example: 0.09
+        buyPrice:
+          type: number
+          nullable: true
+          description: Preço unitário indicativo de compra, em reais.
+          example: 18944.78
+        sellPrice:
+          type: number
+          nullable: true
+          description: Preço unitário indicativo de venda, em reais.
+          example: 18925.53
+        basePrice:
+          type: number
+          nullable: true
+          description: Preço unitário base, em reais.
+          example: 18925.53
+        rateInfo:
+          type: object
+          properties:
+            rateType:
+              type: string
+              enum:
+              - spreadOverSelic
+              - nominalAnnualRate
+              - realAnnualRateOverIpca
+              - realAnnualRateOverIgpm
+              description: O que `buyRate` e `sellRate` medem.
+              example: spreadOverSelic
+            rateUnit:
+              type: string
+              description: Unidade de `buyRate` e `sellRate`.
+              example: '% a.a.'
+            description:
+              type: string
+              description: Texto que explica como ler `buyRate` e `sellRate` neste título.
+              example: Para Tesouro Selic, buyRate e sellRate representam o spread em pontos percentuais ao ano sobre a taxa Selic, não a rentabilidade total do título.
+          required:
+          - rateType
+          - rateUnit
+          - description
+          description: Como ler `buyRate` e `sellRate`. O sentido muda por indexador.
+      required:
+      - symbol
+      - bondType
+      - indexer
+      - couponType
+      - maturityDate
+      - durationDays
+      - baseDate
+      - buyRate
+      - sellRate
+      - buyPrice
+      - sellPrice
+      - basePrice
+      - rateInfo
+    TreasuryPaginationMeta:
+      type: object
+      properties:
+        page:
+          type: number
+        limit:
+          type: number
+        totalItems:
+          type: number
+        totalPages:
+          type: number
+        hasNextPage:
+          type: boolean
+      required:
+      - page
+      - limit
+      - totalItems
+      - totalPages
+      - hasNextPage
+    TreasuryIndicatorsHistoryResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreasuryHistorySeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - symbol: tesouro-selic-01032031
+          bondType: Tesouro Selic
+          indexer: selic
+          couponType: zero
+          maturityDate: '2031-03-01'
+          rateInfo:
+            rateType: spreadOverSelic
+            rateUnit: '% a.a.'
+            description: Para Tesouro Selic, buyRate e sellRate representam o spread em pontos percentuais ao ano sobre a taxa Selic, não a rentabilidade total do título.
+          history:
+          - baseDate: '2026-05-15'
+            buyRate: 0.08
+            sellRate: 0.09
+            buyPrice: 18944.78
+            sellPrice: 18925.53
+            basePrice: 18925.53
+        requestedAt: '2026-05-15T17:32:38.000Z'
+        took: 45
+    TreasuryHistorySeries:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: tesouro-selic-01032031
+        bondType:
+          type: string
+          description: Nome do título no Tesouro Direto.
+          example: Tesouro Selic
+        indexer:
+          type: string
+          enum:
+          - selic
+          - prefixado
+          - ipca
+          - igpm
+          description: Indexador do título. Renda+ e Educa+ usam `ipca`.
+          example: selic
+        couponType:
+          type: string
+          enum:
+          - zero
+          - semestral
+          description: '`semestral` para títulos com juros semestrais, `zero` para os demais.'
+          example: zero
+        maturityDate:
+          type: string
+          nullable: true
+          description: Data de vencimento, no formato YYYY-MM-DD.
+          example: '2031-03-01'
+        rateInfo:
+          type: object
+          properties:
+            rateType:
+              type: string
+              enum:
+              - spreadOverSelic
+              - nominalAnnualRate
+              - realAnnualRateOverIpca
+              - realAnnualRateOverIgpm
+              description: O que `buyRate` e `sellRate` medem.
+              example: spreadOverSelic
+            rateUnit:
+              type: string
+              description: Unidade de `buyRate` e `sellRate`.
+              example: '% a.a.'
+            description:
+              type: string
+              description: Texto que explica como ler `buyRate` e `sellRate` neste título.
+              example: Para Tesouro Selic, buyRate e sellRate representam o spread em pontos percentuais ao ano sobre a taxa Selic, não a rentabilidade total do título.
+          required:
+          - rateType
+          - rateUnit
+          - description
+          description: Como ler `buyRate` e `sellRate`. O sentido muda por indexador.
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreasuryHistoryPoint'
+      required:
+      - symbol
+      - bondType
+      - indexer
+      - couponType
+      - maturityDate
+      - rateInfo
+      - history
+    TreasuryListResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreasuryListItem'
+        pagination:
+          $ref: '#/components/schemas/TreasuryPaginationMeta'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - pagination
+      - requestedAt
+      - took
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

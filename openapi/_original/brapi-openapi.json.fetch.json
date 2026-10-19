@@ -1,0 +1,12 @@
+{
+ "url": "https://brapi.dev/openapi.json",
+ "final": "https://brapi.dev/openapi.json",
+ "status": 200,
+ "content_type": "application/json",
+ "bytes": 517075,
+ "sha256": "073e286dc440737e12237a16f7cec0544e5f94cd6cee09c6ebd7982ccc569327",
+ "fetched_at": "2026-10-19",
+ "fetched_by": "APIEvangelist-Harvest/1.0 (+https://apievangelist.com)",
+ "match": "byte-identical",
+ "note": "re-archived: the provider's current document replaced a stale archive (roadmap#793); the old files are in openapi/_superseded/2026-10-19-stale"
+}

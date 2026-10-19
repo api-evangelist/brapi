@@ -1,0 +1,454 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Utilitários API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Utilitários
+  description: Ferramentas auxiliares para descobrir ativos disponíveis e verificar a saúde da API.
+paths:
+  /health:
+    get:
+      tags:
+      - Utilitários
+      operationId: getHealth
+      summary: Status da API
+      description: 'Mostra se a API está no ar. `status` é sempre `ok` quando a API responde.
+
+
+        Use em monitores de disponibilidade e checks de CI.
+
+
+        `timestamp` é a hora da verificação em ISO 8601 e `uptime` é o tempo no ar em
+
+        segundos. `database.status` vale `ok` ou `error` e `database.latencyMs`
+
+        traz a latência da verificação interna. Endpoint público, sem token.'
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - json
+          description: Formato da resposta. Só aceita json.
+        required: false
+        name: format
+        in: query
+      responses:
+        '200':
+          description: API operando normalmente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+  /api/available:
+    get:
+      tags:
+      - Utilitários
+      operationId: getAvailable
+      summary: Listar tickers disponíveis
+      description: 'Lista simples de tickers aceitos pela API: ativos brasileiros, como ações, FIIs, BDRs e ETFs, em `stocks`, e índices em `indexes`.
+
+
+        Use para validar um ticker ou preencher uma lista de opções.
+
+
+        `search` filtra por parte do ticker. Tickers antigos não entram na lista. A lista é atualizada a cada 15 minutos.
+
+
+        Não exige token. Para filtros por setor e tipo, use a lista de tickers.'
+      parameters:
+      - schema:
+          type: string
+          description: Parte do ticker. Filtra ativos e índices.
+          example: PETR
+        required: false
+        name: search
+        in: query
+      responses:
+        '200':
+          description: Tickers de ativos e índices.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+              description: 'Política de cache: s-maxage=900, stale-while-revalidate.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AvailableResponse'
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/dictionary:
+    get:
+      tags:
+      - Utilitários
+      operationId: getDictionary
+      summary: Dicionário de campos
+      description: 'Lista os campos da API com nome em português, descrição, fórmula de cálculo,
+
+        tipo, unidade, categoria e os endpoints onde cada campo aparece.
+
+
+        Use para gerar rótulos e tooltips, formatar valores pela unidade e entender um
+
+        campo antes de usar.
+
+
+        `category` filtra por área, como `fii`, `treasury` ou `balance-sheet`.
+
+        `search` busca em chave, nome, descrição, categoria e endpoints. Os dois
+
+        funcionam juntos. Endpoint público, sem token.'
+      parameters:
+      - schema:
+          type: string
+          description: Texto buscado em key, label, description, category e endpoints. Ignora maiúsculas.
+          example: patrimônio
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          description: 'Categoria exata do campo. Ex.: fii, treasury, quote, balance-sheet.'
+          example: treasury
+        required: false
+        name: category
+        in: query
+      responses:
+        '200':
+          description: Campos do dicionário.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DictionaryResponse'
+  /api/sdks:
+    get:
+      tags:
+      - Utilitários
+      operationId: getSdks
+      summary: Listar SDKs oficiais
+      description: 'Os SDKs oficiais da brapi, com nome do pacote e repositório.
+
+
+        TypeScript e JavaScript: `npm install brapi`, em
+
+        https://github.com/brapi-dev/brapi-typescript.
+
+        Python: `pip install brapi`, em https://github.com/brapi-dev/brapi-python.
+
+        Existe também o pacote `@brapi/cli` no monorepo, ainda não publicado no npm.
+
+
+        Os SDKs cuidam de autenticação, tipos e retry. Se você usa TypeScript ou
+
+        Python, eles poupam o trabalho de tratar isso à mão.
+
+
+        Endpoint público, sem token.'
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - json
+          description: Formato da resposta. JSON é o formato suportado.
+        required: false
+        name: format
+        in: query
+      responses:
+        '200':
+          description: Página HTML de SDKs
+          content:
+            text/html:
+              schema:
+                type: string
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SdkLinks'
+components:
+  schemas:
+    DatabaseHealth:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+          - error
+        latencyMs:
+          type: number
+          minimum: 0
+        error:
+          type: string
+      required:
+      - status
+      example:
+        status: ok
+        latencyMs: 1
+    SdkLinks:
+      type: object
+      properties:
+        sdks:
+          type: array
+          items:
+            type: object
+            properties:
+              language:
+                type: string
+              package:
+                type: string
+              install:
+                type: string
+              url:
+                type: string
+                format: uri
+            required:
+            - language
+            - package
+            - install
+            - url
+        cli:
+          type: object
+          properties:
+            status:
+              type: string
+              enum:
+              - source-available
+              - published
+            url:
+              type: string
+              format: uri
+          required:
+          - status
+          - url
+      required:
+      - sdks
+      - cli
+    DictionaryResponse:
+      type: object
+      properties:
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/DictionaryEntry'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - fields
+      - requestedAt
+      - took
+      example:
+        fields:
+        - key: symbol
+          label: Símbolo
+          description: 'Código de negociação do ativo brasileiro (ex: PETR4, VALE3)'
+          calculation: null
+          endpoints:
+          - /api/quote/{tickers}
+          - /api/quote/list
+          category: quote
+          type: string
+          unit: null
+        - key: shortName
+          label: Nome Curto
+          description: Nome resumido do ativo
+          calculation: null
+          endpoints:
+          - /api/quote/{tickers}
+          - /api/quote/list
+          category: quote
+          type: string
+          unit: null
+        - key: longName
+          label: Nome Completo
+          description: Nome completo da empresa ou fundo
+          calculation: null
+          endpoints:
+          - /api/quote/{tickers}
+          category: quote
+          type: string
+          unit: null
+        requestedAt: '2026-02-08T16:25:35.000Z'
+        took: 2
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    AvailableResponse:
+      type: object
+      properties:
+        stocks:
+          type: array
+          items:
+            type: string
+          description: Tickers de ativos.
+          example:
+          - PETR4
+          - VALE3
+          - ITUB4
+        indexes:
+          type: array
+          items:
+            type: string
+          description: Tickers de índices.
+          example:
+          - ^BVSP
+          - IFIX.SA
+      required:
+      - stocks
+      - indexes
+      example:
+        stocks:
+        - BBDC4
+        - GOLL54
+        - B3SA3
+        - ITSA4
+        - COGN3
+        - ITUB4
+        - BBAS3
+        - MGLU3
+        - VALE3
+        - PETR4
+        indexes:
+        - ^BVSP
+        - IFIX.SA
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - ok
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+          minimum: 0
+        database:
+          $ref: '#/components/schemas/DatabaseHealth'
+      required:
+      - status
+      - timestamp
+      - uptime
+      example:
+        status: ok
+        timestamp: '2026-02-08T16:25:38.608Z'
+        uptime: 866.658018047
+        database:
+          status: ok
+          latencyMs: 1
+    DictionaryEntry:
+      type: object
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        calculation:
+          type: string
+          nullable: true
+        endpoints:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        type:
+          type: string
+          enum:
+          - number
+          - string
+          - boolean
+          - date
+          - object
+          - array
+        unit:
+          type: string
+          nullable: true
+      required:
+      - key
+      - label
+      - description
+      - calculation
+      - endpoints
+      - category
+      - type
+      - unit
+      example:
+        key: symbol
+        label: Símbolo
+        description: 'Código de negociação do ativo brasileiro (ex: PETR4, VALE3)'
+        calculation: null
+        endpoints:
+        - /api/quote/{tickers}
+        - /api/quote/list
+        category: quote
+        type: string
+        unit: null
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

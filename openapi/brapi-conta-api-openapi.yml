@@ -1,0 +1,239 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Conta API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Conta
+  description: Dados da conta autenticada, como plano atual e uso da janela vigente.
+paths:
+  /api/v2/user/usage:
+    get:
+      tags:
+      - Conta
+      operationId: getUserUsage
+      summary: Uso da conta
+      description: 'Quanto da sua cota você já gastou na janela atual.
+
+
+        A resposta traz `planName` (`free`, `startup` ou `pro`), `planLimit` com o
+
+        limite do plano, `currentUsage` com o consumo registrado, `remainingUsage` com
+
+        o saldo, `usageWindow` indicando se a contagem é por ciclo de cobrança ou por
+
+        30 dias móveis, e `subscriptionPeriod` com o período atual da assinatura.
+
+
+        A contagem vem do mesmo cache que o limitador usa, então ela pode ficar alguns
+
+        segundos atrás do consumo real.
+
+
+        ```bash
+
+        curl -H "Authorization: Bearer SEU_TOKEN" "https://brapi.dev/api/v2/user/usage"
+
+        ```'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - json
+          description: Formato da resposta. JSON é o formato suportado.
+        required: false
+        name: format
+        in: query
+      responses:
+        '200':
+          description: Uso da conta retornado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUsageResponse'
+        '401':
+          description: Token ausente, inválido ou inativo.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '404':
+          description: Usuário associado ao token não encontrado.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '500':
+          description: Erro interno ao buscar o uso da conta.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    UserUsageWindow:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - billing-cycle
+          - rolling-30d
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+      required:
+      - type
+      - start
+      - end
+    UserSubscriptionPeriod:
+      type: object
+      properties:
+        start:
+          type: string
+          nullable: true
+          format: date-time
+        end:
+          type: string
+          nullable: true
+          format: date-time
+      required:
+      - start
+      - end
+    UserUsageData:
+      type: object
+      properties:
+        planName:
+          type: string
+          enum:
+          - free
+          - startup
+          - pro
+        planLimit:
+          type: integer
+          minimum: 0
+        currentUsage:
+          type: integer
+          minimum: 0
+        remainingUsage:
+          type: integer
+          minimum: 0
+        usageWindow:
+          $ref: '#/components/schemas/UserUsageWindow'
+        subscriptionPeriod:
+          $ref: '#/components/schemas/UserSubscriptionPeriod'
+      required:
+      - planName
+      - planLimit
+      - currentUsage
+      - remainingUsage
+      - usageWindow
+      - subscriptionPeriod
+    UserUsageResponse:
+      type: object
+      properties:
+        usage:
+          $ref: '#/components/schemas/UserUsageData'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - usage
+      - requestedAt
+      - took
+      example:
+        usage:
+          planName: pro
+          planLimit: 500000
+          currentUsage: 1248
+          remainingUsage: 498752
+          usageWindow:
+            type: billing-cycle
+            start: '2026-04-01T00:00:00.000Z'
+            end: '2026-05-01T00:00:00.000Z'
+          subscriptionPeriod:
+            start: '2026-04-01T00:00:00.000Z'
+            end: '2026-05-01T00:00:00.000Z'
+        requestedAt: '2026-04-07T20:45:10.000Z'
+        took: 18
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

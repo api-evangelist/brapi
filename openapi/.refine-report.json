@@ -1,10 +1,25 @@
 {
   "provider": "brapi",
   "sources": [
+    "_original/brapi-openapi.json",
     "_ae-authored/brapi-openapi.yml"
   ],
   "outputs": [
+    "brapi-a-es-api-openapi.yml",
+    "brapi-conta-api-openapi.yml",
+    "brapi-cota-es-api-openapi.yml",
     "brapi-criptomoedas-api-openapi.yml",
+    "brapi-c-mbio-api-openapi.yml",
+    "brapi-fundos-api-openapi.yml",
+    "brapi-fundos-imobili-rios-api-openapi.yml",
+    "brapi-futuros-api-openapi.yml",
+    "brapi-indicadores-api-openapi.yml",
+    "brapi-macroeconomia-api-openapi.yml",
+    "brapi-op-es-api-openapi.yml",
+    "brapi-op-es-sobre-futuros-api-openapi.yml",
+    "brapi-renda-fixa-api-openapi.yml",
+    "brapi-tickers-api-openapi.yml",
+    "brapi-utilit-rios-api-openapi.yml",
     "brapi-fiis-api-openapi.yml",
     "brapi-inflacao-api-openapi.yml",
     "brapi-moedas-api-openapi.yml",
@@ -16,7 +31,12 @@
   "errors": [],
   "warnings": [],
   "notes": [
-    "sourced from openapi/_original/ (0 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "brapi-openapi.json: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "brapi-openapi.json: declared missing tag: A\u00e7\u00f5es",
+    "brapi-openapi.json: declared missing tag: Futuros",
+    "brapi-openapi.json: declared missing tag: Indicadores",
+    "brapi-openapi.json: declared missing tag: Op\u00e7\u00f5es sobre Futuros",
     "brapi-openapi.yml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
     "brapi-openapi.yml: tagged paths GET /api/quote/{ticker} -> Quote",
     "brapi-openapi.yml: tagged paths GET /api/quote -> Quote",
@@ -45,7 +65,8 @@
     "brapi-openapi.yml: declared missing tag: Opcoes",
     "brapi-openapi.yml: declared missing tag: Quote",
     "brapi-openapi.yml: declared missing tag: Taxa Basica De Juros",
-    "apis.yml register: already-registered"
+    "tag 'Criptomoedas' spans 2 source specs (brapi-openapi.json, brapi-openapi.yml): per-path servers applied",
+    "apis.yml register: written (+14 apis, 26 total)"
   ],
   "skipped": [
     "brapi-criptomoedas-api-openapi.yml: previously refined output, superseded by openapi/_original/",

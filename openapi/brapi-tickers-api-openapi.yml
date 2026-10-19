@@ -1,0 +1,863 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Tickers API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Tickers
+  description: Descubra, filtre e valide tickers B3 disponíveis na brapi. Use como camada de identidade antes dos endpoints de dados de mercado.
+paths:
+  /api/v2/tickers/renames:
+    get:
+      tags:
+      - Tickers
+      operationId: getTickerRenames
+      summary: Renomes de tickers
+      description: 'Mudanças de ticker, com o ticker antigo, o novo, o atual e a data efetiva.
+
+
+        Conversões de ações incluem `conversionRatio`, a quantidade de ações novas por ação antiga. O histórico de cada classe permanece separado.
+
+
+        Use para explicar por que um ticker antigo leva a outro e para corrigir séries salvas com o ticker antigo.
+
+
+        Se um ativo mudou de ticker mais de uma vez, `canonicalSymbol` traz o último. `startDate` e `endDate` filtram pela data efetiva. A lista vem da data mais recente para a mais antiga.
+
+
+        Não exige token. Para trocar uma lista de tickers pelos atuais, use resolver ticker antigo.'
+      parameters:
+      - schema:
+          type: string
+          description: Tickers separados por vírgula, até 20. Traz renomes em que algum deles é o ticker antigo, o novo ou o atual.
+          example: VVAR3,BHIA3
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Parte do ticker antigo, do novo ou do atual.
+          example: BHIA
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          description: Data efetiva inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data efetiva final no formato YYYY-MM-DD.
+          example: '2026-12-31'
+        required: false
+        name: endDate
+        in: query
+      responses:
+        '200':
+          description: Renomes retornados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerRenamesResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/tickers/resolve:
+    get:
+      tags:
+      - Tickers
+      operationId: resolveTickers
+      summary: Resolver tickers antigos
+      description: 'Troca tickers antigos pelo ticker atual. Um ticker sem renome conhecido volta igual.
+
+
+        Use antes de consultar dados de mercado quando os tickers vêm de usuários, planilhas antigas ou carteiras importadas.
+
+
+        Envie até 20 tickers em `symbols`. A resposta segue a ordem enviada, sem repetidos. `status` é `renamed` quando o ticker mudou e `active` quando não há renome conhecido.
+
+
+        Conversões também retornam `renamed`. `conversionRatio` informa a quantidade de ações novas por ação antiga. Use o ticker original para consultar seu histórico.
+
+
+        Este endpoint não confirma se o ticker existe. Para isso, use a cobertura por ticker.
+
+
+        Não exige token.'
+      parameters:
+      - schema:
+          type: string
+          description: Tickers separados por vírgula, até 20.
+          example: VVAR3,PETR4
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Tickers resolvidos com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerResolveResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/tickers/coverage:
+    get:
+      tags:
+      - Tickers
+      operationId: getTickerCoverage
+      summary: Cobertura por ticker
+      description: 'Mostra quais dados a brapi tem para cada ticker e quais endpoints usar em seguida: cotação, histórico, dividendos, fundamentos ou dados de FII.
+
+
+        Use antes de montar uma integração, para saber quais endpoints servem para cada ativo.
+
+
+        Envie até 20 tickers em `symbols`. Um ticker antigo é trocado pelo atual e vem com `status` igual a `renamed`. Um ticker desconhecido não gera erro. Ele vem com `status` igual a `unknown` e links de busca. Um ticker de opção vem com `wrong_endpoint` e links para os endpoints de opções.
+
+
+        Em conversões de ações, os links de histórico e proventos usam o ticker da classe original.
+
+
+        Este endpoint não traz dados de mercado. Não exige token.'
+      parameters:
+      - schema:
+          type: string
+          description: Tickers separados por vírgula, até 20.
+          example: PETR4,MXRF11,VVAR3
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Cobertura retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerCoverageResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/tickers:
+    get:
+      tags:
+      - Tickers
+      operationId: getTickers
+      summary: Listar tickers da B3
+      description: 'Lista de tickers brasileiros com nome, tipo, setor, logo e um resumo da cotação: ações, FIIs, ETFs, BDRs e units. Os índices vêm em `indexes`.
+
+
+        Use para busca, autocomplete, validação de tickers e screeners.
+
+
+        `search` busca por parte do ticker, do nome da empresa ou de um ticker antigo. O filtro `type` aceita `stock`, `fund` e `bdr`. `facets` lista os valores aceitos nos filtros.
+
+
+        A lista não tem opções, futuros, Tesouro Direto, criptomoedas, câmbio nem indicadores econômicos. Esses dados têm endpoints próprios.
+
+
+        Não exige token. Para cotação completa, use a cotação de ações.'
+      parameters:
+      - schema:
+          type: string
+          description: Parte do ticker, do nome da empresa ou de um ticker antigo.
+          example: PETR
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          enum:
+          - symbol
+          - name
+          - close
+          - change
+          - volume
+          - marketCap
+          default: volume
+          description: Campo de ordenação.
+          example: volume
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página. Começa em 1.
+          example: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: 'Itens por página. Máximo: 2000.'
+          example: 20
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Setor.
+          example: Finance
+        required: false
+        name: sector
+        in: query
+      - schema:
+          type: string
+          description: Subsetor.
+          example: Comércio
+        required: false
+        name: subsector
+        in: query
+      - schema:
+          type: string
+          enum:
+          - stock
+          - fund
+          - bdr
+          description: Tipo do ativo. Índices não entram neste filtro.
+          example: stock
+        required: false
+        name: type
+        in: query
+      - schema:
+          type: string
+          enum:
+          - stock
+          - unit
+          - fii
+          - etf
+          - fi-infra
+          - fi-agro
+          - fip
+          - fidc
+          - bdr
+          description: 'Subtipo do ativo: stock, unit, fii, etf, fi-infra, fi-agro, fip, fidc ou bdr.'
+          example: fii
+        required: false
+        name: subType
+        in: query
+      responses:
+        '200':
+          description: Lista de tickers retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TickerListResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    TickerListResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TickerListItem'
+        indexes:
+          type: array
+          items:
+            $ref: '#/components/schemas/TickerIndexItem'
+        facets:
+          $ref: '#/components/schemas/TickerFacets'
+        pagination:
+          $ref: '#/components/schemas/TickerPagination'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - indexes
+      - facets
+      - pagination
+      - requestedAt
+      - took
+    TickerAvailableData:
+      type: object
+      properties:
+        ticker:
+          type: boolean
+          example: true
+        quote:
+          type: boolean
+          example: true
+        historical:
+          type: boolean
+          example: true
+        stockDividends:
+          type: boolean
+          example: true
+        fiiDividends:
+          type: boolean
+          example: false
+        profile:
+          type: boolean
+          example: true
+        statistics:
+          type: boolean
+          example: true
+        financialStatements:
+          type: boolean
+          example: true
+        fiiIndicators:
+          type: boolean
+          example: false
+        fiiReports:
+          type: boolean
+          example: false
+        fiiPortfolio:
+          type: boolean
+          example: false
+        fiiProperties:
+          type: boolean
+          example: false
+      required:
+      - ticker
+      - quote
+      - historical
+      - stockDividends
+      - fiiDividends
+      - profile
+      - statistics
+      - financialStatements
+      - fiiIndicators
+      - fiiReports
+      - fiiPortfolio
+      - fiiProperties
+    TickerListItem:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Ticker do ativo.
+          example: PETR4
+        name:
+          type: string
+          description: Nome da empresa ou do fundo.
+          example: Petróleo Brasileiro S.A.
+        longName:
+          type: string
+          nullable: true
+          description: Nome longo. Pode ser nulo.
+          example: Petroleo Brasileiro SA Petrobras Preference Shares
+        assetType:
+          type: string
+          nullable: true
+          enum:
+          - stock
+          - fund
+          - bdr
+          description: Tipo do ativo.
+          example: stock
+        subType:
+          type: string
+          nullable: true
+          enum:
+          - stock
+          - unit
+          - fii
+          - etf
+          - fi-infra
+          - fi-agro
+          - fip
+          - fidc
+          - bdr
+          description: 'Subtipo do ativo: stock, unit, fii, etf, fi-infra, fi-agro, fip, fidc ou bdr.'
+          example: stock
+        exchange:
+          type: string
+          enum:
+          - B3
+          description: Bolsa.
+          example: B3
+        currency:
+          type: string
+          enum:
+          - BRL
+          description: Moeda.
+          example: BRL
+        sector:
+          type: string
+          nullable: true
+          description: Setor. Pode ser nulo.
+          example: Energy Minerals
+        subsector:
+          type: string
+          nullable: true
+          description: Subsetor. Pode ser nulo.
+          example: Petróleo, Gás e Biocombustíveis
+        isActive:
+          type: boolean
+          description: '`true` quando o ativo está em negociação.'
+          example: true
+        logoUrl:
+          type: string
+          nullable: true
+          description: URL do logo.
+          example: https://icons.brapi.dev/icons/PETR4.svg
+        quote:
+          $ref: '#/components/schemas/TickerQuoteSummary'
+      required:
+      - symbol
+      - name
+      - longName
+      - assetType
+      - subType
+      - exchange
+      - currency
+      - sector
+      - subsector
+      - isActive
+      - logoUrl
+      - quote
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    TickerQuoteSummary:
+      type: object
+      properties:
+        lastPrice:
+          type: number
+          nullable: true
+          description: Último preço.
+          example: 36.65
+        changePercent:
+          type: number
+          nullable: true
+          description: Variação no dia, em porcentagem.
+          example: -0.95
+        volume:
+          type: number
+          nullable: true
+          description: Volume negociado no dia.
+          example: 27681100
+        marketCap:
+          type: number
+          nullable: true
+          description: Valor de mercado, em reais. Pode ser nulo.
+          example: 483937892568
+      required:
+      - lastPrice
+      - changePercent
+      - volume
+      - marketCap
+    TickerPagination:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        limit:
+          type: number
+          example: 20
+        totalItems:
+          type: number
+          example: 2302
+        totalPages:
+          type: number
+          example: 116
+        hasNextPage:
+          type: boolean
+          example: true
+      required:
+      - page
+      - limit
+      - totalItems
+      - totalPages
+      - hasNextPage
+    TickerIndexItem:
+      type: object
+      properties:
+        symbol:
+          type: string
+          example: ^BVSP
+        name:
+          type: string
+          example: IBOVESPA
+        exchange:
+          type: string
+          enum:
+          - B3
+          example: B3
+        assetType:
+          type: string
+          enum:
+          - index
+          example: index
+      required:
+      - symbol
+      - name
+      - exchange
+      - assetType
+    TickerRename:
+      type: object
+      properties:
+        oldSymbol:
+          type: string
+          description: Ticker antigo.
+          example: VVAR3
+        newSymbol:
+          type: string
+          description: Ticker novo divulgado no evento.
+          example: BHIA3
+        canonicalSymbol:
+          type: string
+          description: Ticker atual. Se o ativo mudou de ticker mais de uma vez, é o último.
+          example: BHIA3
+        effectiveDate:
+          type: string
+          description: Data de início da negociação do novo ticker no formato YYYY-MM-DD.
+          example: '2021-08-16'
+        conversionRatio:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Quantidade de ações novas por ação antiga. Presente quando houve conversão de ações.
+          example: 1.1
+      required:
+      - oldSymbol
+      - newSymbol
+      - canonicalSymbol
+      - effectiveDate
+    TickerCoverageResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TickerCoverageResult'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+    TickerResolveResult:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+          description: Ticker enviado na requisição.
+          example: VVAR3
+        symbol:
+          type: string
+          description: Ticker atual. Use este nas próximas consultas.
+          example: BHIA3
+        changed:
+          type: boolean
+          description: '`true` quando o ticker enviado foi trocado pelo ticker atual.'
+          example: true
+        status:
+          type: string
+          enum:
+          - active
+          - renamed
+          description: '`renamed` quando o ticker enviado mudou. `active` quando não há renome conhecido.'
+          example: renamed
+        effectiveDate:
+          type: string
+          nullable: true
+          description: Data de início da negociação do novo ticker. Nulo quando não há mudança.
+          example: '2021-08-16'
+        conversionRatio:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          description: Quantidade de ações novas por ação antiga. Presente quando houve conversão de ações.
+          example: 1.1
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+      - status
+      - effectiveDate
+    TickerResolveResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TickerResolveResult'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+    TickerCoverageResult:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+          description: Ticker enviado na requisição.
+          example: VVAR3
+        symbol:
+          type: string
+          description: Ticker atual usado na verificação.
+          example: BHIA3
+        changed:
+          type: boolean
+          description: '`true` quando o ticker enviado foi trocado pelo ticker atual.'
+          example: true
+        status:
+          type: string
+          enum:
+          - available
+          - renamed
+          - unknown
+          - wrong_endpoint
+          description: '`available`: o ticker tem dados. `renamed`: o ticker mudou e tem dados. `unknown`: o ticker não foi encontrado. `wrong_endpoint`: o ticker é de uma opção.'
+          example: renamed
+        assetType:
+          type: string
+          nullable: true
+          description: Tipo do ativo. Pode ser nulo.
+          example: stock
+        subType:
+          type: string
+          nullable: true
+          description: Subtipo do ativo. Pode ser nulo.
+          example: stock
+        availableData:
+          $ref: '#/components/schemas/TickerAvailableData'
+        recommendedEndpoints:
+          type: object
+          additionalProperties:
+            type: string
+          description: Endpoints para consultar os dados do ticker.
+          example:
+            ticker: /api/v2/tickers?search=BHIA3
+            quote: /api/v2/stocks/quote?symbols=BHIA3
+            historical: /api/v2/stocks/historical?symbols=BHIA3&range=1y&interval=1d
+            dividends: /api/v2/stocks/dividends?symbols=BHIA3
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+      - status
+      - assetType
+      - subType
+      - availableData
+      - recommendedEndpoints
+    TickerFacets:
+      type: object
+      properties:
+        sectors:
+          type: array
+          items:
+            type: string
+          description: Valores aceitos em `sector`.
+        subsectors:
+          type: array
+          items:
+            type: string
+          description: Valores aceitos em `subsector`.
+        assetTypes:
+          type: array
+          items:
+            type: string
+          description: Valores aceitos em `type`.
+          example:
+          - stock
+          - fund
+          - bdr
+        subTypes:
+          type: array
+          items:
+            type: string
+          description: Valores aceitos em `subType`.
+          example:
+          - stock
+          - unit
+          - fii
+          - etf
+          - bdr
+      required:
+      - sectors
+      - subsectors
+      - assetTypes
+      - subTypes
+    TickerRenamesResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TickerRename'
+        count:
+          type: number
+          example: 2
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - count
+      - requestedAt
+      - took
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

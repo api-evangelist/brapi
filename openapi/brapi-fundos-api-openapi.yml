@@ -1,0 +1,3176 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Fundos API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Fundos
+  description: Descubra e consulte fundos brasileiros listados e estruturados, incluindo FIIs, FIAGROs, FI-Infra/FIFs, FIDCs e FIPs.
+paths:
+  /api/v2/funds/list:
+    get:
+      tags:
+      - Fundos
+      operationId: listFunds
+      security:
+      - Bearer: []
+      summary: Lista de fundos
+      description: 'Lista fundos brasileiros com dados disponíveis: FII, FIAGRO, FI-Infra, FIF, FIDC, FIP e outros. Cada item traz ticker, CNPJ, tipo, classificações, administrador, gestor e os últimos indicadores disponíveis.
+
+
+        A lista ainda não inclui ETFs. Consulte suas cotações e preços históricos nos endpoints de ações. A presença no catálogo de tickers não garante indicadores de fundos.
+
+
+        `updatedAt` informa a atualização do cadastro. Consulte `asOfDate` em `/api/v2/funds/indicators` para a data dos indicadores. Os indicadores não têm a mesma frequência das cotações.
+
+
+        Use para descobrir o tipo de um fundo, achar um CNPJ ou filtrar fundos por tipo.
+
+
+        Busque por `symbols`, `cnpjs` ou `search`. O `search` procura no ticker, no nome, na razão social, no ISIN e no CNPJ.
+
+
+        Os tipos `fiinfra` e `fiagro` equivalem a `fi-infra` e `fi-agro` no catálogo de tickers.
+
+
+        Nem todo ticker terminado em 11 é FII. `JURO11` é FI-Infra e não responde nos endpoints de FIIs.
+
+
+        `sortBy` aceita `symbol`, `name`, `assetType`, `price`, `navPerShare`, `priceToNav`, `totalInvestors` e `updatedAt`. O padrão é `updatedAt`.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: JURO11
+        required: false
+        example: JURO11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '42730834000100'
+        required: false
+        example: '42730834000100'
+        name: cnpjs
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Campo usado na ordenação.
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem crescente (`asc`) ou decrescente (`desc`).
+          example: desc
+        required: false
+        example: desc
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          description: Texto buscado no ticker, nome, razão social, ISIN ou CNPJ.
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          enum:
+          - fii
+          - fiagro
+          - fiinfra
+          - fif
+          - fidc
+          - fip
+          - etf
+          - other
+          description: Tipo do fundo.
+        required: false
+        name: assetType
+        in: query
+      - schema:
+          type: string
+          description: Situação do fundo no cadastro.
+        required: false
+        name: status
+        in: query
+      responses:
+        '200':
+          description: Fundos encontrados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  funds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FundListItem'
+                  pagination:
+                    $ref: '#/components/schemas/FundPaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - funds
+                - pagination
+                - requestedAt
+                - took
+              example:
+                funds:
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  formattedCnpj: 42.730.834/0001-00
+                  name: SPARTA INFRA
+                  legalName: SPARTA INFRA FIC FI INFRA RENDA FIXA CP
+                  assetType: fiinfra
+                  cvmClassType: null
+                  cvmClassification: null
+                  anbimaClassification: null
+                  b3Classification: Financeiro/Fundos/FI-INFRA
+                  isin: null
+                  administratorName: null
+                  administratorCnpj: null
+                  managerName: null
+                  managerCnpj: null
+                  status: null
+                  price: 96.99
+                  navPerShare: 99.19945
+                  priceToNav: 0.9777272
+                  equity: 2040699000
+                  totalAssets: 2041704100
+                  totalInvestors: 92710
+                  updatedAt: '2026-06-21T21:06:37.434Z'
+                pagination:
+                  page: 1
+                  limit: 20
+                  totalItems: 1
+                  totalPages: 1
+                  hasNextPage: false
+                requestedAt: '2026-06-22T02:10:56.319Z'
+                took: 902
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/indicators:
+    get:
+      tags:
+      - Fundos
+      operationId: getFundIndicators
+      security:
+      - Bearer: []
+      summary: Indicadores de fundos
+      description: 'Indicadores mais recentes de um ou mais fundos: preço de mercado, valor patrimonial por cota (`navPerShare`), a razão entre os dois, patrimônio, ativos e número de cotistas.
+
+
+        Use para comparar preço e valor patrimonial, medir ágio ou deságio e ver o tamanho do fundo.
+
+
+        Informe `symbols` ou `cnpjs`. Se você não tem o identificador, use a lista de fundos.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: JURO11
+        required: false
+        example: JURO11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '42730834000100'
+        required: false
+        example: '42730834000100'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          enum:
+          - fii
+          - fiagro
+          - fiinfra
+          - fif
+          - fidc
+          - fip
+          - etf
+          - other
+          description: Tipo do fundo.
+        required: false
+        name: assetType
+        in: query
+      responses:
+        '200':
+          description: Indicadores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  funds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FundIndicator'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - funds
+                - requestedAt
+                - took
+              example:
+                funds:
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  name: SPARTA INFRA
+                  assetType: fiinfra
+                  asOfDate: '2026-06-18T00:00:00.000Z'
+                  price: 96.99
+                  navPerShare: 99.19945
+                  priceToNav: 0.9777272
+                  equity: 2040699000
+                  totalAssets: 2041704100
+                  totalInvestors: 92710
+                  dailyApplications: 0
+                  dailyRedemptions: 0
+                  sharesOutstanding: null
+                  monthlyReturn: null
+                  patrimonialMonthlyReturn: null
+                  dividendYieldMonthly: null
+                requestedAt: '2026-06-22T02:10:56.524Z'
+                took: 189
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/nav/history:
+    get:
+      tags:
+      - Fundos
+      operationId: getFundNavHistory
+      security:
+      - Bearer: []
+      summary: Histórico da cota
+      description: 'Série do valor patrimonial por cota, com patrimônio, ativos, cotistas, aplicações e resgates. FI e FIF podem ter pontos diários. A cobertura varia por CNPJ. Alguns fundos não têm histórico disponível. FIDC tem pontos mensais por classe ou série, com a rentabilidade do mês em `monthlyReturn`.
+
+
+        Use para gráficos de valor da cota, cálculo de rentabilidade e acompanhamento do patrimônio.
+
+
+        Informe `symbols` ou `cnpjs`. Os filtros de data usam o campo `date`.
+
+
+        Este é o valor patrimonial, não o preço negociado em bolsa. Para comparar um FI com um FIDC, alinhe os pontos por mês.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: JURO11
+        required: false
+        example: JURO11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '42730834000100'
+        required: false
+        example: '42730834000100'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2026-01-01'
+        required: false
+        example: '2026-01-01'
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2026-06-30'
+        required: false
+        example: '2026-06-30'
+        name: endDate
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem crescente (`asc`) ou decrescente (`desc`).
+          example: desc
+        required: false
+        example: desc
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Histórico do valor da cota
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FundNavHistory'
+                  pagination:
+                    $ref: '#/components/schemas/FundPaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - history
+                - pagination
+                - requestedAt
+                - took
+              example:
+                history:
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  date: '2026-06-18T00:00:00.000Z'
+                  classOrSeries: null
+                  totalAssets: 2041704100
+                  navPerShare: 99.19945
+                  equity: 2040699000
+                  dailyApplications: 0
+                  dailyRedemptions: 0
+                  totalInvestors: 92710
+                  monthlyReturn: null
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  date: '2026-06-17T00:00:00.000Z'
+                  classOrSeries: null
+                  totalAssets: 2044940400
+                  navPerShare: 99.36075
+                  equity: 2044017200
+                  dailyApplications: 0
+                  dailyRedemptions: 0
+                  totalInvestors: 92779
+                  monthlyReturn: null
+                pagination:
+                  page: 1
+                  limit: 20
+                  totalItems: 114
+                  totalPages: 6
+                  hasNextPage: true
+                requestedAt: '2026-06-22T02:10:56.827Z'
+                took: 300
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/profile:
+    get:
+      tags:
+      - Fundos
+      operationId: getFundProfile
+      security:
+      - Bearer: []
+      summary: Perfil mensal de fundos
+      description: 'Perfil mensal de fundos FI e FIF, conforme a CVM: distribuição de cotistas, medidas de risco, liquidez, concentração e exposição a crédito privado.
+
+
+        Use para ver se o fundo é de varejo ou institucional e quanto do patrimônio está em ativos de baixa liquidez.
+
+
+        Informe `symbols` ou `cnpjs`. Sem filtro de data, a resposta traz o perfil mais recente de cada fundo.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: JURO11
+        required: false
+        example: JURO11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '42730834000100'
+        required: false
+        example: '42730834000100'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2026-01-01'
+        required: false
+        example: '2026-01-01'
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2026-06-30'
+        required: false
+        example: '2026-06-30'
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          description: Mês de referência no formato YYYY-MM-DD.
+        required: false
+        name: referenceDate
+        in: query
+      - schema:
+          type: string
+        required: false
+        name: include
+        in: query
+      responses:
+        '200':
+          description: Perfis
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profiles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FundProfile'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - profiles
+                - requestedAt
+                - took
+              example:
+                profiles:
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  referenceDate: '2026-05-31T00:00:00.000Z'
+                  investorBreakdown:
+                    other: 0
+                    fundsOrClubs: 1
+                    nonResidents: 0
+                    otherPercent: 0
+                    legalEntities: 0
+                    individualRetail: 0
+                    fundsOrClubsPercent: 100
+                    nonResidentsPercent: 0
+                    legalEntitiesPercent: 0
+                    individualRetailPercent: 0
+                  risk:
+                    riskModel: Modelos Não-Paramétricos
+                    portfolioVar: 0
+                    dailyQuotaVariationPercent: 0
+                    privateCreditExposurePercent: 0
+                    stressedDailyQuotaVariationPercent: 0
+                  liquidity: null
+                  concentration:
+                    topCotistaPercent: 0
+                  privateCredit:
+                    exposurePercent: 0
+                requestedAt: '2026-06-22T02:10:56.983Z'
+                took: 152
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/dividends:
+    get:
+      tags:
+      - Fundos
+      operationId: getFundDividends
+      security:
+      - Bearer: []
+      summary: Dividendos de fundos
+      description: 'Dividendos e rendimentos de FIAGRO, FI-Infra, FIF, FIDC e FIP listados. Cada evento traz data de declaração, data-com (`lastDatePrior`), data ex quando existe, data de pagamento, valor por cota e rótulo.
+
+
+        Use para calcular renda, montar calendários de pagamento e comparar rendimentos.
+
+
+        Os filtros `startDate` e `endDate` usam `paymentDate`. Sem `symbols` e `cnpjs`, a resposta traz todos os fundos.
+
+
+        FIIs ficam em dividendos de FIIs. Um ticker de FII neste endpoint retorna erro 400.
+
+
+        O histórico começa no primeiro evento verificável de cada fundo. Não há data inicial única. As fontes são documentos da CVM e comunicados de administradores e gestores. Eventos de tickers antigos continuam depois de um renome. A brapi não estima datas de pagamento. A revisão é mensal.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: JURO11
+        required: false
+        example: JURO11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '42730834000100'
+        required: false
+        example: '42730834000100'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2026-01-01'
+        required: false
+        example: '2026-01-01'
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2026-06-30'
+        required: false
+        example: '2026-06-30'
+        name: endDate
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          enum:
+          - lastDatePrior
+          - paymentDate
+          - declaredDate
+          - symbol
+          - rate
+          default: paymentDate
+          description: Campo usado na ordenação.
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem crescente (`asc`) ou decrescente (`desc`).
+          example: desc
+        required: false
+        example: desc
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - fiagro
+          - fiinfra
+          - fif
+          - fidc
+          - fip
+          - other
+          description: Tipo do fundo.
+        required: false
+        name: assetType
+        in: query
+      responses:
+        '200':
+          description: Dividendos validados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dividends:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FundDividend'
+                  pagination:
+                    $ref: '#/components/schemas/FundPaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - dividends
+                - pagination
+                - requestedAt
+                - took
+              example:
+                dividends:
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  assetType: fiinfra
+                  declaredDate: '2026-05-29T00:00:00.000Z'
+                  lastDatePrior: '2026-05-29T00:00:00.000Z'
+                  exDate: null
+                  paymentDate: '2026-06-13T00:00:00.000Z'
+                  rate: 0.5
+                  label: RENDIMENTO
+                  isinCode: BRJUROCTF002
+                pagination:
+                  page: 1
+                  limit: 20
+                  totalItems: 1
+                  totalPages: 1
+                  hasNextPage: false
+                requestedAt: '2026-06-22T02:10:56.983Z'
+                took: 152
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/fiagro/reports:
+    get:
+      tags:
+      - Fundos
+      operationId: getFiagroReports
+      security:
+      - Bearer: []
+      summary: Relatórios de FIAGRO
+      description: 'Relatório mensal de FIAGRO na CVM: patrimônio, valor patrimonial por cota, cotistas, rentabilidade do mês, dividend yield mensal e valores a distribuir.
+
+
+        Use para acompanhar a evolução de um FIAGRO mês a mês.
+
+
+        Informe `symbols` ou `cnpjs`. Por padrão, a resposta traz só a versão mais recente de cada mês. Use `allVersions=true` para ver as reapresentações.
+
+
+        `sortBy` aceita `referenceDate`, `symbol`, `cnpj`, `netEquity`, `totalInvestors` e `dividendYieldMonthly`. O padrão é `referenceDate`.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: XPCA11
+        required: false
+        example: XPCA11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '41269527000101'
+        required: false
+        example: '41269527000101'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2026-01-01'
+        required: false
+        example: '2026-01-01'
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2026-06-30'
+        required: false
+        example: '2026-06-30'
+        name: endDate
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Campo usado na ordenação.
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem crescente (`asc`) ou decrescente (`desc`).
+          example: desc
+        required: false
+        example: desc
+        name: sortOrder
+        in: query
+      - schema:
+          type: boolean
+          nullable: true
+          default: false
+          description: Se `true`, traz todas as versões enviadas à CVM para cada mês.
+        required: false
+        name: allVersions
+        in: query
+      responses:
+        '200':
+          description: Relatórios FIAGRO
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FiagroReport'
+                  pagination:
+                    $ref: '#/components/schemas/FundPaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - reports
+                - pagination
+                - requestedAt
+                - took
+              example:
+                reports:
+                - symbol: XPCA11
+                  cnpj: '41269527000101'
+                  name: XP CRÉDITO AGRÍCOLA-FUNDO DE INVESTIMENTO NAS CADEIAS PROD
+                  referenceDate: '2026-05-01T00:00:00.000Z'
+                  version: 1
+                  isin: BRXPCACTF004
+                  market: BOLSA
+                  administratorName: XP INVESTIMENTOS CORRETORA DE CÂMBIO, TÍTULOS E VAL MOB S/A
+                  managerName: XP VISTA ASSET MANAGEMENT LTDA.
+                  totalAssets: 492323580
+                  netEquity: 487325340
+                  sharesOutstanding: 45523076
+                  navPerShare: 10.71
+                  totalInvestors: 94254
+                  monthlyReturn: 0.11
+                  patrimonialMonthlyReturn: -0.92
+                  dividendYieldMonthly: 1.03
+                  amortizationRateMonthly: 0
+                  liquidityNeeds: null
+                  incomeToDistribute: 4567754.5
+                  totalLiabilities: 4998232
+                pagination:
+                  page: 1
+                  limit: 20
+                  totalItems: 5
+                  totalPages: 1
+                  hasNextPage: false
+                requestedAt: '2026-06-22T02:10:57.433Z'
+                took: 293
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/fiagro/portfolio:
+    get:
+      tags:
+      - Fundos
+      operationId: getFiagroPortfolio
+      security:
+      - Bearer: []
+      summary: Carteira de FIAGRO
+      description: 'Carteira de FIAGRO em um mês: resumo, alocações por classe de ativo, passivos e investidores.
+
+
+        Use para ver quanto do fundo está em CRA, direitos creditórios, imóveis rurais ou participações.
+
+
+        Informe `symbols` ou `cnpjs`. Sem `referenceDate`, a resposta traz o mês mais recente.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: XPCA11
+        required: false
+        example: XPCA11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '41269527000101'
+        required: false
+        example: '41269527000101'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Mês de referência no formato YYYY-MM-DD.
+        required: false
+        name: referenceDate
+        in: query
+      - schema:
+          type: boolean
+          nullable: true
+          default: false
+          description: Se `true`, traz todas as versões enviadas à CVM para cada mês.
+        required: false
+        name: allVersions
+        in: query
+      - schema:
+          type: string
+        required: false
+        name: include
+        in: query
+      responses:
+        '200':
+          description: Carteiras FIAGRO
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  funds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FiagroPortfolio'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - funds
+                - requestedAt
+                - took
+              example:
+                funds:
+                - symbol: XPCA11
+                  cnpj: '41269527000101'
+                  referenceDate: '2026-05-01T00:00:00.000Z'
+                  summary:
+                    netEquity: 487325339.56
+                    totalAssets: 492323571.36
+                    totalInvested: 460334438.28
+                    liquidityNeeds: null
+                    totalLiabilities: 4998231.8
+                  allocations:
+                    cpr: 0
+                    cra: 299574550.49
+                    fii: 0
+                    fip: 10045714.33
+                    lca: 0
+                    lci: 0
+                    cdca: 0
+                    fidc: 99610927.4
+                    fiagro: 42988149.25
+                    ruralRealEstate: 0
+                  investors:
+                    total: 94254
+                    individuals: 94165
+                    nonResidents: 6
+                    financialCompanies: 0
+                    nonFinancialCompanies: 79
+                  liabilities:
+                    adminFeesPayable: 354189.17
+                    totalLiabilities: 4998231.8
+                    incomeToDistribute: 4567754.46
+                requestedAt: '2026-06-22T02:10:57.586Z'
+                took: 146
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/portfolio:
+    get:
+      tags:
+      - Fundos
+      operationId: getFundPortfolio
+      security:
+      - Bearer: []
+      summary: Carteira de fundos
+      description: 'Carteira de fundos FI e FIF, do arquivo CDA da CVM. As posições vêm agrupadas em títulos públicos, cotas de fundos, crédito privado, ativos listados, recebíveis e valores a pagar.
+
+
+        Use para ver onde o fundo investe e qual o peso de cada grupo de ativos.
+
+
+        Informe `symbols` ou `cnpjs`. Sem `referenceDate`, a resposta traz a carteira mais recente.
+
+
+        Filtre os grupos com `include`: `publicBonds`, `fundHoldings`, `creditAssets`, `listedSecurities`, `receivables` e `payables`.
+
+
+        Posições confidenciais aparecem só no total, em `confidentialSummary`.
+
+
+        A CVM publica o CDA com meses de atraso. Mostre `referenceDate` junto do dado.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+          example: JURO11
+        required: false
+        example: JURO11
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '42730834000100'
+        required: false
+        example: '42730834000100'
+        name: cnpjs
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Mês de referência no formato YYYY-MM-DD.
+        required: false
+        name: referenceDate
+        in: query
+      - schema:
+          type: string
+          description: 'Grupos de ativos separados por vírgula. Ex.: publicBonds,creditAssets.'
+        required: false
+        name: include
+        in: query
+      responses:
+        '200':
+          description: Carteiras
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  funds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FundPortfolio'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - funds
+                - requestedAt
+                - took
+              example:
+                funds:
+                - symbol: JURO11
+                  cnpj: '42730834000100'
+                  name: SPARTA INFRA FI EM COTAS DE FUNDOS INCENTIVADOS DE INVESTIMENTO EM INFRAESTRUTURA RENDA FIXA
+                  referenceDate: '2026-05-31T00:00:00.000Z'
+                  summary:
+                    marketValue: 2083851261
+                    holdingsCount: 7
+                    publicBondsValue: 6403800
+                    fundHoldingsValue: 2053162240
+                    creditAssetsValue: 0
+                    listedSecuritiesValue: 0
+                    receivablesValue: 12371910
+                    payablesValue: 11913311
+                  publicBonds:
+                  - bucket: publicBonds
+                    assetType: Título público federal
+                    assetName: NOTAS DO TESOURO NACIONAL SERIE B
+                    issuerName: null
+                    issuerCnpj: null
+                    isin: BRSTNCNTB716
+                    selicCode: '760199'
+                    quantity: 1434
+                    marketValue: 6403800
+                    costValue: null
+                    maturityDate: '2029-05-15T00:00:00.000Z'
+                    confidential: false
+                    details:
+                      applicationType: Operações Compromissadas
+                      negotiationType: Para negociação
+                      issueDate: '2024-01-17T00:00:00.000Z'
+                      relatedIssuer: false
+                      fundClassType: CLASSES - FIF
+                  fundHoldings:
+                  - bucket: fundHoldings
+                    assetType: Fundo de Investimento e de Cotas
+                    assetName: SPARTA INFRA MASTER VI FUNDO INCENTIVADO DE INVESTIMENTO EM INFRAESTRUTURA RENDA FIXA
+                    issuerName: null
+                    issuerCnpj: '54773359000120'
+                    isin: null
+                    selicCode: null
+                    quantity: 9950000
+                    marketValue: 972734460
+                    costValue: null
+                    maturityDate: null
+                    confidential: false
+                    details:
+                      applicationType: Cotas de Fundos
+                      relatedIssuer: true
+                      fundClassType: CLASSES - FIF
+                  creditAssets: []
+                  listedSecurities: []
+                  receivables:
+                  - bucket: receivables
+                    assetType: Outros
+                    assetName: VALORES A RECEBER
+                    issuerName: null
+                    issuerCnpj: null
+                    isin: null
+                    selicCode: null
+                    quantity: null
+                    marketValue: 12371910
+                    costValue: null
+                    maturityDate: null
+                    confidential: false
+                    details:
+                      applicationType: Valores a receber
+                      negotiationType: Para negociação
+                      fundClassType: CLASSES - FIF
+                  payables:
+                  - bucket: payables
+                    assetType: Outros
+                    assetName: VALORES A PAGAR
+                    issuerName: null
+                    issuerCnpj: null
+                    isin: null
+                    selicCode: null
+                    quantity: null
+                    marketValue: 11913311
+                    costValue: null
+                    maturityDate: null
+                    confidential: false
+                    details:
+                      applicationType: Valores a pagar
+                      negotiationType: Para negociação
+                      fundClassType: CLASSES - FIF
+                  confidentialSummary: null
+                requestedAt: '2026-06-22T02:10:57.134Z'
+                took: 147
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/fidc/reports:
+    get:
+      tags:
+      - Fundos
+      operationId: getFidcReports
+      security:
+      - Bearer: []
+      summary: Relatórios de FIDC
+      description: 'Relatório mensal de FIDC na CVM: ativos, valor da carteira, patrimônio líquido, patrimônio médio, passivos, classe de cota e tipo de condomínio.
+
+
+        Use para acompanhar o tamanho e a evolução de um FIDC mês a mês.
+
+
+        A maioria dos FIDCs não tem ticker em bolsa. Use `cnpjs`. `symbols` funciona só quando o fundo tem ticker.
+
+
+        `sortBy` aceita `referenceDate`, `cnpj`, `netEquity`, `assets` e `portfolioValue`. O padrão é `referenceDate`.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '05754060000113'
+        required: false
+        example: '05754060000113'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2026-01-01'
+        required: false
+        example: '2026-01-01'
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2026-06-30'
+        required: false
+        example: '2026-06-30'
+        name: endDate
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Campo usado na ordenação.
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem crescente (`asc`) ou decrescente (`desc`).
+          example: desc
+        required: false
+        example: desc
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Relatórios FIDC
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FidcReport'
+                  pagination:
+                    $ref: '#/components/schemas/FundPaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - reports
+                - pagination
+                - requestedAt
+                - took
+              example:
+                reports:
+                - symbol: null
+                  cnpj: '05754060000113'
+                  name: CATERPILLAR FUNDO DE INVESTIMENTO EM DIREITOS CREDITÓRIOS DO SEGMENTO INDUSTRIAL II - RESP LIMITADA
+                  referenceDate: '2026-05-31T00:00:00.000Z'
+                  administratorName: BEM - DISTRIBUIDORA DE TITULOS E VALORES MOBILIARIOS LTDA.
+                  class: null
+                  condominiumType: ABERTO
+                  assets: 1642889200
+                  portfolioValue: 1642755000
+                  netEquity: 1642653000
+                  averageNetEquity: 1620125200
+                  liabilities: 236119.5
+                pagination:
+                  page: 1
+                  limit: 20
+                  totalItems: 5
+                  totalPages: 1
+                  hasNextPage: false
+                requestedAt: '2026-06-22T02:10:57.882Z'
+                took: 292
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/fidc/portfolio:
+    get:
+      tags:
+      - Fundos
+      operationId: getFidcPortfolio
+      security:
+      - Bearer: []
+      summary: Carteira de FIDC
+      description: 'Carteira de FIDC em um mês: setores, vencimentos, inadimplência, faixas de risco, classes de cota, cotistas e cedentes.
+
+
+        Use para avaliar o risco de crédito de um FIDC e a concentração por cedente.
+
+
+        Informe `cnpjs`, ou `symbols` quando o fundo tem ticker. Sem `referenceDate`, a resposta traz o mês mais recente.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '05754060000113'
+        required: false
+        example: '05754060000113'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Mês de referência no formato YYYY-MM-DD.
+        required: false
+        name: referenceDate
+        in: query
+      - schema:
+          type: string
+        required: false
+        name: include
+        in: query
+      responses:
+        '200':
+          description: Carteira FIDC
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  funds:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FidcPortfolio'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - funds
+                - requestedAt
+                - took
+              example:
+                funds:
+                - symbol: null
+                  cnpj: '05754060000113'
+                  referenceDate: '2026-05-31T00:00:00.000Z'
+                  sectors:
+                    brand: 0
+                    finance: 0
+                    commerce: 0
+                    industry: 0
+                    judicial: 0
+                    services: 1265864074.47
+                    factoring: 0
+                    realEstate: 0
+                    agribusiness: 0
+                    creditRights: 0
+                    publicSector: 0
+                  maturityBuckets:
+                    upTo30Days: 695649558.05
+                    upTo60Days: 570214516.42
+                    upTo90Days: 0
+                    upTo120Days: 0
+                    upTo150Days: 0
+                    upTo180Days: 0
+                    upTo360Days: 0
+                    upTo720Days: 0
+                    over1080Days: 0
+                    upTo1080Days: 0
+                  delinquencyBuckets:
+                    upTo30Days: 0
+                    upTo60Days: 0
+                    upTo90Days: 0
+                    upTo120Days: 0
+                    upTo150Days: 0
+                    upTo180Days: 0
+                    upTo360Days: 0
+                    upTo720Days: 0
+                    over1080Days: 0
+                    upTo1080Days: 0
+                  riskBuckets:
+                    debtorA: 0
+                    debtorB: 0
+                    debtorC: 0
+                    debtorD: 0
+                    debtorE: 0
+                    debtorF: 0
+                    debtorG: 0
+                    debtorH: 0
+                    debtorAA: 1265864074.47
+                  quotaClasses:
+                  - investors: 1
+                    quotaCount: 27809423.4357832
+                    quotaValue: 59.0682179
+                    classOrSeries: Subclasse Senior Subclasse 1
+                  investors:
+                    seniorPf: 0
+                    subordinatedPf: 0
+                    seniorNonResident: 1
+                    subordinatedNonResident: 0
+                    seniorFinancialInstitution: 0
+                    subordinatedFinancialInstitution: 0
+                  cedentes:
+                    top1Cnpj: '61064911000177'
+                    top2Cnpj: '61064911001734'
+                    top1Percent: 65.78
+                    top2Percent: 11.29
+                requestedAt: '2026-06-22T02:10:58.032Z'
+                took: 145
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/funds/fip/reports:
+    get:
+      tags:
+      - Fundos
+      operationId: getFipReports
+      security:
+      - Bearer: []
+      summary: Relatórios de FIP
+      description: 'Relatórios trimestrais e quadrimestrais de FIP na CVM: patrimônio, capital comprometido e integralizado, cotas, classe e composição de investidores.
+
+
+        Use para acompanhar o capital e os investidores de um FIP.
+
+
+        Escolha o documento com `reportType`. Informe `cnpjs`, ou `symbols` quando o fundo tem ticker. FIP não tem cota diária.
+
+
+        `sortBy` aceita `referenceDate`, `cnpj` e `netEquity`. O padrão é `referenceDate`.
+
+
+        Plano Pro.'
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula, até 20. Ex.: JURO11,XPCA11.'
+        required: false
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: CNPJs separados por vírgula, até 20, com ou sem pontuação.
+          example: '06033235000166'
+        required: false
+        example: '06033235000166'
+        name: cnpjs
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2026-01-01'
+        required: false
+        example: '2026-01-01'
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD.
+          example: '2026-06-30'
+        required: false
+        example: '2026-06-30'
+        name: endDate
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 1
+          description: Número da página, a partir de 1.
+          example: 1
+        required: false
+        example: 1
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          default: 20
+          description: Itens por página.
+          example: 20
+        required: false
+        example: 20
+        name: limit
+        in: query
+      - schema:
+          type: string
+          description: Campo usado na ordenação.
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem crescente (`asc`) ou decrescente (`desc`).
+          example: desc
+        required: false
+        example: desc
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - trimestral
+          - quadrimestral
+          description: Tipo de relatório.
+        required: false
+        name: reportType
+        in: query
+      responses:
+        '200':
+          description: Relatórios FIP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FipReport'
+                  pagination:
+                    $ref: '#/components/schemas/FundPaginationMeta'
+                  requestedAt:
+                    type: string
+                    format: date-time
+                    description: Data e hora da requisição em ISO 8601.
+                    example: '2025-01-24T17:32:38.000Z'
+                  took:
+                    type: integer
+                    minimum: 0
+                    description: Tempo de processamento, em milissegundos.
+                    example: 45
+                required:
+                - reports
+                - pagination
+                - requestedAt
+                - took
+              example:
+                reports:
+                - symbol: null
+                  cnpj: '06033235000166'
+                  name: CRT FIP - MULTIESTRATÉGIA
+                  reportType: quadrimestral
+                  referenceDate: '2026-04-30T00:00:00.000Z'
+                  netEquity: 28866473.76
+                  targetAudience: Investidores qualificados
+                  isInvestmentEntity: true
+                  investedInOtherFips: 0
+                  capital:
+                    committed: 13162950.24
+                    subscribed: 13162950.24
+                    paidIn: 13162950.24
+                  quotas:
+                    subscribed: 103
+                    paidIn: 13162950.24
+                  quotaClass:
+                    name: '1'
+                    fundType: CLASSES - FIP
+                    subscribedQuotas: 103
+                    paidInQuotas: 103
+                    quotaValue: 280257.02679611
+                    investors: 1
+                    hasDistinctEconomicRights: false
+                    hasSpecialPoliticalRights: false
+                  investorComposition:
+                    totalInvestors: 1
+                    totalSubscribedQuotaPercent: 100
+                    byType:
+                      closedPensionFunds:
+                        investors: 1
+                        subscribedQuotaPercent: 100
+                pagination:
+                  page: 1
+                  limit: 20
+                  totalItems: 1
+                  totalPages: 1
+                  hasNextPage: false
+                requestedAt: '2026-06-22T02:10:58.323Z'
+                took: 288
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    FundProfile:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        investorBreakdown:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        risk:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        liquidity:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        concentration:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        privateCredit:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - investorBreakdown
+      - risk
+      - liquidity
+      - concentration
+      - privateCredit
+    FundIndicator:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        name:
+          type: string
+          nullable: true
+        assetType:
+          type: string
+          enum:
+          - fii
+          - fiagro
+          - fiinfra
+          - fif
+          - fidc
+          - fip
+          - etf
+          - other
+        price:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        priceToNav:
+          type: number
+          nullable: true
+        equity:
+          type: number
+          nullable: true
+        totalAssets:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        asOfDate:
+          type: string
+          nullable: true
+        dailyApplications:
+          type: number
+          nullable: true
+        dailyRedemptions:
+          type: number
+          nullable: true
+        sharesOutstanding:
+          type: number
+          nullable: true
+        monthlyReturn:
+          type: number
+          nullable: true
+        patrimonialMonthlyReturn:
+          type: number
+          nullable: true
+        dividendYieldMonthly:
+          type: number
+          nullable: true
+      required:
+      - symbol
+      - cnpj
+      - name
+      - assetType
+      - price
+      - navPerShare
+      - priceToNav
+      - equity
+      - totalAssets
+      - totalInvestors
+      - asOfDate
+      - dailyApplications
+      - dailyRedemptions
+      - sharesOutstanding
+      - monthlyReturn
+      - patrimonialMonthlyReturn
+      - dividendYieldMonthly
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    FundPortfolio:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        name:
+          type: string
+          nullable: true
+        referenceDate:
+          type: string
+        summary:
+          type: object
+          additionalProperties:
+            nullable: true
+        publicBonds:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHolding'
+        fundHoldings:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHolding'
+        creditAssets:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHolding'
+        listedSecurities:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHolding'
+        receivables:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHolding'
+        payables:
+          type: array
+          items:
+            $ref: '#/components/schemas/FundHolding'
+        confidentialSummary:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+      required:
+      - symbol
+      - cnpj
+      - name
+      - referenceDate
+      - summary
+      - publicBonds
+      - fundHoldings
+      - creditAssets
+      - listedSecurities
+      - receivables
+      - payables
+      - confidentialSummary
+    FiagroPortfolio:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        summary:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        allocations:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        investors:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        liabilities:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - summary
+      - allocations
+      - investors
+      - liabilities
+    FidcPortfolio:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        referenceDate:
+          type: string
+        sectors:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        maturityBuckets:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        delinquencyBuckets:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        riskBuckets:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        quotaClasses:
+          type: array
+          nullable: true
+          items:
+            type: object
+            additionalProperties:
+              nullable: true
+        investors:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+        cedentes:
+          type: object
+          nullable: true
+          additionalProperties:
+            nullable: true
+      required:
+      - symbol
+      - cnpj
+      - referenceDate
+      - sectors
+      - maturityBuckets
+      - delinquencyBuckets
+      - riskBuckets
+      - quotaClasses
+      - investors
+      - cedentes
+    FundHoldingDetails:
+      type: object
+      nullable: true
+      properties:
+        applicationType:
+          type: string
+        negotiationType:
+          type: string
+        assetCode:
+          type: string
+        issueDate:
+          type: string
+        relatedIssuer:
+          type: boolean
+        purchasedQuantity:
+          type: number
+        soldQuantity:
+          type: number
+        purchaseValue:
+          type: number
+        saleValue:
+          type: number
+        confidentialUntil:
+          type: string
+        fundClassType:
+          type: string
+        subclassId:
+          type: string
+        issuerType:
+          type: string
+    FundListItem:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        formattedCnpj:
+          type: string
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        legalName:
+          type: string
+          nullable: true
+        assetType:
+          type: string
+          enum:
+          - fii
+          - fiagro
+          - fiinfra
+          - fif
+          - fidc
+          - fip
+          - etf
+          - other
+        cvmClassType:
+          type: string
+          nullable: true
+        cvmClassification:
+          type: string
+          nullable: true
+        anbimaClassification:
+          type: string
+          nullable: true
+        b3Classification:
+          type: string
+          nullable: true
+        isin:
+          type: string
+          nullable: true
+        administratorName:
+          type: string
+          nullable: true
+        administratorCnpj:
+          type: string
+          nullable: true
+        managerName:
+          type: string
+          nullable: true
+        managerCnpj:
+          type: string
+          nullable: true
+        status:
+          type: string
+          nullable: true
+        price:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        priceToNav:
+          type: number
+          nullable: true
+        equity:
+          type: number
+          nullable: true
+        totalAssets:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        updatedAt:
+          type: string
+          nullable: true
+      required:
+      - symbol
+      - cnpj
+      - formattedCnpj
+      - name
+      - legalName
+      - assetType
+      - cvmClassType
+      - cvmClassification
+      - anbimaClassification
+      - b3Classification
+      - isin
+      - administratorName
+      - administratorCnpj
+      - managerName
+      - managerCnpj
+      - status
+      - price
+      - navPerShare
+      - priceToNav
+      - equity
+      - totalAssets
+      - totalInvestors
+      - updatedAt
+    FundDividend:
+      type: object
+      properties:
+        symbol:
+          type: string
+        cnpj:
+          type: string
+        assetType:
+          type: string
+          enum:
+          - fiagro
+          - fiinfra
+          - fif
+          - fidc
+          - fip
+          - other
+        declaredDate:
+          type: string
+        lastDatePrior:
+          type: string
+        exDate:
+          type: string
+          nullable: true
+        paymentDate:
+          type: string
+        rate:
+          type: number
+        label:
+          type: string
+        isinCode:
+          type: string
+          nullable: true
+      required:
+      - symbol
+      - cnpj
+      - assetType
+      - declaredDate
+      - lastDatePrior
+      - exDate
+      - paymentDate
+      - rate
+      - label
+      - isinCode
+    FidcReport:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        name:
+          type: string
+          nullable: true
+        referenceDate:
+          type: string
+        administratorName:
+          type: string
+          nullable: true
+        class:
+          type: string
+          nullable: true
+        condominiumType:
+          type: string
+          nullable: true
+        assets:
+          type: number
+          nullable: true
+        portfolioValue:
+          type: number
+          nullable: true
+        netEquity:
+          type: number
+          nullable: true
+        averageNetEquity:
+          type: number
+          nullable: true
+        liabilities:
+          type: number
+          nullable: true
+      required:
+      - symbol
+      - cnpj
+      - name
+      - referenceDate
+      - administratorName
+      - class
+      - condominiumType
+      - assets
+      - portfolioValue
+      - netEquity
+      - averageNetEquity
+      - liabilities
+    FundNavHistory:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        date:
+          type: string
+        classOrSeries:
+          type: string
+          nullable: true
+        totalAssets:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        equity:
+          type: number
+          nullable: true
+        dailyApplications:
+          type: number
+          nullable: true
+        dailyRedemptions:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        monthlyReturn:
+          type: number
+          nullable: true
+      required:
+      - symbol
+      - cnpj
+      - date
+      - classOrSeries
+      - totalAssets
+      - navPerShare
+      - equity
+      - dailyApplications
+      - dailyRedemptions
+      - totalInvestors
+      - monthlyReturn
+    FundHolding:
+      type: object
+      properties:
+        bucket:
+          type: string
+        assetType:
+          type: string
+          nullable: true
+        assetName:
+          type: string
+          nullable: true
+        issuerName:
+          type: string
+          nullable: true
+        issuerCnpj:
+          type: string
+          nullable: true
+        isin:
+          type: string
+          nullable: true
+        selicCode:
+          type: string
+          nullable: true
+        quantity:
+          type: number
+          nullable: true
+        marketValue:
+          type: number
+          nullable: true
+        costValue:
+          type: number
+          nullable: true
+        maturityDate:
+          type: string
+          nullable: true
+        confidential:
+          type: boolean
+        details:
+          $ref: '#/components/schemas/FundHoldingDetails'
+      required:
+      - bucket
+      - assetType
+      - assetName
+      - issuerName
+      - issuerCnpj
+      - isin
+      - selicCode
+      - quantity
+      - marketValue
+      - costValue
+      - maturityDate
+      - confidential
+      - details
+    FiagroReport:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        name:
+          type: string
+          nullable: true
+        referenceDate:
+          type: string
+        version:
+          type: number
+        isin:
+          type: string
+          nullable: true
+        market:
+          type: string
+          nullable: true
+        administratorName:
+          type: string
+          nullable: true
+        managerName:
+          type: string
+          nullable: true
+        totalAssets:
+          type: number
+          nullable: true
+        netEquity:
+          type: number
+          nullable: true
+        sharesOutstanding:
+          type: number
+          nullable: true
+        navPerShare:
+          type: number
+          nullable: true
+        totalInvestors:
+          type: number
+          nullable: true
+        monthlyReturn:
+          type: number
+          nullable: true
+        patrimonialMonthlyReturn:
+          type: number
+          nullable: true
+        dividendYieldMonthly:
+          type: number
+          nullable: true
+        amortizationRateMonthly:
+          type: number
+          nullable: true
+        liquidityNeeds:
+          type: number
+          nullable: true
+        incomeToDistribute:
+          type: number
+          nullable: true
+        totalLiabilities:
+          type: number
+          nullable: true
+      required:
+      - symbol
+      - cnpj
+      - name
+      - referenceDate
+      - version
+      - isin
+      - market
+      - administratorName
+      - managerName
+      - totalAssets
+      - netEquity
+      - sharesOutstanding
+      - navPerShare
+      - totalInvestors
+      - monthlyReturn
+      - patrimonialMonthlyReturn
+      - dividendYieldMonthly
+      - amortizationRateMonthly
+      - liquidityNeeds
+      - incomeToDistribute
+      - totalLiabilities
+    FipReport:
+      type: object
+      properties:
+        symbol:
+          type: string
+          nullable: true
+        cnpj:
+          type: string
+        name:
+          type: string
+          nullable: true
+        reportType:
+          type: string
+          enum:
+          - trimestral
+          - quadrimestral
+        referenceDate:
+          type: string
+        netEquity:
+          type: number
+          nullable: true
+        targetAudience:
+          type: string
+          nullable: true
+        isInvestmentEntity:
+          type: boolean
+          nullable: true
+        investedInOtherFips:
+          type: number
+          nullable: true
+        capital:
+          type: object
+          nullable: true
+          properties:
+            committed:
+              type: number
+              nullable: true
+            subscribed:
+              type: number
+              nullable: true
+            paidIn:
+              type: number
+              nullable: true
+          required:
+          - committed
+          - subscribed
+          - paidIn
+        quotas:
+          type: object
+          nullable: true
+          properties:
+            subscribed:
+              type: number
+              nullable: true
+            paidIn:
+              type: number
+              nullable: true
+          required:
+          - subscribed
+          - paidIn
+        quotaClass:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              nullable: true
+            fundType:
+              type: string
+              nullable: true
+            subscribedQuotas:
+              type: number
+              nullable: true
+            paidInQuotas:
+              type: number
+              nullable: true
+            quotaValue:
+              type: number
+              nullable: true
+            investors:
+              type: number
+              nullable: true
+            hasDistinctEconomicRights:
+              type: boolean
+              nullable: true
+            hasSpecialPoliticalRights:
+              type: boolean
+              nullable: true
+          required:
+          - name
+          - fundType
+          - subscribedQuotas
+          - paidInQuotas
+          - quotaValue
+          - investors
+          - hasDistinctEconomicRights
+          - hasSpecialPoliticalRights
+        investorComposition:
+          type: object
+          nullable: true
+          properties:
+            totalInvestors:
+              type: number
+              nullable: true
+            totalSubscribedQuotaPercent:
+              type: number
+              nullable: true
+            byType:
+              type: object
+              properties:
+                individuals:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                investmentFunds:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                realEstateFunds:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                openPensionFunds:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                closedPensionFunds:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                publicPensionFunds:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                commercialBanks:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                nonResidents:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                otherInvestors:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                insuranceCompanies:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                fundDistributors:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                capitalizationAndLeasingCompanies:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                financialCompanies:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                nonFinancialCompanies:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+                brokersAndDistributors:
+                  type: object
+                  properties:
+                    investors:
+                      type: number
+                      nullable: true
+                    subscribedQuotaPercent:
+                      type: number
+                      nullable: true
+                  required:
+                  - investors
+                  - subscribedQuotaPercent
+          required:
+          - totalInvestors
+          - totalSubscribedQuotaPercent
+          - byType
+      required:
+      - symbol
+      - cnpj
+      - name
+      - reportType
+      - referenceDate
+      - netEquity
+      - targetAudience
+      - isInvestmentEntity
+      - investedInOtherFips
+      - capital
+      - quotas
+      - quotaClass
+      - investorComposition
+    FundPaginationMeta:
+      type: object
+      properties:
+        page:
+          type: number
+        limit:
+          type: number
+        totalItems:
+          type: number
+        totalPages:
+          type: number
+        hasNextPage:
+          type: boolean
+      required:
+      - page
+      - limit
+      - totalItems
+      - totalPages
+      - hasNextPage
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

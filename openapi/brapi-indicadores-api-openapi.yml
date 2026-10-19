@@ -1,0 +1,491 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Indicadores API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Indicadores
+paths:
+  /api/v2/inflation:
+    get:
+      tags:
+      - Indicadores
+      operationId: getInflation
+      summary: IPCA acumulado em 12 meses
+      description: 'Série mensal do IPCA acumulado em 12 meses, o índice oficial de inflação do
+
+        Brasil. Cada ponto é o acumulado dos 12 meses até aquela data.
+
+
+        Endpoint descontinuado. Use as
+
+        séries macroeconômicas com `symbols=ipca12m`
+
+        para o acumulado ou `symbols=ipca` para a variação do mês.
+
+
+        Sem filtros, devolve os últimos 12 meses. Filtre com `start` e `end` no
+
+        formato `DD/MM/YYYY`. O IPCA de um mês sai no mês seguinte.
+
+
+        Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: true devolve a série desde 01/01/2000. Sem datas e sem este parâmetro, devolve os últimos 12 meses.
+          example: 'false'
+        required: false
+        name: historical
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato DD/MM/YYYY.
+          example: 01/01/2023
+        required: false
+        name: start
+        in: query
+      - schema:
+          type: string
+          description: 'Data final no formato DD/MM/YYYY. Padrão: hoje.'
+          example: 31/12/2023
+        required: false
+        name: end
+        in: query
+      - schema:
+          type: string
+          description: 'Campo de ordenação: date ou value. Padrão: date.'
+          example: date
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          description: 'Ordem: asc ou desc. Padrão: desc.'
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: IPCA acumulado em 12 meses, um ponto por mês.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InflationResponseSimple'
+        '401':
+          description: '**Não Autorizado.** Token de autenticação não fornecido ou inválido.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: '**Acesso Proibido.** Seu plano não tem acesso ao módulo de indicadores econômicos.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: '**Erro Interno.** Erro interno ao processar a requisição.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: '**Serviço Indisponível.** Serviço externo temporariamente indisponível.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/inflation/available:
+    get:
+      tags:
+      - Indicadores
+      operationId: getInflationAvailable
+      summary: Países com dados de inflação
+      description: 'Lista os países que o endpoint de inflação aceita. Hoje só `brazil`.
+
+
+        Endpoint descontinuado. Use as
+
+        séries macroeconômicas. Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - json
+          description: Formato da resposta. Só aceita json.
+        required: false
+        name: format
+        in: query
+      responses:
+        '200':
+          description: Lista de países disponíveis para dados de inflação retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InflationAvailableResponse'
+  /api/v2/prime-rate:
+    get:
+      tags:
+      - Indicadores
+      operationId: getPrimeRate
+      summary: Taxa Selic
+      description: 'Série diária da meta da taxa Selic, definida pelo Copom, em % ao ano.
+
+
+        Endpoint descontinuado. Use as
+
+        séries macroeconômicas com `symbols=selic`.
+
+
+        Sem filtros, devolve os últimos 12 meses. Filtre com `start` e `end` no
+
+        formato `DD/MM/YYYY`. A meta só muda nas reuniões do Copom, então a série
+
+        repete o mesmo valor entre uma reunião e outra.
+
+
+        Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: true devolve a série desde 01/01/2000. Sem datas e sem este parâmetro, devolve os últimos 12 meses.
+          example: 'false'
+        required: false
+        name: historical
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato DD/MM/YYYY.
+          example: 01/01/2023
+        required: false
+        name: start
+        in: query
+      - schema:
+          type: string
+          description: 'Data final no formato DD/MM/YYYY. Padrão: hoje.'
+          example: 31/12/2023
+        required: false
+        name: end
+        in: query
+      - schema:
+          type: string
+          description: 'Campo de ordenação: date ou value. Padrão: date.'
+          example: date
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          description: 'Ordem: asc ou desc. Padrão: desc.'
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      responses:
+        '200':
+          description: Meta da Selic, um ponto por dia, em % ao ano.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrimeRateResponseSimple'
+        '401':
+          description: '**Não Autorizado.** Token de autenticação não fornecido ou inválido.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: '**Acesso Proibido.** Seu plano não tem acesso ao módulo de indicadores econômicos.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: '**Erro Interno.** Erro interno ao processar a requisição.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: '**Serviço Indisponível.** Serviço externo temporariamente indisponível.'
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/prime-rate/available:
+    get:
+      tags:
+      - Indicadores
+      operationId: getPrimeRateAvailable
+      summary: Países com dados de juros
+      description: 'Lista os países que o endpoint da Selic aceita. Hoje só `brazil`.
+
+
+        Endpoint descontinuado. Use as
+
+        séries macroeconômicas. Planos Startup e Pro.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          enum:
+          - json
+          description: Formato da resposta. Só aceita json.
+        required: false
+        name: format
+        in: query
+      responses:
+        '200':
+          description: Lista de países disponíveis para dados de taxa de juros retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrimeRateAvailableResponse'
+components:
+  schemas:
+    PrimeRateEntrySimple:
+      type: object
+      properties:
+        date:
+          type: string
+        value:
+          type: string
+          description: Meta da Selic, em % ao ano.
+          example: '15.00'
+        epochDate:
+          type: number
+      required:
+      - date
+      - value
+      - epochDate
+    InflationAvailableResponse:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+      required:
+      - countries
+      - message
+      - requestedAt
+      example:
+        countries:
+        - brazil
+        message: Available inflation data countries
+        requestedAt: '2026-02-08T16:26:27.274Z'
+    InflationResponseSimple:
+      type: object
+      properties:
+        inflation:
+          type: array
+          items:
+            $ref: '#/components/schemas/InflationEntrySimple'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - inflation
+      - requestedAt
+      - took
+      example:
+        inflation:
+        - date: 01/12/2025
+          value: '4.26'
+          epochDate: 1764558000000
+        - date: 01/11/2025
+          value: '4.46'
+          epochDate: 1761966000000
+        - date: 01/10/2025
+          value: '4.68'
+          epochDate: 1759287600000
+        requestedAt: '2026-02-08T16:26:26.123Z'
+        took: 138
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    InflationEntrySimple:
+      type: object
+      properties:
+        date:
+          type: string
+        value:
+          type: string
+          description: IPCA acumulado em 12 meses, em %.
+          example: '4.26'
+        epochDate:
+          type: number
+      required:
+      - date
+      - value
+      - epochDate
+    PrimeRateAvailableResponse:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            type: string
+        message:
+          type: string
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+      required:
+      - countries
+      - message
+      - requestedAt
+      example:
+        countries:
+        - brazil
+        message: Available prime rate data countries
+        requestedAt: '2026-02-08T16:26:29.093Z'
+    PrimeRateResponseSimple:
+      type: object
+      properties:
+        prime-rate:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrimeRateEntrySimple'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - prime-rate
+      - requestedAt
+      - took
+      example:
+        prime-rate:
+        - date: 08/02/2026
+          value: '15.00'
+          epochDate: 1770519600000
+        - date: 07/02/2026
+          value: '15.00'
+          epochDate: 1770433200000
+        - date: 06/02/2026
+          value: '15.00'
+          epochDate: 1770346800000
+        requestedAt: '2026-02-08T16:26:28.456Z'
+        took: 92
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard

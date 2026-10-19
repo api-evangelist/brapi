@@ -200,6 +200,144 @@ apis:
     url: openapi/brapi-taxa-basica-de-juros-api-openapi.yml
   - type: Documentation
     url: https://brapi.dev/docs
+- aid: brapi:brapi-a-es-api
+  name: brapi Ações API
+  description: The Ações API from brapi — 12 operation(s) for ações.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Ações
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-a-es-api-openapi.yml
+- aid: brapi:brapi-c-mbio-api
+  name: brapi Câmbio API
+  description: >-
+    Monitore taxas de câmbio entre moedas fiduciárias de todo o mundo, com atualizações frequentes e dados
+    históricos.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Câmbio
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-c-mbio-api-openapi.yml
+- aid: brapi:brapi-conta-api
+  name: brapi Conta API
+  description: Dados da conta autenticada, como plano atual e uso da janela vigente.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Conta
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-conta-api-openapi.yml
+- aid: brapi:brapi-cota-es-api
+  name: brapi Cotações API
+  description: >-
+    Consulte informações detalhadas sobre ações, BDRs, ETFs e índices brasileiros. Obtenha preços em tempo
+    real, dados fundamentalistas, históricos e dividendos.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Cotações
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-cota-es-api-openapi.yml
+- aid: brapi:brapi-fundos-api
+  name: brapi Fundos API
+  description: >-
+    Descubra e consulte fundos brasileiros listados e estruturados, incluindo FIIs, FIAGROs, FI-Infra/FIFs,
+    FIDCs e FIPs.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Fundos
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-fundos-api-openapi.yml
+- aid: brapi:brapi-fundos-imobili-rios-api
+  name: brapi Fundos Imobiliários API
+  description: >-
+    Acesse dados completos de FIIs: cotações, indicadores fundamentalistas (P/VP, DY), relatórios gerenciais
+    e histórico de proventos.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Fundos Imobiliários
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-fundos-imobili-rios-api-openapi.yml
+- aid: brapi:brapi-futuros-api
+  name: brapi Futuros API
+  description: The Futuros API from brapi — 5 operation(s) for futuros.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Futuros
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-futuros-api-openapi.yml
+- aid: brapi:brapi-indicadores-api
+  name: brapi Indicadores API
+  description: The Indicadores API from brapi — 4 operation(s) for indicadores.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Indicadores
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-indicadores-api-openapi.yml
+- aid: brapi:brapi-macroeconomia-api
+  name: brapi Macroeconomia API
+  description: >-
+    Acompanhe os principais indicadores macroeconômicos do Brasil, incluindo inflação (IPCA, IGP-M), Taxa
+    Selic, agregados monetários e atividade.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Macroeconomia
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-macroeconomia-api-openapi.yml
+- aid: brapi:brapi-op-es-api
+  name: brapi Opções API
+  description: Consulte contratos, cadeias EOD negociadas e histórico de opções.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Opções
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-op-es-api-openapi.yml
+- aid: brapi:brapi-op-es-sobre-futuros-api
+  name: brapi Opções sobre Futuros API
+  description: The Opções sobre Futuros API from brapi — 8 operation(s) for opções sobre futuros.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Opções sobre Futuros
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-op-es-sobre-futuros-api-openapi.yml
+- aid: brapi:brapi-renda-fixa-api
+  name: brapi Renda Fixa API
+  description: Consulte dados de títulos públicos e outros instrumentos de renda fixa brasileira.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Renda Fixa
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-renda-fixa-api-openapi.yml
+- aid: brapi:brapi-tickers-api
+  name: brapi Tickers API
+  description: >-
+    Descubra, filtre e valide tickers B3 disponíveis na brapi. Use como camada de identidade antes dos
+    endpoints de dados de mercado.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Tickers
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-tickers-api-openapi.yml
+- aid: brapi:brapi-utilit-rios-api
+  name: brapi Utilitários API
+  description: Ferramentas auxiliares para descobrir ativos disponíveis e verificar a saúde da API.
+  humanURL: https://brapi.dev/docs
+  tags:
+  - Utilitários
+  properties:
+  - type: OpenAPI
+    url: openapi/brapi-utilit-rios-api-openapi.yml
 common:
   - type: Plans
     url: plans/brapi-plans-pricing.yml

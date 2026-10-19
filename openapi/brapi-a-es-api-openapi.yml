@@ -1,0 +1,3932 @@
+openapi: 3.2.0
+info:
+  title: brapi - API do Mercado Financeiro Brasileiro Ações API
+  version: 3.0.0
+  description: 'Dados do mercado financeiro brasileiro: ações, FIIs, fundos, BDRs, ETFs, índices, opções, futuros, Tesouro Direto, câmbio, criptomoedas e séries macroeconômicas.
+
+
+    Envie a chave no header `Authorization: Bearer `. Crie a conta em https://brapi.dev/login e pegue a chave em https://brapi.dev/dashboard. PETR4, MGLU3, VALE3 e ITUB4 funcionam sem chave.
+
+
+    Use as rotas em `/api/v2` em integrações novas. Uma rota descontinuada envia `Deprecation: true`, `Sunset: ` e um header `Link` com a rota que a substitui. A política está em https://brapi.dev/docs/versioning.
+
+
+    SDKs oficiais: `npm install brapi` (https://github.com/brapi-dev/brapi-typescript) e `pip install brapi` (https://github.com/brapi-dev/brapi-python). Documentação: https://brapi.dev/docs'
+  contact:
+    name: brapi
+    url: https://brapi.dev
+    email: contato@brapi.dev
+  externalDocs:
+    description: Política de versionamento e descontinuação
+    url: https://brapi.dev/versioning.md
+  x-brapi-versioning:
+    strategy: url
+    currentVersion: v2
+    policyUrl: https://brapi.dev/versioning.md
+    deprecationHeaders:
+    - Deprecation
+    - Sunset
+    - Link
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://brapi.dev
+  description: Servidor principal da API brapi
+- url: http://localhost:3001
+  description: Servidor local para desenvolvimento
+tags:
+- name: Ações
+paths:
+  /api/v2/stocks/insider-transactions:
+    get:
+      operationId: getStockInsiderTransactions
+      tags:
+      - Ações
+      summary: Negociações de administradores e pessoas vinculadas
+      description: 'Movimentações de valores mobiliários por administradores, controladores e pessoas vinculadas, por empresa e período. Os relatórios são mensais. A atualização ocorre semanalmente.
+
+
+        O ticker identifica a empresa do relatório. PETR3 e PETR4 retornam os mesmos dados. Os registros agrupam pessoas por cargo, sem identificar cada pessoa ou o ticker negociado.
+
+
+        `direction` indica entrada ou saída da posição, inclusive transferências. Use `movementType` para identificar compras e vendas.
+
+
+        A resposta traz as movimentações mais recentes primeiro e a última versão de cada relatório. Use `allVersions=true` para incluir versões anteriores. Não some essas versões, pois elas podem repetir movimentações. Saldos iniciais não entram na lista.
+
+
+        Plano Pro. PETR4, MGLU3, VALE3 e ITUB4 permitem testes gratuitos, sem token.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 300
+          description: Tickers separados por vírgula. Máximo de 20. Cada ticker identifica a empresa que apresenta o relatório.
+          example: VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: 'Data inicial da movimentação. Padrão: 365 dias antes de endDate.'
+          example: '2026-08-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: 'Data final da movimentação. Padrão: hoje.'
+          example: '2026-08-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - company
+          - parent
+          - subsidiary
+          - all
+          default: company
+          description: 'Empresa que emite o valor mobiliário: a própria empresa, sua controladora ou sua controlada.'
+        required: false
+        name: companyRelation
+        in: query
+      - schema:
+          type: string
+          enum:
+          - credit
+          - debit
+          description: Entrada ou saída da posição. Inclui transferências e outras movimentações.
+        required: false
+        name: direction
+        in: query
+      - schema:
+          type: string
+          enum:
+          - controller
+          - board
+          - director
+          - fiscalCouncil
+          - statutoryBody
+          description: Grupo de cargos. Cada grupo inclui pessoas vinculadas.
+        required: false
+        name: roleGroup
+        in: query
+      - schema:
+          type: string
+          minLength: 1
+          maxLength: 150
+          description: Tipo de movimentação, com o texto exato do relatório.
+          example: Compra à vista
+        required: false
+        name: movementType
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          description: 'Inclui versões anteriores dos relatórios. Padrão: false. Versões anteriores podem repetir movimentações.'
+        required: false
+        name: allVersions
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 10000
+          default: 1
+          description: Página de cada empresa.
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+          description: Máximo de movimentações por empresa e página.
+          example: 1
+        required: false
+        name: limit
+        in: query
+      responses:
+        '200':
+          description: Movimentações por empresa, com paginação independente.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InsiderTransactionResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Serviço temporariamente indisponível. Tente de novo em alguns minutos.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Serviço temporariamente indisponível.
+                  example:
+                    error: true
+                    message: Serviço externo temporariamente indisponível. Tente novamente em alguns minutos.
+                    code: EXTERNAL_API_ERROR
+  /api/v2/stocks/screener:
+    get:
+      operationId: getStockScreener
+      tags:
+      - Ações
+      summary: Filtrar ações por indicadores
+      description: 'Filtra e ordena ações da B3 por preço e indicadores fundamentalistas, como P/L, P/VP, dividend yield e ROE. Uma chamada percorre todas as ações.
+
+
+        Cada indicador aceita `{chave}Min` e `{chave}Max`. Os limites são inclusivos e usam a mesma unidade da resposta. Frações seguem `/api/v2/stocks/statistics` e `/api/v2/stocks/financial-data`: 6% é `0.06`. Um filtro remove os ativos sem o dado. Na ordenação, os nulos ficam no fim.
+
+
+        Exemplos:
+
+
+        - P/L entre 0 e 8 e dividend yield de pelo menos 6%: `?trailingPEMin=0&trailingPEMax=8÷ndYieldMin=0.06&sortBy=dividendYield`
+
+        - ROE de pelo menos 15%, do maior para o menor: `?returnOnEquityMin=0.15&sortBy=returnOnEquity`
+
+
+        Empresas com prejuízo têm P/L negativo. Para excluí-las, envie `trailingPEMin=0` junto com `trailingPEMax`.
+
+
+        `quote` e `dividendYield` usam o último preço. P/L, P/VP e os outros indicadores usam o preço da atualização diária dos fundamentos. Em units, P/L e P/VP usam o último preço da unit. `dividendYield` soma os proventos em dinheiro dos últimos 12 meses.
+
+
+        Planos Startup e Pro. Os indicadores do plano Pro não vêm em `metrics` no plano Startup. Um filtro ou uma ordenação com esses indicadores no plano Startup retorna 403.
+
+
+        | Indicador | Chave | Unidade | Plano |
+
+        | --- | --- | --- | --- |
+
+        | Preço | `lastPrice` | reais | Startup e Pro |
+
+        | Variação no dia | `changePercent` | porcentagem (2.81 = 2,81%) | Startup e Pro |
+
+        | Volume | `volume` | ações | Startup e Pro |
+
+        | Valor de mercado | `marketCap` | reais | Startup e Pro |
+
+        | P/L | `trailingPE` | múltiplo | Startup e Pro |
+
+        | P/VP | `priceToBook` | múltiplo | Startup e Pro |
+
+        | EV/EBITDA | `enterpriseToEbitda` | múltiplo | Startup e Pro |
+
+        | EV/Receita | `enterpriseToRevenue` | múltiplo | Startup e Pro |
+
+        | PEG | `pegRatio` | múltiplo | Startup e Pro |
+
+        | LPA | `earningsPerShare` | reais | Startup e Pro |
+
+        | VPA | `bookValuePerShare` | reais | Startup e Pro |
+
+        | Margem líquida | `netMargin` | fração (0.06 = 6%) | Startup e Pro |
+
+        | Valor da firma | `enterpriseValue` | reais | Startup e Pro |
+
+        | Variação 52 semanas | `fiftyTwoWeekChange` | fração (0.06 = 6%) | Startup e Pro |
+
+        | Dividend yield | `dividendYield` | fração (0.06 = 6%) | Startup e Pro |
+
+        | ROE | `returnOnEquity` | fração (0.06 = 6%) | Pro |
+
+        | ROA | `returnOnAssets` | fração (0.06 = 6%) | Pro |
+
+        | Margem bruta | `grossMargin` | fração (0.06 = 6%) | Pro |
+
+        | Margem EBITDA | `ebitdaMargin` | fração (0.06 = 6%) | Pro |
+
+        | Margem operacional | `operatingMargin` | fração (0.06 = 6%) | Pro |
+
+        | Dívida/PL | `debtToEquity` | múltiplo | Pro |
+
+        | Dívida líquida/EBITDA | `netDebtToEbitda` | múltiplo | Pro |
+
+        | Liquidez corrente | `currentRatio` | múltiplo | Pro |
+
+        | Liquidez seca | `quickRatio` | múltiplo | Pro |
+
+        | Crescimento da receita | `revenueGrowth` | fração (0.06 = 6%) | Pro |
+
+        | Crescimento do lucro | `earningsGrowth` | fração (0.06 = 6%) | Pro |
+
+        | Crescimento anual da receita | `revenueGrowthAnnual` | fração (0.06 = 6%) | Pro |
+
+        | Crescimento anual do lucro | `earningsGrowthAnnual` | fração (0.06 = 6%) | Pro |
+
+        | Receita | `totalRevenue` | reais | Pro |
+
+        | EBITDA | `ebitda` | reais | Pro |
+
+        | Fluxo de caixa livre | `freeCashflow` | reais | Pro |
+
+        | Dívida bruta | `totalDebt` | reais | Pro |
+
+        | Caixa | `totalCash` | reais | Pro |'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: Parte do ticker, do nome da empresa ou de um ticker antigo.
+          example: BANCO
+        required: false
+        name: search
+        in: query
+      - schema:
+          type: string
+          enum:
+          - stock
+          - fund
+          - bdr
+          default: stock
+          description: 'Tipo do ativo. Padrão: `stock`.'
+          example: stock
+        required: false
+        name: type
+        in: query
+      - schema:
+          type: string
+          enum:
+          - stock
+          - unit
+          - fii
+          - etf
+          - fi-infra
+          - fi-agro
+          - fip
+          - fidc
+          - bdr
+          description: 'Subtipo do ativo: stock, unit, fii, etf, fi-infra, fi-agro, fip, fidc ou bdr.'
+          example: unit
+        required: false
+        name: subType
+        in: query
+      - schema:
+          type: string
+          description: Setor. Aceita parte do nome.
+          example: Finance
+        required: false
+        name: sector
+        in: query
+      - schema:
+          type: string
+          description: Subsetor. Nome exato.
+          example: Energia Elétrica
+        required: false
+        name: subsector
+        in: query
+      - schema:
+          type: string
+          enum:
+          - symbol
+          - name
+          - lastPrice
+          - changePercent
+          - volume
+          - marketCap
+          - trailingPE
+          - priceToBook
+          - enterpriseToEbitda
+          - enterpriseToRevenue
+          - pegRatio
+          - earningsPerShare
+          - bookValuePerShare
+          - netMargin
+          - enterpriseValue
+          - fiftyTwoWeekChange
+          - dividendYield
+          - returnOnEquity
+          - returnOnAssets
+          - grossMargin
+          - ebitdaMargin
+          - operatingMargin
+          - debtToEquity
+          - netDebtToEbitda
+          - currentRatio
+          - quickRatio
+          - revenueGrowth
+          - earningsGrowth
+          - revenueGrowthAnnual
+          - earningsGrowthAnnual
+          - totalRevenue
+          - ebitda
+          - freeCashflow
+          - totalDebt
+          - totalCash
+          default: marketCap
+          description: 'Campo de ordenação: uma chave de métrica, `symbol` ou `name`. Valores nulos ficam no fim.'
+          example: dividendYield
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: 'Ordem. Padrão: `desc`.'
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 10000
+          default: 1
+          description: Número da página. Começa em 1.
+          example: 1
+        required: false
+        name: page
+        in: query
+      - schema:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+          maximum: 200
+          default: 20
+          description: 'Itens por página. Máximo: 200.'
+          example: 20
+        required: false
+        name: limit
+        in: query
+      - schema:
+          type: number
+          description: 'Preço: valor mínimo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: lastPriceMin
+        in: query
+      - schema:
+          type: number
+          description: 'Preço: valor máximo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: lastPriceMax
+        in: query
+      - schema:
+          type: number
+          description: 'Variação no dia: valor mínimo, inclusive. Unidade: porcentagem (2.81 = 2,81%). Plano Startup e Pro.'
+        required: false
+        name: changePercentMin
+        in: query
+      - schema:
+          type: number
+          description: 'Variação no dia: valor máximo, inclusive. Unidade: porcentagem (2.81 = 2,81%). Plano Startup e Pro.'
+        required: false
+        name: changePercentMax
+        in: query
+      - schema:
+          type: number
+          description: 'Volume: valor mínimo, inclusive. Unidade: ações. Plano Startup e Pro.'
+        required: false
+        name: volumeMin
+        in: query
+      - schema:
+          type: number
+          description: 'Volume: valor máximo, inclusive. Unidade: ações. Plano Startup e Pro.'
+        required: false
+        name: volumeMax
+        in: query
+      - schema:
+          type: number
+          description: 'Valor de mercado: valor mínimo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: marketCapMin
+        in: query
+      - schema:
+          type: number
+          description: 'Valor de mercado: valor máximo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: marketCapMax
+        in: query
+      - schema:
+          type: number
+          description: 'P/L: valor mínimo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: trailingPEMin
+        in: query
+      - schema:
+          type: number
+          description: 'P/L: valor máximo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: trailingPEMax
+        in: query
+      - schema:
+          type: number
+          description: 'P/VP: valor mínimo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: priceToBookMin
+        in: query
+      - schema:
+          type: number
+          description: 'P/VP: valor máximo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: priceToBookMax
+        in: query
+      - schema:
+          type: number
+          description: 'EV/EBITDA: valor mínimo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: enterpriseToEbitdaMin
+        in: query
+      - schema:
+          type: number
+          description: 'EV/EBITDA: valor máximo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: enterpriseToEbitdaMax
+        in: query
+      - schema:
+          type: number
+          description: 'EV/Receita: valor mínimo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: enterpriseToRevenueMin
+        in: query
+      - schema:
+          type: number
+          description: 'EV/Receita: valor máximo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: enterpriseToRevenueMax
+        in: query
+      - schema:
+          type: number
+          description: 'PEG: valor mínimo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: pegRatioMin
+        in: query
+      - schema:
+          type: number
+          description: 'PEG: valor máximo, inclusive. Unidade: múltiplo. Plano Startup e Pro.'
+        required: false
+        name: pegRatioMax
+        in: query
+      - schema:
+          type: number
+          description: 'LPA: valor mínimo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: earningsPerShareMin
+        in: query
+      - schema:
+          type: number
+          description: 'LPA: valor máximo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: earningsPerShareMax
+        in: query
+      - schema:
+          type: number
+          description: 'VPA: valor mínimo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: bookValuePerShareMin
+        in: query
+      - schema:
+          type: number
+          description: 'VPA: valor máximo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: bookValuePerShareMax
+        in: query
+      - schema:
+          type: number
+          description: 'Margem líquida: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Startup e Pro.'
+        required: false
+        name: netMarginMin
+        in: query
+      - schema:
+          type: number
+          description: 'Margem líquida: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Startup e Pro.'
+        required: false
+        name: netMarginMax
+        in: query
+      - schema:
+          type: number
+          description: 'Valor da firma: valor mínimo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: enterpriseValueMin
+        in: query
+      - schema:
+          type: number
+          description: 'Valor da firma: valor máximo, inclusive. Unidade: reais. Plano Startup e Pro.'
+        required: false
+        name: enterpriseValueMax
+        in: query
+      - schema:
+          type: number
+          description: 'Variação 52 semanas: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Startup e Pro.'
+        required: false
+        name: fiftyTwoWeekChangeMin
+        in: query
+      - schema:
+          type: number
+          description: 'Variação 52 semanas: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Startup e Pro.'
+        required: false
+        name: fiftyTwoWeekChangeMax
+        in: query
+      - schema:
+          type: number
+          description: 'Dividend yield: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Startup e Pro.'
+        required: false
+        name: dividendYieldMin
+        in: query
+      - schema:
+          type: number
+          description: 'Dividend yield: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Startup e Pro.'
+        required: false
+        name: dividendYieldMax
+        in: query
+      - schema:
+          type: number
+          description: 'ROE: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: returnOnEquityMin
+        in: query
+      - schema:
+          type: number
+          description: 'ROE: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: returnOnEquityMax
+        in: query
+      - schema:
+          type: number
+          description: 'ROA: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: returnOnAssetsMin
+        in: query
+      - schema:
+          type: number
+          description: 'ROA: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: returnOnAssetsMax
+        in: query
+      - schema:
+          type: number
+          description: 'Margem bruta: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: grossMarginMin
+        in: query
+      - schema:
+          type: number
+          description: 'Margem bruta: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: grossMarginMax
+        in: query
+      - schema:
+          type: number
+          description: 'Margem EBITDA: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: ebitdaMarginMin
+        in: query
+      - schema:
+          type: number
+          description: 'Margem EBITDA: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: ebitdaMarginMax
+        in: query
+      - schema:
+          type: number
+          description: 'Margem operacional: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: operatingMarginMin
+        in: query
+      - schema:
+          type: number
+          description: 'Margem operacional: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: operatingMarginMax
+        in: query
+      - schema:
+          type: number
+          description: 'Dívida/PL: valor mínimo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: debtToEquityMin
+        in: query
+      - schema:
+          type: number
+          description: 'Dívida/PL: valor máximo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: debtToEquityMax
+        in: query
+      - schema:
+          type: number
+          description: 'Dívida líquida/EBITDA: valor mínimo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: netDebtToEbitdaMin
+        in: query
+      - schema:
+          type: number
+          description: 'Dívida líquida/EBITDA: valor máximo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: netDebtToEbitdaMax
+        in: query
+      - schema:
+          type: number
+          description: 'Liquidez corrente: valor mínimo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: currentRatioMin
+        in: query
+      - schema:
+          type: number
+          description: 'Liquidez corrente: valor máximo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: currentRatioMax
+        in: query
+      - schema:
+          type: number
+          description: 'Liquidez seca: valor mínimo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: quickRatioMin
+        in: query
+      - schema:
+          type: number
+          description: 'Liquidez seca: valor máximo, inclusive. Unidade: múltiplo. Plano Pro.'
+        required: false
+        name: quickRatioMax
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento da receita: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: revenueGrowthMin
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento da receita: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: revenueGrowthMax
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento do lucro: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: earningsGrowthMin
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento do lucro: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: earningsGrowthMax
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento anual da receita: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: revenueGrowthAnnualMin
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento anual da receita: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: revenueGrowthAnnualMax
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento anual do lucro: valor mínimo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: earningsGrowthAnnualMin
+        in: query
+      - schema:
+          type: number
+          description: 'Crescimento anual do lucro: valor máximo, inclusive. Unidade: fração (0.06 = 6%). Plano Pro.'
+        required: false
+        name: earningsGrowthAnnualMax
+        in: query
+      - schema:
+          type: number
+          description: 'Receita: valor mínimo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: totalRevenueMin
+        in: query
+      - schema:
+          type: number
+          description: 'Receita: valor máximo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: totalRevenueMax
+        in: query
+      - schema:
+          type: number
+          description: 'EBITDA: valor mínimo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: ebitdaMin
+        in: query
+      - schema:
+          type: number
+          description: 'EBITDA: valor máximo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: ebitdaMax
+        in: query
+      - schema:
+          type: number
+          description: 'Fluxo de caixa livre: valor mínimo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: freeCashflowMin
+        in: query
+      - schema:
+          type: number
+          description: 'Fluxo de caixa livre: valor máximo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: freeCashflowMax
+        in: query
+      - schema:
+          type: number
+          description: 'Dívida bruta: valor mínimo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: totalDebtMin
+        in: query
+      - schema:
+          type: number
+          description: 'Dívida bruta: valor máximo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: totalDebtMax
+        in: query
+      - schema:
+          type: number
+          description: 'Caixa: valor mínimo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: totalCashMin
+        in: query
+      - schema:
+          type: number
+          description: 'Caixa: valor máximo, inclusive. Unidade: reais. Plano Pro.'
+        required: false
+        name: totalCashMax
+        in: query
+      responses:
+        '200':
+          description: Ativos que passam nos filtros, com paginação.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockScreenerResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/quote:
+    get:
+      tags:
+      - Ações
+      operationId: getStockQuotes
+      summary: Cotação de ações
+      description: 'Preço, variação, volume, market cap, máxima e mínima do dia, faixa de 52 semanas e logo de ações, FIIs, BDRs, ETFs, units e índices brasileiros.
+
+
+        Use para telas de cotação, carteiras, alertas de preço e widgets.
+
+
+        Envie vários tickers em `symbols`, separados por vírgula. O número máximo de tickers por chamada depende do plano.
+
+
+        Quando alguns tickers não existem, eles ficam fora de `results`. Se nenhum ticker tem cotação, a resposta retorna 404.
+
+
+        Um ticker antigo é trocado pelo ticker atual. Nesse caso, `changed` é `true` e `requestedSymbol` guarda o ticker enviado.
+
+
+        AXIA5 e AXIA6 retornam a cotação de uma ação AXIA3. Consulte a resolução de tickers para ver a proporção de conversão.
+
+
+        Para a série de preços, use o histórico de preços. Para achar tickers válidos, use a lista de tickers.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Cotações recuperadas com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockQuoteResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/historical:
+    get:
+      tags:
+      - Ações
+      operationId: getStockHistorical
+      summary: Histórico de preços de ações
+      description: 'Série de preços por pregão com abertura, máxima, mínima, fechamento, fechamento ajustado e volume. Serve para ações, FIIs, BDRs, ETFs, units e índices com histórico.
+
+
+        Use para gráficos, backtests e cálculo de retorno.
+
+
+        Em conversões de ações, use o ticker original para consultar o histórico daquela classe. Por exemplo, AXIA6 mantém seu próprio histórico.
+
+
+        LCAM3 e BRFS3 também mantêm históricos próprios, separados de RENT3 e MBRF3. PRGA3 usa a série de BRFS3. MRFG3 usa MBRF3.
+
+
+        O histórico disponível pode ser consultado mesmo quando o ticker não tem cotação atual.
+
+
+        Defina a janela com `range` e `interval`, por exemplo `range=1y&interval=1d`, ou com `startDate` e `endDate`. O padrão é `range=1mo` e `interval=1d`.
+
+
+        O plano define os valores aceitos em `range` e `interval` e o tamanho máximo da janela por data. Um pedido acima do limite do plano retorna erro 400.
+
+
+        Em intervalos diários, `open`, `high`, `low` e `close` podem vir ajustados. Nesses pontos, `close` coincide com `adjustedClose`. Outros pontos podem trazer `close` sem ajuste ou `adjustedClose` nulo. Os campos `raw*`, quando disponíveis, trazem os preços originais.
+
+
+        Use `adjustedClose` para calcular retorno diário. Ele considera proventos, desdobramentos e grupamentos.
+
+
+        `includeRaw=true` exige o plano Pro. Em intervalos diários, ele adiciona `rawOpen`, `rawHigh`, `rawLow` e `rawClose`, os preços originais sem ajuste. Esses campos podem ser nulos. Intervalos intradiários não trazem campos `raw*`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 1d
+          - 2d
+          - 5d
+          - 7d
+          - 1mo
+          - 3mo
+          - 6mo
+          - 1y
+          - 2y
+          - 5y
+          - 10y
+          - ytd
+          - max
+          description: 'Janela relativa. Padrão: 1mo.'
+          example: 1y
+        required: false
+        name: range
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 1m
+          - 2m
+          - 5m
+          - 15m
+          - 30m
+          - 60m
+          - 90m
+          - 1h
+          - 1d
+          - 5d
+          - 1wk
+          - 1mo
+          - 3mo
+          description: 'Intervalo entre os pontos. Padrão: 1d.'
+          example: 1d
+        required: false
+        name: interval
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Sem `startDate`, `range` conta para trás a partir desta data.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem dos pontos por data.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          description: Inclui os preços originais sem ajuste (`rawOpen`, `rawHigh`, `rawLow`, `rawClose`) em intervalos diários. Exige o plano Pro.
+          example: 'true'
+        required: false
+        name: includeRaw
+        in: query
+      responses:
+        '200':
+          description: Histórico recuperado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockHistoricalResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/dividends:
+    get:
+      tags:
+      - Ações
+      operationId: getStockDividends
+      summary: Dividendos de ações
+      description: 'Proventos de ações brasileiras: dividendos, JCP, bonificações, desdobramentos, grupamentos e subscrições, com valor por ação, data-com, data ex e data de pagamento.
+
+
+        Use para calcular dividend yield, montar calendários de proventos e registrar proventos em carteiras.
+
+
+        Em conversões de ações, os proventos de cada classe permanecem separados. Uma consulta por AXIA6 retorna os proventos de AXIA6 e ELET6.
+
+
+        Os proventos de LCAM3 e BRFS3 permanecem separados de RENT3 e MBRF3. PRGA3 usa BRFS3. MRFG3 usa MBRF3.
+
+
+        Os proventos disponíveis podem ser consultados mesmo quando o ticker não tem cotação atual.
+
+
+        `lastDatePrior` é a data-com, o último dia para comprar a ação e ter direito ao provento. `exDate` é a data ex, o primeiro dia sem esse direito. `exDate` pode ser nulo.
+
+
+        `startDate` e `endDate` filtram proventos em dinheiro por `paymentDate` e eventos em ações por `lastDatePrior`.
+
+
+        `includeRaw=true` exige o plano Pro. Ele adiciona `rawRate`, o valor por ação na escala dos preços sem ajuste.
+
+
+        FIIs não entram aqui. Um ticker de FII retorna erro 400. Use dividendos de FIIs.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra proventos em dinheiro por `paymentDate` e eventos em ações por `lastDatePrior`.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra proventos em dinheiro por `paymentDate` e eventos em ações por `lastDatePrior`.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - paymentDate
+          - lastDatePrior
+          - approvedOn
+          - rate
+          default: paymentDate
+          description: Campo de ordenação dos eventos.
+          example: paymentDate
+        required: false
+        name: sortBy
+        in: query
+      - schema:
+          type: string
+          enum:
+          - asc
+          - desc
+          default: desc
+          description: Ordem dos eventos.
+          example: desc
+        required: false
+        name: sortOrder
+        in: query
+      - schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          description: Inclui `rawRate`, o valor por ação na escala dos preços sem ajuste. Exige o plano Pro.
+          example: 'true'
+        required: false
+        name: includeRaw
+        in: query
+      responses:
+        '200':
+          description: Dividendos recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockDividendsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/profile:
+    get:
+      tags:
+      - Ações
+      operationId: getStockProfile
+      summary: Perfil da empresa
+      description: 'Dados cadastrais da empresa por trás do ticker: razão social, CNPJ, setor, indústria, endereço, site, telefone, número de funcionários e descrição da atividade.
+
+
+        Use para páginas de empresa, filtros por setor e cadastro de ativos em carteiras.
+
+
+        Esses dados quase não mudam. Guarde a resposta e consulte de novo poucas vezes.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockProfileResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/statistics:
+    get:
+      tags:
+      - Ações
+      operationId: getStockStatistics
+      summary: Múltiplos de ações
+      description: 'Múltiplos e indicadores por ação: P/L, P/VP, beta, dividend yield, lucro por ação, valor patrimonial por ação e market cap.
+
+
+        Use para comparar empresas, montar screeners e acompanhar valuation.
+
+
+        O padrão `mode=current` traz o valor atual. `mode=history` traz a série anual ou trimestral, conforme `period`, filtrada por `startDate` e `endDate`.
+
+
+        Múltiplos que usam o preço mudam a cada pregão. Múltiplos que usam só o balanço mudam quando a empresa publica um novo resultado.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - annual
+          - quarterly
+          default: annual
+          description: 'Período de cada linha: anual ou trimestral.'
+          example: annual
+        required: false
+        name: period
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - current
+          - history
+          default: current
+          description: '`current` traz o valor atual. `history` traz a série definida por `period`.'
+          example: current
+        required: false
+        name: mode
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockStatisticsResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/financial-data:
+    get:
+      tags:
+      - Ações
+      operationId: getStockFinancialData
+      summary: Dados financeiros
+      description: 'Receita, lucro, EBITDA, margens, dívida, caixa e fluxo de caixa livre de uma empresa, em um único objeto.
+
+
+        Use para ver o resumo financeiro sem ler cada demonstração.
+
+
+        O padrão `mode=current` traz os últimos 12 meses. `mode=history` traz a série anual ou trimestral, conforme `period`, filtrada por `startDate` e `endDate`.
+
+
+        Para as linhas completas, use balanço patrimonial, DRE e fluxo de caixa.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - annual
+          - quarterly
+          default: annual
+          description: 'Período de cada linha: anual ou trimestral.'
+          example: annual
+        required: false
+        name: period
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      - schema:
+          type: string
+          enum:
+          - current
+          - history
+          default: current
+          description: '`current` traz o valor atual. `history` traz a série definida por `period`.'
+          example: current
+        required: false
+        name: mode
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockFinancialDataResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/balance-sheet:
+    get:
+      tags:
+      - Ações
+      operationId: getStockBalanceSheet
+      summary: Balanço patrimonial
+      description: 'Ativo, passivo e patrimônio líquido de empresas listadas, com base nos demonstrativos entregues à CVM. Uma linha por período, do mais recente para o mais antigo.
+
+
+        Use para analisar endividamento, liquidez e estrutura de capital.
+
+
+        O padrão é `period=annual`. Use `period=quarterly` para trimestres. `startDate` e `endDate` filtram pela data de encerramento do período.
+
+
+        Bancos e seguradoras usam outro plano de contas. Campos que não se aplicam ao setor vêm como `null`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - annual
+          - quarterly
+          default: annual
+          description: 'Período de cada linha: anual ou trimestral.'
+          example: annual
+        required: false
+        name: period
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockBalanceSheetResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/income-statement:
+    get:
+      tags:
+      - Ações
+      operationId: getStockIncomeStatement
+      summary: DRE
+      description: 'Demonstração de resultado de empresas listadas: receita, custos, lucro bruto, despesas operacionais, resultado financeiro, impostos e lucro líquido. Uma linha por período, do mais recente para o mais antigo.
+
+
+        Use para acompanhar resultados, margens e crescimento de lucro.
+
+
+        O padrão é `period=annual`. Use `period=quarterly` para trimestres. `startDate` e `endDate` filtram pela data de encerramento do período.
+
+
+        Cada trimestre traz o valor do trimestre isolado, sem somar os trimestres anteriores do ano.
+
+
+        Os trimestres usam a mesma base, consolidada ou individual, do relatório anual do mesmo ano. Sem relatório anual, a base é a que tem o trimestre mais recente. Em empate, a consolidada vale. Lacunas não são preenchidas com a outra base. Um período sem os dados necessários para o cálculo retorna `null`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - annual
+          - quarterly
+          default: annual
+          description: 'Período de cada linha: anual ou trimestral.'
+          example: annual
+        required: false
+        name: period
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockIncomeStatementResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/cash-flow:
+    get:
+      tags:
+      - Ações
+      operationId: getStockCashFlow
+      summary: Fluxo de caixa
+      description: 'Demonstração do fluxo de caixa de empresas listadas: caixa das atividades operacionais, de investimento e de financiamento, com os saldos de caixa no início e no fim do período.
+
+
+        Use para comparar a geração de caixa com o lucro e calcular o fluxo de caixa livre.
+
+
+        O padrão é `period=annual`. Use `period=quarterly` para trimestres. `startDate` e `endDate` filtram pela data de encerramento do período.
+
+
+        `freeCashFlow` soma o caixa operacional e o caixa de investimento. Ele é `null` quando um dos dois falta.
+
+
+        Os trimestres usam a mesma base, consolidada ou individual, do relatório anual do mesmo ano. Sem relatório anual, a base é a que tem o trimestre mais recente. Em empate, a consolidada vale. Lacunas não são preenchidas com a outra base. Um período sem os dados necessários para o cálculo retorna `null`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - annual
+          - quarterly
+          default: annual
+          description: 'Período de cada linha: anual ou trimestral.'
+          example: annual
+        required: false
+        name: period
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockCashFlowResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v2/stocks/value-added:
+    get:
+      tags:
+      - Ações
+      operationId: getStockValueAdded
+      summary: DVA
+      description: 'Demonstração do valor adicionado de empresas listadas: a riqueza que a empresa gerou e como ela se divide entre pessoal, governo, credores e acionistas.
+
+
+        Use para ver quanto a empresa paga de salários, impostos e juros, e quanto fica com os acionistas.
+
+
+        O padrão é `period=annual`. Use `period=quarterly` para trimestres. `startDate` e `endDate` filtram pela data de encerramento do período.
+
+
+        Os trimestres usam a mesma base, consolidada ou individual, do relatório anual do mesmo ano. Sem relatório anual, a base é a que tem o trimestre mais recente. Em empate, a consolidada vale. Lacunas não são preenchidas com a outra base. Um período sem os dados necessários para o cálculo retorna `null`.'
+      security:
+      - Bearer: []
+      parameters:
+      - schema:
+          type: string
+          description: 'Tickers separados por vírgula. Ex.: PETR4,VALE3. `requestedSymbol` identifica o ticker enviado e `symbol` identifica os dados retornados.'
+          example: PETR4,VALE3
+        required: true
+        name: symbols
+        in: query
+      - schema:
+          type: string
+          enum:
+          - annual
+          - quarterly
+          default: annual
+          description: 'Período de cada linha: anual ou trimestral.'
+          example: annual
+        required: false
+        name: period
+        in: query
+      - schema:
+          type: string
+          description: Data inicial no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-01-01'
+        required: false
+        name: startDate
+        in: query
+      - schema:
+          type: string
+          description: Data final no formato YYYY-MM-DD. Filtra pela data de encerramento do período.
+          example: '2024-12-31'
+        required: false
+        name: endDate
+        in: query
+      responses:
+        '200':
+          description: Dados fundamentalistas recuperados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockValueAddedResponse'
+        '400':
+          description: Requisição inválida. Confira os parâmetros.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Requisição inválida. Um parâmetro falta ou tem valor incorreto.
+                  example:
+                    error: true
+                    message: Parâmetros inválidos
+                    code: BAD_REQUEST
+        '401':
+          description: Token ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Token ausente ou inválido.
+                  example:
+                    error: true
+                    message: Token de autenticação inválido ou ausente
+                    code: UNAUTHORIZED
+        '403':
+          description: O plano não inclui este recurso ou parâmetro.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Acesso negado. O plano não inclui este recurso.
+                  example:
+                    error: true
+                    message: Você não tem permissão para acessar este recurso
+                    code: FORBIDDEN
+        '404':
+          description: Nenhum dado encontrado para o pedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Nenhum dado encontrado para o pedido.
+                  example:
+                    error: true
+                    message: Recurso não encontrado
+                    code: NOT_FOUND
+        '429':
+          description: Limite de requisições excedido.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/ErrorResponse'
+                - description: Limite de requisições excedido.
+                  example:
+                    error: true
+                    message: Limite de requisições excedido. Tente novamente mais tarde.
+                    code: RATE_LIMIT_EXCEEDED
+        '500':
+          description: Erro interno do servidor.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    InsiderTransactionResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/InsiderTransactionResult'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: VALE3
+          symbol: VALE3
+          changed: false
+          data:
+            cnpj: '33592510000154'
+            companyName: VALE S.A.
+            disclosureLevel: roleGroup
+            firstReportDate: '2018-12-01'
+            latestReportDate: '2026-08-01'
+            latestFilingDate: '2026-09-10'
+            startDate: '2026-08-01'
+            endDate: '2026-08-31'
+            transactions:
+            - id: 9b6d502173ac5f1e0e736a7b6eeea530592e3f7772723d1d66fdfa8a58aafecf:6
+              reportDate: '2026-08-01'
+              filingDate: '2026-09-10'
+              version: 1
+              transactionDate: '2026-08-04'
+              companyRelation: company
+              securityCompany: VALE S.A.
+              roleGroup: board
+              roleDescription: Conselho de Administração ou Vinculado
+              direction: credit
+              movementType: Compra à vista
+              description: null
+              securityType: Ações
+              securityClass: 'ON'
+              intermediary: BTG PACTUAL CTVM S.A.
+              quantity: '4'
+              unitPrice: '76.2900000000'
+              volume: '305.1600000000'
+            pagination:
+              page: 1
+              limit: 1
+              total: 5
+              hasMore: true
+        requestedAt: '2026-09-30T12:00:00.000Z'
+        took: 6
+    StockQuoteSeries:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+          description: Ticker enviado na requisição.
+          example: VVAR3
+        symbol:
+          type: string
+          description: Ticker usado para os dados retornados.
+          example: BHIA3
+        changed:
+          type: boolean
+          description: '`true` quando `symbol` difere de `requestedSymbol`.'
+          example: true
+        data:
+          $ref: '#/components/schemas/StockQuoteSnapshot'
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+      - data
+    InsiderTransactionResult:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+        symbol:
+          type: string
+        changed:
+          type: boolean
+        data:
+          type: object
+          properties:
+            cnpj:
+              type: string
+            companyName:
+              type: string
+              nullable: true
+            disclosureLevel:
+              type: string
+              enum:
+              - roleGroup
+              description: Movimentações agrupadas por cargo. Os dados não identificam cada pessoa.
+            firstReportDate:
+              type: string
+              nullable: true
+              description: Primeiro mês de relatório disponível para a empresa. Pode haver meses sem dados.
+            latestReportDate:
+              type: string
+              nullable: true
+              description: Último mês de relatório disponível para a empresa.
+            latestFilingDate:
+              type: string
+              nullable: true
+              description: Data de apresentação mais recente. Uma correção pode se referir a um mês anterior.
+            startDate:
+              type: string
+            endDate:
+              type: string
+            transactions:
+              type: array
+              items:
+                $ref: '#/components/schemas/InsiderTransaction'
+              description: Movimentações que correspondem aos filtros. Uma lista vazia não indica posição igual a zero.
+            pagination:
+              type: object
+              properties:
+                page:
+                  type: integer
+                limit:
+                  type: integer
+                total:
+                  type: integer
+                hasMore:
+                  type: boolean
+              required:
+              - page
+              - limit
+              - total
+              - hasMore
+          required:
+          - cnpj
+          - companyName
+          - disclosureLevel
+          - firstReportDate
+          - latestReportDate
+          - latestFilingDate
+          - startDate
+          - endDate
+          - transactions
+          - pagination
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+      - data
+    StockScreenerItem:
+      allOf:
+      - $ref: '#/components/schemas/TickerListItem'
+      - type: object
+        properties:
+          metrics:
+            $ref: '#/components/schemas/StockScreenerMetrics'
+          fundamentalsUpdatedAt:
+            type: string
+            nullable: true
+            format: date-time
+            description: Data e hora da última atualização dos fundamentos usados. Nulo quando o ativo não tem fundamentos.
+            example: '2026-09-29T15:20:56.282Z'
+        required:
+        - metrics
+        - fundamentalsUpdatedAt
+    StockHistoricalResult:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+          description: Ticker enviado na requisição.
+          example: VVAR3
+        symbol:
+          type: string
+          description: Ticker usado para os dados retornados.
+          example: BHIA3
+        changed:
+          type: boolean
+          description: '`true` quando `symbol` difere de `requestedSymbol`.'
+          example: true
+        data:
+          $ref: '#/components/schemas/StockHistoricalSeries'
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+      - data
+    DividendsData:
+      type: object
+      properties:
+        cashDividends:
+          type: array
+          items:
+            type: object
+            properties:
+              assetIssued:
+                type: string
+                description: Código ISIN do ativo que dá direito ao provento.
+              paymentDate:
+                type: string
+                nullable: true
+                description: Data de pagamento.
+              paymentDateIsDeadline:
+                type: boolean
+                description: '`true` quando a empresa informou só o prazo máximo do pagamento ("até 31/12/2026"). Nesse caso, `paymentDate` é o prazo e muda quando a empresa divulgar a data.'
+              verified:
+                type: boolean
+                description: '`true` quando o provento foi conferido em um documento publicado pela empresa ou pelo fundo. `false` quando vem de dados históricos que ainda não têm esse documento.'
+              rate:
+                type: number
+                description: Valor por ação, em reais.
+              rawRate:
+                type: number
+                nullable: true
+                description: Valor por ação na escala dos preços sem ajuste. Vem com `includeRaw=true`.
+              relatedTo:
+                type: string
+                description: 'Período a que o provento se refere. Ex.: 1º Trimestre/2024.'
+              approvedOn:
+                type: string
+                nullable: true
+                description: Data de aprovação.
+              isinCode:
+                type: string
+                description: Código ISIN.
+              label:
+                type: string
+                description: 'Tipo do provento: DIVIDENDO ou JCP.'
+              lastDatePrior:
+                type: string
+                nullable: true
+                description: Data-com, o último dia para comprar o ativo e ter direito ao provento.
+              exDate:
+                type: string
+                nullable: true
+                description: Data ex, o primeiro dia sem direito ao provento. Pode ser nulo.
+              remarks:
+                type: string
+                description: Observações.
+            required:
+            - assetIssued
+            - paymentDate
+            - paymentDateIsDeadline
+            - verified
+            - rate
+            - relatedTo
+            - approvedOn
+            - isinCode
+            - label
+            - lastDatePrior
+            - exDate
+            - remarks
+          description: Dividendos e JCP pagos em dinheiro.
+        stockDividends:
+          type: array
+          items:
+            type: object
+            properties:
+              assetIssued:
+                type: string
+                description: Código ISIN do ativo que dá direito ao provento.
+              factor:
+                type: number
+                description: 'Fator do evento. Ex.: 2 em um desdobramento de 2 para 1.'
+              completeFactor:
+                type: string
+                description: 'Fator em texto. Ex.: 2 para 1.'
+              approvedOn:
+                type: string
+                nullable: true
+                description: Data de aprovação.
+              isinCode:
+                type: string
+                description: Código ISIN.
+              label:
+                type: string
+                description: 'Tipo do evento: DESDOBRAMENTO, GRUPAMENTO ou BONIFICAÇÃO.'
+              lastDatePrior:
+                type: string
+                nullable: true
+                description: Data-com, o último dia para comprar o ativo e ter direito ao evento.
+              exDate:
+                type: string
+                nullable: true
+                description: Data ex, o primeiro dia sem direito ao evento. Pode ser nulo.
+              remarks:
+                type: string
+                description: Observações.
+            required:
+            - assetIssued
+            - factor
+            - completeFactor
+            - approvedOn
+            - isinCode
+            - label
+            - lastDatePrior
+            - exDate
+            - remarks
+          description: 'Eventos em ações: desdobramentos, grupamentos e bonificações.'
+        subscriptions:
+          type: array
+          items:
+            nullable: true
+          description: Direitos de subscrição.
+      required:
+      - cashDividends
+      - stockDividends
+      - subscriptions
+      description: Proventos. Na rota `/api/quote/{tickers}`, vem com `dividends=true`. Na rota `/api/v2/stocks/dividends`, não exige esse parâmetro.
+    StockIncomeStatementResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: PETR4
+          symbol: PETR4
+          changed: false
+          data:
+          - type: yearly
+            endDate: '2025-12-31'
+            totalRevenue: 497549000000
+            costOfRevenue: -260551000000
+            grossProfit: 236998000000
+            researchDevelopment: null
+            sellingGeneralAdministrative: -10802000000
+            nonRecurring: null
+            otherOperatingExpenses: -51372000000
+            totalOperatingExpenses: -91370000000
+            operatingIncome: -91370000000
+            totalOtherIncomeExpenseNet: null
+            ebit: 145628000000
+            interestExpense: null
+            incomeBeforeTax: 150599000000
+            incomeTaxExpense: -39994000000
+            minorityInterest: 476000000
+            netIncomeFromContinuingOps: 110605000000
+            discontinuedOperations: 0
+            extraordinaryItems: null
+            effectOfAccountingCharges: null
+            otherItems: null
+            netIncome: 110605000000
+            netIncomeApplicableToCommonShares: 110129000000
+            salesExpenses: -28954000000
+            lossesDueToNonRecoverabilityOfAssets: 0
+            otherOperatingIncome: 0
+            equityIncomeResult: -242000000
+            financialResult: 4971000000
+            financialIncome: 8286000000
+            financialExpenses: -3315000000
+            currentTaxes: -35099000000
+            deferredTaxes: -4895000000
+            incomeBeforeStatutoryParticipationsAndContributions: null
+            basicEarningsPerCommonShare: 8540
+            dilutedEarningsPerCommonShare: 8540
+            basicEarningsPerPreferredShare: 8540
+            profitSharingAndStatutoryContributions: null
+            dilutedEarningsPerPreferredShare: 8540
+            claimsAndOperationsCosts: null
+            administrativeCosts: null
+            otherOperatingIncomeAndExpenses: null
+            earningsPerShare: null
+            basicEarningsPerShare: null
+            dilutedEarningsPerShare: null
+            insuranceOperations: null
+            reinsuranceOperations: null
+            complementaryPensionOperations: null
+            capitalizationOperations: null
+            cleanEbit: 145628000000
+            cleanEbitda: 145628000000
+            cleanNopat: 96114480000
+            cleanNetIncome: null
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 31
+    StockProfileResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: VVAR3
+          symbol: BHIA3
+          changed: true
+          data:
+            address1: Rua Flórida, 1970
+            address2: 5 andar
+            address3: null
+            city: SÃO PAULO
+            state: SP
+            zip: '4565001'
+            country: BRASIL
+            phone: (11) 42256017
+            fax: (11) 42256996
+            website: https://ri.grupocasasbahia.com.br
+            industry: Eletrodomésticos
+            industryKey: eletrodomesticos
+            industryDisp: Eletrodomésticos
+            sector: Consumo Cíclico
+            sectorKey: consumo-ciclico
+            sectorDisp: Consumo Cíclico
+            longBusinessSummary: 'O Grupo Casas Bahia S.A., listado na B3 sob BHIA3, atua no varejo de bens duráveis e eletroeletrônicos no Brasil, com operação omnicanal que combina lojas físicas, comércio eletrônico e marketplace. A companhia opera marcas de varejo conhecidas nacionalmente e mantém estrutura de logística, distribuição e serviços financeiros para apoiar vendas parceladas e recorrência de clientes. A base de receita inclui venda de produtos, serviços e intermediação em canais digitais.
+
+
+              A dinâmica de resultados é influenciada por consumo das famílias, custo de crédito, inadimplência, nível de estoques e eficiência logística. O setor de varejo de eletrodomésticos é sensível a renda disponível, juros e competição de preço entre grandes plataformas. Nos últimos anos, a empresa passou por reorganização de marca e ajustes operacionais para reduzir alavancagem, melhorar geração de caixa e priorizar rentabilidade por canal e categoria de produto.'
+            fullTimeEmployees: 57500
+            companyOfficers: null
+            twitter: '@CasasBahia'
+            name: PONTO FRIO
+            startDate: '1952-01-01'
+            description: null
+            logoUrl: https://icons.brapi.dev/icons/BHIA3.svg
+            cnpj: '33041260065290'
+            administratorName: null
+            administratorCnpj: null
+            administratorAddress: null
+            administratorAddressNumber: null
+            administratorAddressComplement: null
+            administratorDistrict: null
+            administratorCity: null
+            administratorState: null
+            administratorZipCode: null
+            administratorPhone1: null
+            administratorPhone2: null
+            administratorPhone3: null
+            administratorWebsite: null
+            administratorEmail: null
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 200
+    StockScreenerResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockScreenerItem'
+        pagination:
+          $ref: '#/components/schemas/TickerPagination'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - pagination
+      - requestedAt
+      - took
+    TickerQuoteSummary:
+      type: object
+      properties:
+        lastPrice:
+          type: number
+          nullable: true
+          description: Último preço.
+          example: 36.65
+        changePercent:
+          type: number
+          nullable: true
+          description: Variação no dia, em porcentagem.
+          example: -0.95
+        volume:
+          type: number
+          nullable: true
+          description: Volume negociado no dia.
+          example: 27681100
+        marketCap:
+          type: number
+          nullable: true
+          description: Valor de mercado, em reais. Pode ser nulo.
+          example: 483937892568
+      required:
+      - lastPrice
+      - changePercent
+      - volume
+      - marketCap
+    StockDividendsSeries:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+          description: Ticker enviado na requisição.
+          example: VVAR3
+        symbol:
+          type: string
+          description: Ticker usado para os dados retornados.
+          example: BHIA3
+        changed:
+          type: boolean
+          description: '`true` quando `symbol` difere de `requestedSymbol`.'
+          example: true
+        data:
+          $ref: '#/components/schemas/DividendsData'
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+      - data
+    StockStatisticsResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: WEGE3
+          symbol: WEGE3
+          changed: false
+          data:
+            priceHint: null
+            enterpriseValue: 181192740000
+            forwardPE: null
+            profitMargins: 0.16715191
+            floatShares: 1485954700
+            sharesOutstanding: 4197318000
+            sharesShort: null
+            sharesShortPriorMonth: null
+            sharesShortPreviousMonthDate: null
+            dateShortInterest: null
+            sharesPercentSharesOut: null
+            heldPercentInsiders: null
+            heldPercentInstitutions: null
+            shortRatio: null
+            shortPercentOfFloat: null
+            beta: 0.6503127
+            impliedSharesOutstanding: null
+            category: null
+            bookValue: 4.227962
+            priceToBook: 10.078141
+            fundFamily: null
+            legalType: null
+            lastFiscalYearEnd: null
+            nextFiscalYearEnd: '2026-12-31 00:00:00+00'
+            mostRecentQuarter: '2026-03-31'
+            earningsQuarterlyGrowth: -0.03510854
+            netIncomeToCommon: 6287370000
+            trailingEps: 1.4979494
+            forwardEps: null
+            pegRatio: 66.687416
+            lastSplitFactor: null
+            lastSplitDate: null
+            enterpriseToRevenue: 4.507972
+            enterpriseToEbitda: 20.290693
+            52WeekChange: 0.03210223
+            SandP52WeekChange: null
+            lastDividendValue: null
+            lastDividendDate: '2026-03-20'
+            ytdReturn: null
+            beta3Year: null
+            totalAssets: null
+            yield: 0.03
+            fundInceptionDate: null
+            threeYearAverageReturn: null
+            fiveYearAverageReturn: null
+            morningStarOverallRating: null
+            morningStarRiskRating: null
+            annualReportExpenseRatio: null
+            lastCapGain: null
+            annualHoldingsTurnover: null
+            marketCap: 178847730000
+            trailingPE: 28.445553
+            earningsPerShare: 1.4979494
+            dividendYield: 0.03
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 207
+    StockQuoteResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockQuoteSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: PETR4
+          symbol: PETR4
+          changed: false
+          data:
+            shortName: PETROBRAS   PN  EX  N2
+            longName: Petróleo Brasileiro S.A. - Petrobras
+            currency: BRL
+            regularMarketPrice: 41.18
+            regularMarketDayHigh: 41.53
+            regularMarketDayLow: 40.82
+            regularMarketDayRange: 40.82 - 41.53
+            regularMarketChange: -0.58
+            regularMarketChangePercent: -1.39
+            regularMarketTime: '2026-06-14T05:15:42.000Z'
+            marketCap: null
+            regularMarketVolume: 34024700
+            regularMarketPreviousClose: 41.76
+            regularMarketOpen: 41.18
+            fiftyTwoWeekRange: 29.31 - 50.69
+            fiftyTwoWeekLow: 29.31
+            fiftyTwoWeekHigh: 50.69
+            logourl: https://icons.brapi.dev/icons/PETR4.svg
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 286
+    StockScreenerMetrics:
+      type: object
+      properties:
+        trailingPE:
+          type: number
+          nullable: true
+          description: 'P/L. Preço sobre lucro dos últimos 12 meses. É negativo quando a empresa tem prejuízo. Unidade: múltiplo. Nulo quando não há dado.'
+          example: 5.22
+        priceToBook:
+          type: number
+          nullable: true
+          description: 'P/VP. Preço sobre valor patrimonial. Unidade: múltiplo. Nulo quando não há dado.'
+          example: 1.31
+        enterpriseToEbitda:
+          type: number
+          nullable: true
+          description: 'EV/EBITDA. Valor da firma sobre EBITDA. Unidade: múltiplo. Nulo quando não há dado.'
+          example: 4.58
+        enterpriseToRevenue:
+          type: number
+          nullable: true
+          description: 'EV/Receita. Valor da firma sobre receita. Unidade: múltiplo. Nulo quando não há dado.'
+          example: 2.28
+        pegRatio:
+          type: number
+          nullable: true
+          description: 'PEG. P/L dividido pelo crescimento do lucro. Unidade: múltiplo. Nulo quando não há dado.'
+          example: 0.07
+        earningsPerShare:
+          type: number
+          nullable: true
+          description: 'LPA. Lucro por ação dos últimos 12 meses, em reais. Unidade: reais. Nulo quando não há dado.'
+          example: 10.35
+        bookValuePerShare:
+          type: number
+          nullable: true
+          description: 'VPA. Valor patrimonial por ação, em reais. Unidade: reais. Nulo quando não há dado.'
+          example: 37.32
+        netMargin:
+          type: number
+          nullable: true
+          description: 'Margem líquida. Lucro líquido sobre receita, em fração (0.24 = 24%). Unidade: fração (0.06 = 6%). Nulo quando não há dado.'
+          example: 0.2439
+        enterpriseValue:
+          type: number
+          nullable: true
+          description: 'Valor da firma. Valor de mercado mais dívida líquida, em reais. Unidade: reais. Nulo quando não há dado.'
+          example: 1250458100000
+        fiftyTwoWeekChange:
+          type: number
+          nullable: true
+          description: 'Variação 52 semanas. Variação do preço em 52 semanas, em fração (0.65 = 65%). Unidade: fração (0.06 = 6%). Nulo quando não há dado.'
+          example: 0.6539
+        dividendYield:
+          type: number
+          nullable: true
+          description: 'Dividend yield. Proventos em dinheiro dos últimos 12 meses sobre o último preço, em fração (0.06 = 6%). Nulo quando não houve proventos. Unidade: fração (0.06 = 6%). Nulo quando não há dado.'
+          example: 0.0712
+        returnOnEquity:
+          type: number
+          nullable: true
+          description: 'ROE. Retorno sobre o patrimônio, em fração (0.15 = 15%). Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.2773
+        returnOnAssets:
+          type: number
+          nullable: true
+          description: 'ROA. Retorno sobre os ativos, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.1046
+        grossMargin:
+          type: number
+          nullable: true
+          description: 'Margem bruta. Lucro bruto sobre receita, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.506
+        ebitdaMargin:
+          type: number
+          nullable: true
+          description: 'Margem EBITDA. EBITDA sobre receita, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.4983
+        operatingMargin:
+          type: number
+          nullable: true
+          description: 'Margem operacional. Lucro operacional sobre receita, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.3386
+        debtToEquity:
+          type: number
+          nullable: true
+          description: 'Dívida/PL. Dívida bruta sobre patrimônio líquido. Unidade: múltiplo. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 1.41
+        netDebtToEbitda:
+          type: number
+          nullable: true
+          description: 'Dívida líquida/EBITDA. Dívida bruta menos caixa, sobre EBITDA. Nulo quando o EBITDA é zero ou negativo. Unidade: múltiplo. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 2.28
+        currentRatio:
+          type: number
+          nullable: true
+          description: 'Liquidez corrente. Ativo circulante sobre passivo circulante. Unidade: múltiplo. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.85
+        quickRatio:
+          type: number
+          nullable: true
+          description: 'Liquidez seca. Ativo circulante sem estoques, sobre passivo circulante. Unidade: múltiplo. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.58
+        revenueGrowth:
+          type: number
+          nullable: true
+          description: 'Crescimento da receita. Crescimento da receita do último trimestre contra o mesmo trimestre do ano anterior, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.1123
+        earningsGrowth:
+          type: number
+          nullable: true
+          description: 'Crescimento do lucro. Crescimento do lucro do último trimestre contra o mesmo trimestre do ano anterior, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.7238
+        revenueGrowthAnnual:
+          type: number
+          nullable: true
+          description: 'Crescimento anual da receita. Crescimento da receita no último ano fiscal, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 0.0137
+        earningsGrowthAnnual:
+          type: number
+          nullable: true
+          description: 'Crescimento anual do lucro. Crescimento do lucro no último ano fiscal, em fração. Unidade: fração (0.06 = 6%). Nulo quando não há dado. Só vem no plano Pro.'
+          example: 2.0085
+        totalRevenue:
+          type: number
+          nullable: true
+          description: 'Receita. Receita dos últimos 12 meses, em reais. Unidade: reais. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 548493000000
+        ebitda:
+          type: number
+          nullable: true
+          description: 'EBITDA. EBITDA dos últimos 12 meses, em reais. Unidade: reais. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 273323000000
+        freeCashflow:
+          type: number
+          nullable: true
+          description: 'Fluxo de caixa livre. Fluxo de caixa livre, em reais. Unidade: reais. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 105334000000
+        totalDebt:
+          type: number
+          nullable: true
+          description: 'Dívida bruta. Dívida bruta, em reais. Unidade: reais. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 676283000000
+        totalCash:
+          type: number
+          nullable: true
+          description: 'Caixa. Caixa e aplicações, em reais. Unidade: reais. Nulo quando não há dado. Só vem no plano Pro.'
+          example: 53764000000
+      required:
+      - trailingPE
+      - priceToBook
+      - enterpriseToEbitda
+      - enterpriseToRevenue
+      - pegRatio
+      - earningsPerShare
+      - bookValuePerShare
+      - netMargin
+      - enterpriseValue
+      - fiftyTwoWeekChange
+      - dividendYield
+      description: Indicadores do ativo. As chaves do plano Pro não vêm no plano Startup.
+    InsiderTransaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador da movimentação nesta versão do relatório.
+        reportDate:
+          type: string
+          description: Primeiro dia do mês de referência. Não é a data da movimentação.
+          example: '2026-08-01'
+        filingDate:
+          type: string
+          description: Data de apresentação do relatório.
+          example: '2026-09-10'
+        version:
+          type: integer
+          description: Versão do relatório. Uma correção substitui a versão anterior.
+        transactionDate:
+          type: string
+          nullable: true
+          description: Data da movimentação em YYYY-MM-DD.
+          example: '2026-08-21'
+        companyRelation:
+          type: string
+          enum:
+          - company
+          - parent
+          - subsidiary
+          example: company
+        securityCompany:
+          type: string
+          description: Nome da empresa que emite o valor mobiliário.
+        roleGroup:
+          type: string
+          nullable: true
+          enum:
+          - controller
+          - board
+          - director
+          - fiscalCouncil
+          - statutoryBody
+          example: director
+        roleDescription:
+          type: string
+          nullable: true
+          example: Diretor ou Vinculado
+        direction:
+          type: string
+          enum:
+          - credit
+          - debit
+          example: credit
+        movementType:
+          type: string
+          example: Compra à vista
+        description:
+          type: string
+          nullable: true
+        securityType:
+          type: string
+          example: Ações
+        securityClass:
+          type: string
+          nullable: true
+          example: 'ON'
+        intermediary:
+          type: string
+          nullable: true
+        quantity:
+          type: string
+          nullable: true
+          description: Quantidade inteira exata. Pode ser negativa.
+          example: '1000'
+        unitPrice:
+          type: string
+          nullable: true
+          description: Valor decimal exato em texto, sem ajuste por desdobramentos. null indica valor ausente.
+          example: '25.1200000000'
+        volume:
+          type: string
+          nullable: true
+          description: Valor decimal exato em texto, sem ajuste por desdobramentos. null indica valor ausente.
+          example: '25.1200000000'
+      required:
+      - id
+      - reportDate
+      - filingDate
+      - version
+      - transactionDate
+      - companyRelation
+      - securityCompany
+      - roleGroup
+      - roleDescription
+      - direction
+      - movementType
+      - description
+      - securityType
+      - securityClass
+      - intermediary
+      - quantity
+      - unitPrice
+      - volume
+    StockBalanceSheetResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: PETR4
+          symbol: PETR4
+          changed: false
+          data:
+          - type: yearly
+            endDate: '2025-12-31'
+            cash: 35608000000
+            shortTermInvestments: 15000001000
+            netReceivables: 25461000000
+            inventory: 45173000000
+            otherCurrentAssets: 7637000000
+            totalCurrentAssets: 140026000000
+            longTermInvestments: 3024000000
+            propertyPlantEquipment: 924624000000
+            otherAssets: null
+            totalAssets: 1223389000000
+            accountsPayable: null
+            shortLongTermDebt: null
+            otherCurrentLiab: null
+            longTermDebt: null
+            otherLiab: null
+            totalCurrentLiabilities: null
+            totalLiab: 805802000000
+            commonStock: null
+            retainedEarnings: 0
+            treasuryStock: null
+            otherStockholderEquity: null
+            totalStockholderEquity: null
+            netTangibleAssets: null
+            goodWill: null
+            intangibleAssets: 13885000000
+            deferredLongTermAssetCharges: null
+            deferredLongTermLiab: null
+            minorityInterest: 1800999900
+            capitalSurplus: null
+            financialAssets: null
+            centralBankCompulsoryDeposit: null
+            financialAssetsMeasuredAtFairValueThroughProfitOrLoss: null
+            currentAndDeferredTaxes: null
+            investments: null
+            financialAssetsFVThroughOCI: null
+            financialAssetsAtAmortizedCost: null
+            accountsReceivableFromClients: 0
+            otherAccountsReceivable: 0
+            biologicalAssets: 0
+            taxesToRecover: 11147000000
+            prepaidExpenses: 0
+            longTermAssets: 1083363000000
+            longTermRealizableAssets: 141830000000
+            longTermReceivables: 4683000000
+            longTermAccountsReceivableFromClients: 0
+            longTermInventory: 0
+            longTermBiologicalAssets: 0
+            longTermDeferredTaxes: 34965000000
+            longTermPrepaidExpenses: 0
+            creditsWithRelatedParties: 0
+            shareholdings: 0
+            investmentProperties: 0
+            otherLongTermReceivables: 0
+            otherNonCurrentAssets: 106557000000
+            creditsFromOperations: null
+            insuranceAndReinsurance: null
+            complementaryPension: null
+            securitiesAndCreditsReceivable: null
+            otherValuesAndAssets: null
+            compulsoryLoansAndDeposits: null
+            deferredSellingExpenses: null
+            nonCurrentAssets: null
+            longTermFinancialInvestmentsMeasuredAtFairValueThroughIncome: null
+            financialInvestmentsFVThroughOCI: null
+            financialInvestmentsMeasuredAtAmortizedCost: null
+            intangibleAsset: null
+            deferredTaxes: null
+            capitalization: null
+            otherOperations: null
+            financialLiabilitiesMeasuredAtFairValueThroughIncome: null
+            financialLiabilitiesAtAmortizedCost: null
+            provisions: 21934000000
+            taxLiabilities: null
+            otherLiabilities: null
+            shareholdersEquity: 417587000000
+            controllerShareholdersEquity: null
+            nonControllingShareholdersEquity: null
+            realizedShareCapital: 205432000000
+            capitalReserves: 3105999900
+            revaluationReserves: 0
+            profitReserves: 158278000000
+            accumulatedProfitsOrLosses: null
+            equityValuationAdjustments: 0
+            cumulativeConversionAdjustments: 0
+            otherComprehensiveResults: 48970000000
+            currentLiabilities: 198368000000
+            socialAndLaborObligations: 15236000000
+            providers: 40948000000
+            nationalSuppliers: 0
+            foreignSuppliers: 0
+            taxObligations: 7110000000
+            loansAndFinancing: 67253000000
+            loansAndFinancingInNationalCurrency: 0
+            loansAndFinancingInForeignCurrency: 0
+            debentures: 0
+            leaseFinancing: 55226000000
+            otherObligations: 45321000000
+            otherCurrentLiabilities: 566000000
+            nonCurrentLiabilities: 607434000000
+            longTermLoansAndFinancing: 316772000000
+            longTermLoansAndFinancingInNationalCurrency: 0
+            longTermLoansAndFinancingInForeignCurrency: 0
+            longTermDebentures: 0
+            longTermLeaseFinancing: 183310000000
+            otherLongTermObligations: 3168000000
+            longTermProvisions: 252529000000
+            otherNonCurrentLiabilities: 0
+            profitsAndRevenuesToBeAppropriated: 0
+            debitsFromOperations: null
+            debitsFromInsuranceAndReinsurance: null
+            debitsFromComplementaryPension: null
+            thirdPartyDeposits: null
+            technicalProvisions: null
+            otherDebits: null
+            longTermLiabilities: null
+            longTermAccountsPayable: null
+            longTermDebitsFromOperations: null
+            longTermTechnicalProvisions: null
+            longTermInsuranceAndReinsurance: null
+            longTermComplementaryPension: null
+            longTermCapitalization: null
+            otherLongTermProvisions: null
+            debitsFromCapitalization: null
+            debitsFromOtherOperations: null
+            otherProvisions: null
+            advanceForFutureCapitalIncrease: null
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 31
+    StockDividendsResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockDividendsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: ITSA4
+          symbol: ITSA4
+          changed: false
+          data:
+            cashDividends:
+            - assetIssued: BRITSAACNPR7
+              paymentDate: '2026-10-01T03:00:00.000Z'
+              rate: 0.024242
+              relatedTo: ''
+              approvedOn: null
+              isinCode: BRITSAACNPR7
+              label: JCP
+              lastDatePrior: '2026-08-31T03:00:00.000Z'
+              exDate: '2026-08-31T03:00:00.000Z'
+              remarks: ''
+            stockDividends:
+            - assetIssued: BRITSAACNPR7
+              factor: 1.02
+              completeFactor: 1,02 para 1
+              approvedOn: '2025-12-15T03:00:00.000Z'
+              isinCode: BRITSAACNPR7
+              label: BONIFICACAO
+              lastDatePrior: '2025-12-18T03:00:00.000Z'
+              exDate: '2025-12-18T03:00:00.000Z'
+              remarks: ''
+            subscriptions: []
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 203
+    StockValueAddedResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: PETR4
+          symbol: PETR4
+          changed: false
+          data:
+          - type: yearly
+            endDate: '2025-12-31'
+            revenue: 749557000000
+            productSales: 641818000000
+            otherRevenues: 14692000000
+            constructionOfOwnAssets: 93487000000
+            provisionOrReversalOfDoubtfulAccounts: -440000000
+            suppliesPurchasedFromThirdParties: -292210000000
+            costsWithProductsSold: -97253000000
+            thirdPartyMaterialsAndServices: -140304000000
+            lossOrRecoveryOfAssets: -8347000000
+            otherSupplies: -46306000000
+            grossAddedValue: 457347000000
+            retentions: -84388000000
+            depreciationAndAmortization: -84388000000
+            otherRetentions: 0
+            netAddedValue: 372959000000
+            netAddedValueProduced: null
+            addedValueReceivedOnTransfer: 12695000000
+            addedValueReceivedByTransfer: null
+            equityIncomeResult: -242000000
+            financialIncome: 8286000000
+            otherValuesReceivedOnTransfer: 4651000000
+            otherValuesReceivedByTransfer: null
+            addedValueToDistribute: 385654000000
+            totalAddedValueToDistribute: null
+            distributionOfAddedValue: 385654000000
+            teamRemuneration: 46406000000
+            taxes: 207791000000
+            federalTaxes: 142628000000
+            stateTaxes: 64329000000
+            municipalTaxes: 834000000
+            remunerationOfThirdPartyCapitals: 20852000000
+            equityRemuneration: null
+            ownEquityRemuneration: 110605000000
+            interestOnOwnEquity: 30682000000
+            dividends: 10554000000
+            retainedEarningsOrLoss: 68893000000
+            nonControllingShareOfRetainedEarnings: 476000000
+            otherDistributions: 0
+            financialIntermediationRevenue: null
+            revenueFromTheProvisionOfServices: null
+            provisionOrReversalOfExpectedCreditRiskLosses: null
+            financialIntermediationExpenses: null
+            materialsEnergyAndOthers: null
+            services: null
+            lossOrRecoveryOfAssetValues: null
+            thirdPartyEquityRemuneration: null
+            insuranceOperationsRevenue: null
+            complementaryPensionOperationsRevenue: null
+            feesRevenue: null
+            variationsOfTechnicalProvisions: null
+            insuranceOperationsVariations: null
+            pensionOperationsVariations: null
+            otherVariations: null
+            netOperatingRevenue: null
+            claimsAndBenefits: null
+            variationInDeferredSellingExpenses: null
+            resultsOfCededReinsuranceOperations: null
+            resultOfCoinsuranceOperationsAssigned: null
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 30
+    StockCashFlowResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: PETR4
+          symbol: PETR4
+          changed: false
+          data:
+          - type: yearly
+            endDate: '2025-12-31'
+            operatingCashFlow: 200333000000
+            incomeFromOperations: 253975000000
+            netIncomeBeforeTaxes: null
+            adjustmentsToProfitOrLoss: null
+            changesInAssetsAndLiabilities: -25534000000
+            otherOperatingActivities: -28108000000
+            cashGeneratedInOperations: null
+            investmentCashFlow: -86114000000
+            financingCashFlow: -97122000000
+            exchangeVariationWithoutCash: null
+            foreignExchangeRateWithoutCash: -1743000100
+            increaseOrDecreaseInCash: 15354000000
+            initialCashBalance: 20254000000
+            finalCashBalance: 35608000000
+            freeCashFlow: 114219000000
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 32
+    StockHistoricalResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockHistoricalResult'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: PETR4
+          symbol: PETR4
+          changed: false
+          data:
+            usedInterval: 1d
+            usedRange: 1mo
+            historicalDataPrice:
+            - date: 1781233200
+              open: 41.06
+              high: 41.53
+              low: 40.82
+              close: 41.18
+              volume: 34081000
+              adjustedClose: 41.18
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 907
+    TickerListItem:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Ticker do ativo.
+          example: PETR4
+        name:
+          type: string
+          description: Nome da empresa ou do fundo.
+          example: Petróleo Brasileiro S.A.
+        longName:
+          type: string
+          nullable: true
+          description: Nome longo. Pode ser nulo.
+          example: Petroleo Brasileiro SA Petrobras Preference Shares
+        assetType:
+          type: string
+          nullable: true
+          enum:
+          - stock
+          - fund
+          - bdr
+          description: Tipo do ativo.
+          example: stock
+        subType:
+          type: string
+          nullable: true
+          enum:
+          - stock
+          - unit
+          - fii
+          - etf
+          - fi-infra
+          - fi-agro
+          - fip
+          - fidc
+          - bdr
+          description: 'Subtipo do ativo: stock, unit, fii, etf, fi-infra, fi-agro, fip, fidc ou bdr.'
+          example: stock
+        exchange:
+          type: string
+          enum:
+          - B3
+          description: Bolsa.
+          example: B3
+        currency:
+          type: string
+          enum:
+          - BRL
+          description: Moeda.
+          example: BRL
+        sector:
+          type: string
+          nullable: true
+          description: Setor. Pode ser nulo.
+          example: Energy Minerals
+        subsector:
+          type: string
+          nullable: true
+          description: Subsetor. Pode ser nulo.
+          example: Petróleo, Gás e Biocombustíveis
+        isActive:
+          type: boolean
+          description: '`true` quando o ativo está em negociação.'
+          example: true
+        logoUrl:
+          type: string
+          nullable: true
+          description: URL do logo.
+          example: https://icons.brapi.dev/icons/PETR4.svg
+        quote:
+          $ref: '#/components/schemas/TickerQuoteSummary'
+      required:
+      - symbol
+      - name
+      - longName
+      - assetType
+      - subType
+      - exchange
+      - currency
+      - sector
+      - subsector
+      - isActive
+      - logoUrl
+      - quote
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: boolean
+          enum:
+          - true
+        message:
+          type: string
+        code:
+          type: string
+      required:
+      - error
+      - message
+      description: Erro interno do servidor.
+      example:
+        error: true
+        message: Erro interno do servidor
+        code: INTERNAL_SERVER_ERROR
+    StockHistoricalPrice:
+      type: object
+      properties:
+        date:
+          type: integer
+          description: Data do pregão em Unix timestamp, em segundos.
+          example: 1704067200
+        open:
+          type: number
+          nullable: true
+          example: 36.1
+        high:
+          type: number
+          nullable: true
+          example: 37.2
+        low:
+          type: number
+          nullable: true
+          example: 35.9
+        close:
+          type: number
+          nullable: true
+          example: 36.65
+        volume:
+          type: number
+          nullable: true
+          example: 27681100
+        adjustedClose:
+          type: number
+          nullable: true
+          example: 36.65
+        rawOpen:
+          type: number
+          nullable: true
+          description: Preço de abertura original, sem ajuste. Vem com `includeRaw=true` em intervalos diários. Pode ser nulo.
+        rawHigh:
+          type: number
+          nullable: true
+          description: Preço máximo original, sem ajuste. Vem com `includeRaw=true` em intervalos diários. Pode ser nulo.
+        rawLow:
+          type: number
+          nullable: true
+          description: Preço mínimo original, sem ajuste. Vem com `includeRaw=true` em intervalos diários. Pode ser nulo.
+        rawClose:
+          type: number
+          nullable: true
+          description: Preço de fechamento original, sem ajuste. Vem com `includeRaw=true` em intervalos diários. Pode ser nulo.
+      required:
+      - date
+      - open
+      - high
+      - low
+      - close
+      - volume
+      - adjustedClose
+    StockHistoricalSeries:
+      type: object
+      properties:
+        usedInterval:
+          type: string
+          example: 1d
+        usedRange:
+          type: string
+          description: Janela usada. Vem como `custom` quando `startDate` é informado.
+          example: 1y
+        historicalDataPrice:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockHistoricalPrice'
+      required:
+      - usedInterval
+      - usedRange
+      - historicalDataPrice
+    StockFundamentalsSeries:
+      type: object
+      properties:
+        requestedSymbol:
+          type: string
+          example: VVAR3
+        symbol:
+          type: string
+          example: BHIA3
+        changed:
+          type: boolean
+          example: true
+        data:
+          nullable: true
+          description: Dados do endpoint. Pode ser objeto, array ou null.
+      required:
+      - requestedSymbol
+      - symbol
+      - changed
+    TickerPagination:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        limit:
+          type: number
+          example: 20
+        totalItems:
+          type: number
+          example: 2302
+        totalPages:
+          type: number
+          example: 116
+        hasNextPage:
+          type: boolean
+          example: true
+      required:
+      - page
+      - limit
+      - totalItems
+      - totalPages
+      - hasNextPage
+    StockQuoteSnapshot:
+      type: object
+      properties:
+        shortName:
+          type: string
+          example: PETROBRAS PN
+        longName:
+          type: string
+          example: Petróleo Brasileiro S.A.
+        currency:
+          type: string
+          example: BRL
+        regularMarketPrice:
+          type: number
+          example: 36.65
+        regularMarketDayHigh:
+          type: number
+          example: 37.27
+        regularMarketDayLow:
+          type: number
+          example: 36.45
+        regularMarketDayRange:
+          type: string
+          example: 36.45 - 37.27
+        regularMarketChange:
+          type: number
+          example: -0.35
+        regularMarketChangePercent:
+          type: number
+          example: -0.95
+        regularMarketTime:
+          type: string
+          description: Horário da cotação em ISO 8601.
+          example: '2026-02-08T16:24:54.000Z'
+        marketCap:
+          type: number
+          nullable: true
+          example: 483937892568
+        regularMarketVolume:
+          type: number
+          example: 27681100
+        regularMarketPreviousClose:
+          type: number
+          example: 36.7
+        regularMarketOpen:
+          type: number
+          example: 37.21
+        fiftyTwoWeekRange:
+          type: string
+          example: 28.86 - 38.66
+        fiftyTwoWeekLow:
+          type: number
+          example: 28.86
+        fiftyTwoWeekHigh:
+          type: number
+          example: 38.66
+        logourl:
+          type: string
+          example: https://icons.brapi.dev/icons/PETR4.svg
+      required:
+      - shortName
+      - longName
+      - currency
+      - regularMarketPrice
+      - regularMarketDayHigh
+      - regularMarketDayLow
+      - regularMarketDayRange
+      - regularMarketChange
+      - regularMarketChangePercent
+      - regularMarketTime
+      - marketCap
+      - regularMarketVolume
+      - regularMarketPreviousClose
+      - regularMarketOpen
+      - fiftyTwoWeekRange
+      - fiftyTwoWeekLow
+      - fiftyTwoWeekHigh
+      - logourl
+    StockFinancialDataResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/StockFundamentalsSeries'
+        requestedAt:
+          type: string
+          format: date-time
+          description: Data e hora da requisição em ISO 8601.
+          example: '2025-01-24T17:32:38.000Z'
+        took:
+          type: integer
+          minimum: 0
+          description: Tempo de processamento, em milissegundos.
+          example: 45
+      required:
+      - results
+      - requestedAt
+      - took
+      example:
+        results:
+        - requestedSymbol: WEGE3
+          symbol: WEGE3
+          changed: false
+          data:
+            currentPrice: null
+            targetHighPrice: null
+            targetLowPrice: null
+            targetMeanPrice: null
+            targetMedianPrice: null
+            recommendationMean: null
+            recommendationKey: null
+            numberOfAnalystOpinions: null
+            totalCash: 7385768000
+            totalCashPerShare: 1.7596399
+            ebitda: 8929845000
+            totalDebt: 9730790000
+            quickRatio: 0.98023725
+            currentRatio: 1.5479537
+            totalRevenue: 40193850000
+            debtToEquity: 0.54833394
+            revenuePerShare: null
+            returnOnAssets: 0.15488343
+            returnOnEquity: 0.378589
+            grossProfits: 13361430000
+            freeCashflow: 2974247000
+            operatingCashflow: 7172939000
+            earningsGrowth: 0.0042655054
+            revenueGrowth: 0.0040378235
+            earningsGrowthAnnual: 0.05521239
+            revenueGrowthAnnual: 0.074161455
+            grossMargins: 0.3324247
+            ebitdaMargins: 0.22216943
+            operatingMargins: 0.19664963
+            profitMargins: 0.16715191
+            financialCurrency: null
+        requestedAt: '2026-06-14T05:03:16.000Z'
+        took: 31
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token de API obtido no dashboard em brapi.dev/dashboard
