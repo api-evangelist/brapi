@@ -1,0 +1,4006 @@
+{
+  "endpoint": "https://brapi.dev/api/mcp/mcp",
+  "captured": "2026-10-20",
+  "method": "initialize + tools/list (anonymous, no tool called; roadmap#992)",
+  "protocol_version": "2025-06-18",
+  "server_info": {
+    "name": "brapi-mcp-server",
+    "version": "1.0.0"
+  },
+  "result": {
+    "tools": [
+      {
+        "name": "get_available_stocks",
+        "title": "List Stocks and Indexes",
+        "description": "Get list of available Brazilian stocks, indexes, and financial instruments with advanced filtering options\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search term to filter by name or ticker (e.g., \"PETR\", \"Vale\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Stocks and Indexes",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_available_currencies",
+        "title": "List Currency Pairs",
+        "description": "Get list of available currency pairs for exchange rates\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search term to filter currencies (e.g., \"USD\", \"Euro\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Currency Pairs",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_available_cryptocurrencies",
+        "title": "List Cryptocurrencies",
+        "description": "Get list of available cryptocurrencies\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search term to filter cryptocurrencies (e.g., \"BTC\", \"ETH\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Cryptocurrencies",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_available_inflation_countries",
+        "title": "List Inflation Countries",
+        "description": "Get list of countries with available inflation data\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search term to filter countries"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Inflation Countries",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_tickers",
+        "title": "List Tickers",
+        "description": "Search and filter available B3 tickers in brapi. Use for autocomplete, ticker validation, and discovering stocks, FIIs, ETFs, BDRs, units, and indexes.\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search by ticker, company name, or old renamed ticker (e.g., \"PETR\", \"VVAR3\")"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "stock",
+                "fund",
+                "bdr"
+              ],
+              "description": "Filter by broad asset type: stock, fund, or bdr"
+            },
+            "subType": {
+              "type": "string",
+              "enum": [
+                "stock",
+                "unit",
+                "fii",
+                "etf",
+                "fi-infra",
+                "fi-agro",
+                "fip",
+                "fidc",
+                "bdr"
+              ],
+              "description": "Filter by subtype: stock, unit, fii, etf, fi-infra, fi-agro, fip, fidc, bdr"
+            },
+            "sector": {
+              "type": "string",
+              "description": "Filter by sector"
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "symbol",
+                "name",
+                "close",
+                "change",
+                "volume",
+                "marketCap"
+              ],
+              "description": "Sort field (default: \"volume\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order (default: \"desc\")"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Tickers",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_ticker_renames",
+        "title": "Ticker Renames",
+        "description": "List known B3 ticker renames with old ticker, current canonical ticker, and effective date.\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated symbols to filter by (e.g., \"VVAR3,BHIA3\")"
+            },
+            "search": {
+              "type": "string",
+              "description": "Search in old/current tickers (e.g., \"BHIA\")"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date YYYY-MM-DD"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date YYYY-MM-DD"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Ticker Renames",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "resolve_tickers",
+        "title": "Resolve Tickers",
+        "description": "Resolve old B3 tickers to the current ticker recommended by brapi. Current tickers are returned unchanged.\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated symbols to resolve, max 20 (e.g., \"VVAR3,PETR4\")"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Resolve Tickers",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_ticker_coverage",
+        "title": "Ticker Data Coverage",
+        "description": "Check which brapi data surfaces are available for B3 tickers and get recommended endpoints. Accepts up to 20 comma-separated symbols per call.\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`. Check up to 20 comma-separated symbols in one batch, e.g. \"PETR4,MXRF11,VVAR3\"."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Ticker Data Coverage",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_macro_series_available",
+        "title": "List Macro Series",
+        "description": "List macroeconomic series available in brapi (slug, name, unit, frequency, category). Public - no auth required. Use this for discovery before calling get_macro_series. Optional `q` does case-insensitive substring search across slug, alias, name and description, with results ranked by relevance. Optional `category` filters by category. FX pairs are intentionally excluded - they live under the currency endpoints.\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "q": {
+              "type": "string",
+              "description": "Optional text filter (e.g., 'ipca', 'cdi', 'juros'). Matches slug, alias, name, description."
+            },
+            "category": {
+              "type": "string",
+              "enum": [
+                "interestRate",
+                "inflation",
+                "monetary",
+                "activity",
+                "labor",
+                "external"
+              ],
+              "description": "Filter by category (e.g., 'monetary', 'inflation', 'interestRate')."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Macro Series",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_dictionary",
+        "title": "Field Dictionary",
+        "description": "Explain brapi API fields with the Portuguese label, description, calculation, endpoint references, type, and unit. Use this tool when a response field is unclear instead of guessing. Filter by search term or category.\n\nAuthentication: not required.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search in the field key, label, description, category, or endpoint paths"
+            },
+            "category": {
+              "type": "string",
+              "description": "Filter by category, such as quote, fii, treasury, balance-sheet, or income-statement"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Field Dictionary",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_account_capabilities",
+        "title": "Account Plan and Limits",
+        "description": "Get the authenticated brapi account plan, request limits, valid historical ranges, and feature access. Call this once when a protected tool's limits are unclear.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "annotations": {
+          "title": "Account Plan and Limits",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_quotes",
+        "title": "Stock Quotes and Data",
+        "description": "Get current and historical data for Brazilian stocks, indexes, or ETFs including price quotes, financial statements, and dividends\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "tickers": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `tickers`, not `symbols` or `symbol`. Pass comma-separated B3 tickers, e.g. \"PETR4\" or \"PETR4,VALE3,ITUB4\"."
+            },
+            "interval": {
+              "type": "string",
+              "description": "Data interval for historical prices: \"1m\", \"2m\", \"5m\", \"15m\", \"30m\", \"60m\", \"90m\", \"1h\", \"1d\", \"5d\", \"1wk\", \"1mo\", \"3mo\""
+            },
+            "range": {
+              "type": "string",
+              "description": "Time range for historical data: \"1d\", \"2d\", \"5d\", \"7d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\""
+            },
+            "modules": {
+              "type": "string",
+              "description": "Data modules to include (comma-separated): \"summaryProfile\", \"balanceSheetHistory\", \"balanceSheetHistoryQuarterly\", \"incomeStatementHistory\", \"incomeStatementHistoryQuarterly\", \"financialData\", \"financialDataHistory\", \"financialDataHistoryQuarterly\", \"defaultKeyStatistics\", \"defaultKeyStatisticsHistory\", \"defaultKeyStatisticsHistoryQuarterly\", \"valueAddedHistory\", \"valueAddedHistoryQuarterly\", \"cashflowHistory\", \"cashflowHistoryQuarterly\""
+            },
+            "dividends": {
+              "type": "boolean",
+              "description": "Include dividend history (default: false)"
+            }
+          },
+          "required": [
+            "tickers"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Stock Quotes and Data",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_quote",
+        "title": "Stock Quote",
+        "description": "Get v2 stock quote snapshots from /api/v2/stocks/quote: price, change, volume, market cap, day range, 52-week range, and logo.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Stock Quote",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_historical",
+        "title": "Stock Price History",
+        "description": "Get v2 OHLCV historical prices from /api/v2/stocks/historical for one or more B3 tickers.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "range": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "2d",
+                "5d",
+                "7d",
+                "1mo",
+                "3mo",
+                "6mo",
+                "1y",
+                "2y",
+                "5y",
+                "10y",
+                "ytd",
+                "max"
+              ],
+              "description": "Historical range, e.g. \"1mo\", \"1y\", or \"max\""
+            },
+            "interval": {
+              "type": "string",
+              "enum": [
+                "1m",
+                "2m",
+                "5m",
+                "15m",
+                "30m",
+                "60m",
+                "90m",
+                "1h",
+                "1d",
+                "5d",
+                "1wk",
+                "1mo",
+                "3mo"
+              ],
+              "description": "Historical interval, e.g. \"1d\", \"1wk\", or \"1mo\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format, e.g. \"2026-08-25\""
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format, e.g. \"2026-08-25\""
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort by date, default \"desc\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Stock Price History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_dividends",
+        "title": "Stock Dividends",
+        "description": "Get v2 dividends/JCP for stock-like B3 tickers from /api/v2/stocks/dividends. Use get_fii_dividends for FIIs.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format, e.g. \"2026-08-25\""
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format, e.g. \"2026-08-25\""
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "paymentDate",
+                "lastDatePrior",
+                "approvedOn",
+                "rate"
+              ],
+              "description": "Sort field, default \"paymentDate\""
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order, default \"desc\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Stock Dividends",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_insider_transactions",
+        "title": "Stock Insider Transactions",
+        "description": "Get monthly CVM insider transaction reports from /api/v2/stocks/insider-transactions. Rows group controllers, board members, directors, fiscal council, and other statutory bodies with related persons. Rows do not name each person or the traded ticker. The ticker selects the reporting company, so PETR3 and PETR4 return the same reports. credit and debit also include transfers, loans, and grants; use movementType for purchases and sales. quantity, unitPrice, and volume are exact decimal strings. The default window is the last 365 days. Pro plan.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Transaction start date. Default: 365 days before endDate in YYYY-MM-DD format, e.g. \"2026-08-25\""
+            },
+            "endDate": {
+              "type": "string",
+              "description": "Transaction end date. Default: today in YYYY-MM-DD format, e.g. \"2026-08-25\""
+            },
+            "companyRelation": {
+              "type": "string",
+              "enum": [
+                "company",
+                "parent",
+                "subsidiary",
+                "all"
+              ],
+              "description": "Issuer of the security: the reporting company, its parent, or its subsidiary. Default \"company\""
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "credit",
+                "debit"
+              ],
+              "description": "credit adds to the position; debit removes from it"
+            },
+            "roleGroup": {
+              "type": "string",
+              "enum": [
+                "controller",
+                "board",
+                "director",
+                "fiscalCouncil",
+                "statutoryBody"
+              ],
+              "description": "Role group. Each group includes related persons"
+            },
+            "movementType": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 150,
+              "description": "Exact report text, e.g. \"Compra à vista\" or \"Venda à vista\""
+            },
+            "allVersions": {
+              "type": "boolean",
+              "description": "Include earlier report versions. Default false. Earlier versions can repeat rows; do not sum them"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "description": "Page for each company, starting at 1"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Transactions per company and page, max 100, default 50"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Stock Insider Transactions",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_profile",
+        "title": "Company Profile",
+        "description": "Get v2 company/profile fundamentals from /api/v2/stocks/profile.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Company Profile",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_statistics",
+        "title": "Key Statistics",
+        "description": "Get v2 stock statistics from /api/v2/stocks/statistics, either current or historical.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "current",
+                "history"
+              ],
+              "description": "Use \"current\" for current/TTM data or \"history\" for series"
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "description": "Historical period, default \"annual\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Key Statistics",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_financial_data",
+        "title": "Financial Metrics",
+        "description": "Get v2 stock financial data from /api/v2/stocks/financial-data, either current or historical.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "current",
+                "history"
+              ],
+              "description": "Use \"current\" for current/TTM data or \"history\" for series"
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "description": "Historical period, default \"annual\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Financial Metrics",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_balance_sheet",
+        "title": "Balance Sheet",
+        "description": "Get v2 balance sheet statements from /api/v2/stocks/balance-sheet.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "description": "Statement period, default \"annual\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Balance Sheet",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_income_statement",
+        "title": "Income Statement",
+        "description": "Get v2 income statements from /api/v2/stocks/income-statement.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "description": "Statement period, default \"annual\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Income Statement",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_cash_flow",
+        "title": "Cash Flow Statement",
+        "description": "Get v2 cash-flow statements from /api/v2/stocks/cash-flow.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "description": "Statement period, default \"annual\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Cash Flow Statement",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_value_added",
+        "title": "Value Added Statement",
+        "description": "Get v2 value-added statements from /api/v2/stocks/value-added.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Use the exact key `symbols`, not `tickers` or `symbol`. Pass comma-separated B3 ticker symbols, e.g. \"PETR4\" or \"PETR4,VALE3\"."
+            },
+            "period": {
+              "type": "string",
+              "enum": [
+                "annual",
+                "quarterly"
+              ],
+              "description": "Statement period, default \"annual\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Value Added Statement",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_stock_screener",
+        "title": "Stock Screener",
+        "description": "Filter and rank B3 stocks by price and fundamentals from /api/v2/stocks/screener: P/L, P/VP, dividend yield, ROE, margins, debt, growth, and more. One call scans every asset. Each metric accepts {metric}Min and {metric}Max, inclusive, in the units of the response: fractions use 0.06 for 6% (dividendYield, returnOnEquity, margins, growth); changePercent uses 2.81 for 2.81%; prices and amounts are BRL. A filter drops assets without that value. Companies with a loss have a negative trailingPE, so for \"P/L below 8\" send trailingPEMin=0 and trailingPEMax=8. sortBy accepts any metric key, symbol, or name (default marketCap, desc); nulls sort last. page starts at 1; limit max 200, default 20. Startup and Pro plans. Pro metrics (returnOnEquity, returnOnAssets, grossMargin, ebitdaMargin, operatingMargin, debtToEquity, netDebtToEbitda, currentRatio, quickRatio, revenueGrowth, earningsGrowth, revenueGrowthAnnual, earningsGrowthAnnual, totalRevenue, ebitda, freeCashflow, totalDebt, totalCash) need the Pro plan: a filter or sort with them on Startup returns PLAN_LIMIT, and Startup results omit them. The free plan has no access.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Part of the ticker, company name, or an old ticker"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "stock",
+                "fund",
+                "bdr"
+              ],
+              "description": "Asset type, default \"stock\""
+            },
+            "subType": {
+              "type": "string",
+              "enum": [
+                "stock",
+                "unit",
+                "fii",
+                "etf",
+                "fi-infra",
+                "fi-agro",
+                "fip",
+                "fidc",
+                "bdr"
+              ],
+              "description": "Asset subtype: stock, unit, fii, etf, fi-infra, fi-agro, fip, fidc, bdr"
+            },
+            "sector": {
+              "type": "string",
+              "description": "Sector, partial match, e.g. \"Finance\""
+            },
+            "subsector": {
+              "type": "string",
+              "description": "Exact subsector, e.g. \"Energia Elétrica\""
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "symbol",
+                "name",
+                "lastPrice",
+                "changePercent",
+                "volume",
+                "marketCap",
+                "trailingPE",
+                "priceToBook",
+                "enterpriseToEbitda",
+                "enterpriseToRevenue",
+                "pegRatio",
+                "earningsPerShare",
+                "bookValuePerShare",
+                "netMargin",
+                "enterpriseValue",
+                "fiftyTwoWeekChange",
+                "dividendYield",
+                "returnOnEquity",
+                "returnOnAssets",
+                "grossMargin",
+                "ebitdaMargin",
+                "operatingMargin",
+                "debtToEquity",
+                "netDebtToEbitda",
+                "currentRatio",
+                "quickRatio",
+                "revenueGrowth",
+                "earningsGrowth",
+                "revenueGrowthAnnual",
+                "earningsGrowthAnnual",
+                "totalRevenue",
+                "ebitda",
+                "freeCashflow",
+                "totalDebt",
+                "totalCash"
+              ],
+              "description": "Metric key, symbol, or name. Default \"marketCap\""
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order, default \"desc\""
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000,
+              "description": "Page number, starting at 1"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "description": "Items per page, max 200, default 20"
+            },
+            "lastPriceMin": {
+              "type": "number",
+              "description": "Preço (lastPrice) minimum, inclusive. Unit: BRL."
+            },
+            "lastPriceMax": {
+              "type": "number",
+              "description": "Preço (lastPrice) maximum, inclusive. Unit: BRL."
+            },
+            "changePercentMin": {
+              "type": "number",
+              "description": "Variação no dia (changePercent) minimum, inclusive. Unit: percent, 2.81 = 2.81%."
+            },
+            "changePercentMax": {
+              "type": "number",
+              "description": "Variação no dia (changePercent) maximum, inclusive. Unit: percent, 2.81 = 2.81%."
+            },
+            "volumeMin": {
+              "type": "number",
+              "description": "Volume (volume) minimum, inclusive. Unit: shares."
+            },
+            "volumeMax": {
+              "type": "number",
+              "description": "Volume (volume) maximum, inclusive. Unit: shares."
+            },
+            "marketCapMin": {
+              "type": "number",
+              "description": "Valor de mercado (marketCap) minimum, inclusive. Unit: BRL."
+            },
+            "marketCapMax": {
+              "type": "number",
+              "description": "Valor de mercado (marketCap) maximum, inclusive. Unit: BRL."
+            },
+            "trailingPEMin": {
+              "type": "number",
+              "description": "P/L (trailingPE) minimum, inclusive. Unit: multiple."
+            },
+            "trailingPEMax": {
+              "type": "number",
+              "description": "P/L (trailingPE) maximum, inclusive. Unit: multiple."
+            },
+            "priceToBookMin": {
+              "type": "number",
+              "description": "P/VP (priceToBook) minimum, inclusive. Unit: multiple."
+            },
+            "priceToBookMax": {
+              "type": "number",
+              "description": "P/VP (priceToBook) maximum, inclusive. Unit: multiple."
+            },
+            "enterpriseToEbitdaMin": {
+              "type": "number",
+              "description": "EV/EBITDA (enterpriseToEbitda) minimum, inclusive. Unit: multiple."
+            },
+            "enterpriseToEbitdaMax": {
+              "type": "number",
+              "description": "EV/EBITDA (enterpriseToEbitda) maximum, inclusive. Unit: multiple."
+            },
+            "enterpriseToRevenueMin": {
+              "type": "number",
+              "description": "EV/Receita (enterpriseToRevenue) minimum, inclusive. Unit: multiple."
+            },
+            "enterpriseToRevenueMax": {
+              "type": "number",
+              "description": "EV/Receita (enterpriseToRevenue) maximum, inclusive. Unit: multiple."
+            },
+            "pegRatioMin": {
+              "type": "number",
+              "description": "PEG (pegRatio) minimum, inclusive. Unit: multiple."
+            },
+            "pegRatioMax": {
+              "type": "number",
+              "description": "PEG (pegRatio) maximum, inclusive. Unit: multiple."
+            },
+            "earningsPerShareMin": {
+              "type": "number",
+              "description": "LPA (earningsPerShare) minimum, inclusive. Unit: BRL."
+            },
+            "earningsPerShareMax": {
+              "type": "number",
+              "description": "LPA (earningsPerShare) maximum, inclusive. Unit: BRL."
+            },
+            "bookValuePerShareMin": {
+              "type": "number",
+              "description": "VPA (bookValuePerShare) minimum, inclusive. Unit: BRL."
+            },
+            "bookValuePerShareMax": {
+              "type": "number",
+              "description": "VPA (bookValuePerShare) maximum, inclusive. Unit: BRL."
+            },
+            "netMarginMin": {
+              "type": "number",
+              "description": "Margem líquida (netMargin) minimum, inclusive. Unit: fraction, 0.06 = 6%."
+            },
+            "netMarginMax": {
+              "type": "number",
+              "description": "Margem líquida (netMargin) maximum, inclusive. Unit: fraction, 0.06 = 6%."
+            },
+            "enterpriseValueMin": {
+              "type": "number",
+              "description": "Valor da firma (enterpriseValue) minimum, inclusive. Unit: BRL."
+            },
+            "enterpriseValueMax": {
+              "type": "number",
+              "description": "Valor da firma (enterpriseValue) maximum, inclusive. Unit: BRL."
+            },
+            "fiftyTwoWeekChangeMin": {
+              "type": "number",
+              "description": "Variação 52 semanas (fiftyTwoWeekChange) minimum, inclusive. Unit: fraction, 0.06 = 6%."
+            },
+            "fiftyTwoWeekChangeMax": {
+              "type": "number",
+              "description": "Variação 52 semanas (fiftyTwoWeekChange) maximum, inclusive. Unit: fraction, 0.06 = 6%."
+            },
+            "dividendYieldMin": {
+              "type": "number",
+              "description": "Dividend yield (dividendYield) minimum, inclusive. Unit: fraction, 0.06 = 6%."
+            },
+            "dividendYieldMax": {
+              "type": "number",
+              "description": "Dividend yield (dividendYield) maximum, inclusive. Unit: fraction, 0.06 = 6%."
+            },
+            "returnOnEquityMin": {
+              "type": "number",
+              "description": "ROE (returnOnEquity) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "returnOnEquityMax": {
+              "type": "number",
+              "description": "ROE (returnOnEquity) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "returnOnAssetsMin": {
+              "type": "number",
+              "description": "ROA (returnOnAssets) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "returnOnAssetsMax": {
+              "type": "number",
+              "description": "ROA (returnOnAssets) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "grossMarginMin": {
+              "type": "number",
+              "description": "Margem bruta (grossMargin) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "grossMarginMax": {
+              "type": "number",
+              "description": "Margem bruta (grossMargin) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "ebitdaMarginMin": {
+              "type": "number",
+              "description": "Margem EBITDA (ebitdaMargin) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "ebitdaMarginMax": {
+              "type": "number",
+              "description": "Margem EBITDA (ebitdaMargin) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "operatingMarginMin": {
+              "type": "number",
+              "description": "Margem operacional (operatingMargin) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "operatingMarginMax": {
+              "type": "number",
+              "description": "Margem operacional (operatingMargin) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "debtToEquityMin": {
+              "type": "number",
+              "description": "Dívida/PL (debtToEquity) minimum, inclusive. Unit: multiple. Pro plan."
+            },
+            "debtToEquityMax": {
+              "type": "number",
+              "description": "Dívida/PL (debtToEquity) maximum, inclusive. Unit: multiple. Pro plan."
+            },
+            "netDebtToEbitdaMin": {
+              "type": "number",
+              "description": "Dívida líquida/EBITDA (netDebtToEbitda) minimum, inclusive. Unit: multiple. Pro plan."
+            },
+            "netDebtToEbitdaMax": {
+              "type": "number",
+              "description": "Dívida líquida/EBITDA (netDebtToEbitda) maximum, inclusive. Unit: multiple. Pro plan."
+            },
+            "currentRatioMin": {
+              "type": "number",
+              "description": "Liquidez corrente (currentRatio) minimum, inclusive. Unit: multiple. Pro plan."
+            },
+            "currentRatioMax": {
+              "type": "number",
+              "description": "Liquidez corrente (currentRatio) maximum, inclusive. Unit: multiple. Pro plan."
+            },
+            "quickRatioMin": {
+              "type": "number",
+              "description": "Liquidez seca (quickRatio) minimum, inclusive. Unit: multiple. Pro plan."
+            },
+            "quickRatioMax": {
+              "type": "number",
+              "description": "Liquidez seca (quickRatio) maximum, inclusive. Unit: multiple. Pro plan."
+            },
+            "revenueGrowthMin": {
+              "type": "number",
+              "description": "Crescimento da receita (revenueGrowth) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "revenueGrowthMax": {
+              "type": "number",
+              "description": "Crescimento da receita (revenueGrowth) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "earningsGrowthMin": {
+              "type": "number",
+              "description": "Crescimento do lucro (earningsGrowth) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "earningsGrowthMax": {
+              "type": "number",
+              "description": "Crescimento do lucro (earningsGrowth) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "revenueGrowthAnnualMin": {
+              "type": "number",
+              "description": "Crescimento anual da receita (revenueGrowthAnnual) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "revenueGrowthAnnualMax": {
+              "type": "number",
+              "description": "Crescimento anual da receita (revenueGrowthAnnual) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "earningsGrowthAnnualMin": {
+              "type": "number",
+              "description": "Crescimento anual do lucro (earningsGrowthAnnual) minimum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "earningsGrowthAnnualMax": {
+              "type": "number",
+              "description": "Crescimento anual do lucro (earningsGrowthAnnual) maximum, inclusive. Unit: fraction, 0.06 = 6%. Pro plan."
+            },
+            "totalRevenueMin": {
+              "type": "number",
+              "description": "Receita (totalRevenue) minimum, inclusive. Unit: BRL. Pro plan."
+            },
+            "totalRevenueMax": {
+              "type": "number",
+              "description": "Receita (totalRevenue) maximum, inclusive. Unit: BRL. Pro plan."
+            },
+            "ebitdaMin": {
+              "type": "number",
+              "description": "EBITDA (ebitda) minimum, inclusive. Unit: BRL. Pro plan."
+            },
+            "ebitdaMax": {
+              "type": "number",
+              "description": "EBITDA (ebitda) maximum, inclusive. Unit: BRL. Pro plan."
+            },
+            "freeCashflowMin": {
+              "type": "number",
+              "description": "Fluxo de caixa livre (freeCashflow) minimum, inclusive. Unit: BRL. Pro plan."
+            },
+            "freeCashflowMax": {
+              "type": "number",
+              "description": "Fluxo de caixa livre (freeCashflow) maximum, inclusive. Unit: BRL. Pro plan."
+            },
+            "totalDebtMin": {
+              "type": "number",
+              "description": "Dívida bruta (totalDebt) minimum, inclusive. Unit: BRL. Pro plan."
+            },
+            "totalDebtMax": {
+              "type": "number",
+              "description": "Dívida bruta (totalDebt) maximum, inclusive. Unit: BRL. Pro plan."
+            },
+            "totalCashMin": {
+              "type": "number",
+              "description": "Caixa (totalCash) minimum, inclusive. Unit: BRL. Pro plan."
+            },
+            "totalCashMax": {
+              "type": "number",
+              "description": "Caixa (totalCash) maximum, inclusive. Unit: BRL. Pro plan."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Stock Screener",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_currency_rates",
+        "title": "Exchange Rates",
+        "description": "Get current exchange rates for currency pairs\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "currency": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Currency pair in BASE-QUOTE format, e.g. \"USD-BRL\" or \"EUR-BRL\"."
+            }
+          },
+          "required": [
+            "currency"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Exchange Rates",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_crypto_prices",
+        "title": "Cryptocurrency Prices",
+        "description": "Get current and historical cryptocurrency prices with market data\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "coin": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Cryptocurrency to query (e.g., \"BTC\", \"ETH\")"
+            },
+            "currency": {
+              "type": "string",
+              "description": "Quote currency for prices (default: BRL)"
+            },
+            "range": {
+              "type": "string",
+              "description": "Time range for historical data: \"1d\", \"2d\", \"5d\", \"7d\", \"1mo\", \"3mo\", \"6mo\", \"1y\", \"2y\", \"5y\", \"10y\", \"ytd\", \"max\""
+            },
+            "interval": {
+              "type": "string",
+              "description": "Data interval: \"1m\", \"2m\", \"5m\", \"15m\", \"30m\", \"60m\", \"90m\", \"1h\", \"1d\", \"5d\", \"1wk\", \"1mo\", \"3mo\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "First daily history date, YYYY-MM-DD. Use without range."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "Last daily history date, YYYY-MM-DD, inclusive."
+            }
+          },
+          "required": [
+            "coin"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Cryptocurrency Prices",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_macro_series",
+        "title": "Macro Series History",
+        "description": "Get historical observations for Brazilian macroeconomic series (Selic, IPCA, IGP-M, CDI, IBC-Br, etc.). Pass slugs in `symbols` (comma-separated, e.g. `selic,ipca,igpm`). Use get_macro_series_available to discover slugs. Currency pairs (USD-BRL etc.) are NOT served here - use the currency endpoints for FX series including inverses and cross-rates.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Comma-separated series slugs (max 20). Examples: 'selic', 'ipca,igpm', 'cdi,ibcbr'"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "ISO date YYYY-MM-DD. Default: 12 months ago."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "ISO date YYYY-MM-DD. Default: today."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort by date. Default: desc (newest first)."
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Max observations per series. Default: 20."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Macro Series History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_macro_series_latest",
+        "title": "Latest Macro Values",
+        "description": "Get only the most recent observation for each requested macroeconomic series. Lighter than get_macro_series when you just need the current Selic / IPCA / CDI value. FX pairs are not served here - use the currency endpoints.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Comma-separated series slugs (max 20). Example: 'selic,ipca12m,cdi'"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Latest Macro Values",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_inflation_data",
+        "title": "Inflation Data",
+        "description": "Get inflation data for Brazil (IPCA, IGPM) with period filtering options\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "country": {
+              "type": "string",
+              "description": "Country code (default: \"brazil\"). Currently only Brazil is supported"
+            },
+            "historical": {
+              "type": "boolean",
+              "description": "Include historical data (default: false)"
+            },
+            "start": {
+              "type": "string",
+              "description": "Start date for historical data (format: YYYY-MM-DD or DD/MM/YYYY)"
+            },
+            "end": {
+              "type": "string",
+              "description": "End date for historical data (format: YYYY-MM-DD or DD/MM/YYYY)"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: \"date\" or \"value\""
+            },
+            "sortOrder": {
+              "type": "string",
+              "description": "Sort order: \"asc\" or \"desc\""
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Inflation Data",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_prime_rate_data",
+        "title": "Selic Rate",
+        "description": "Get Brazil's prime rate (SELIC) data with period and sorting options\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "country": {
+              "type": "string",
+              "description": "Country code (default: \"brazil\"). Currently only Brazil is supported"
+            },
+            "historical": {
+              "type": "boolean",
+              "description": "Include historical data (default: false)"
+            },
+            "start": {
+              "type": "string",
+              "description": "Start date for historical data (format: YYYY-MM-DD or DD/MM/YYYY)"
+            },
+            "end": {
+              "type": "string",
+              "description": "End date for historical data (format: YYYY-MM-DD or DD/MM/YYYY)"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: \"date\" or \"value\""
+            },
+            "sortOrder": {
+              "type": "string",
+              "description": "Sort order: \"asc\" or \"desc\""
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Selic Rate",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_expirations",
+        "title": "Option Expirations",
+        "description": "List available option expiration dates for a given Brazilian underlying asset (stock, ETF, or index)\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Required. Underlying symbol (stock, ETF, or index), e.g. \"PETR4\" or \"VALE3\"."
+            },
+            "includeExpired": {
+              "type": "boolean",
+              "description": "Include expirations that have already passed (default: false, returns only future expirations)"
+            }
+          },
+          "required": [
+            "underlying"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Expirations",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_strikes",
+        "title": "Option Strikes",
+        "description": "List available option strike prices for a given Brazilian underlying asset on a specific expiration date\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying symbol (stock, ETF, or index) to list option strikes for (e.g., \"PETR4\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date in YYYY-MM-DD format. Use get_option_expirations to discover available dates"
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by option side: \"call\" (compra) or \"put\" (venda). Omit to return both"
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Strikes",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_chain",
+        "title": "Option Chain",
+        "description": "Get the option chain (traded series with OHLCV snapshot) for a Brazilian underlying asset on a specific expiration date\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying symbol (stock, ETF, or index) to fetch the option chain for (e.g., \"PETR4\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date in YYYY-MM-DD format. Use get_option_expirations to discover available dates"
+            },
+            "date": {
+              "type": "string",
+              "description": "EOD date in YYYY-MM-DD format used to look up prices and volume (default: latest available trading day)"
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by option side: \"call\" (compra) or \"put\" (venda). Omit to return both"
+            },
+            "minStrike": {
+              "type": "number",
+              "description": "Minimum strike price to include"
+            },
+            "maxStrike": {
+              "type": "number",
+              "description": "Maximum strike price to include"
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Chain",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_historical",
+        "title": "Option Price History",
+        "description": "Get daily EOD historical price data (OHLCV, bid/ask, trades, financial volume) for a single option series identified by its symbol and expiration date\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Option symbol (e.g., \"PETRE370\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date in YYYY-MM-DD format"
+            },
+            "strike": {
+              "type": "number",
+              "description": "Strike price. Required when the same symbol appears more than once within the same expiration"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order for the history array: \"asc\" (oldest first) or \"desc\" (newest first, default)"
+            }
+          },
+          "required": [
+            "symbol",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Price History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_analytics",
+        "title": "Option Greeks",
+        "description": "Get EOD implied volatility and Greeks for traded Brazilian option series for an underlying asset on a specific expiration date. Fields are null with nullReason when the calculation cannot be produced from observed data.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Underlying symbol (stock, ETF, or index) to fetch option analytics for (e.g., \"PETR4\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "Required. Expiration date in YYYY-MM-DD format. Use get_option_expirations first to discover available dates"
+            },
+            "date": {
+              "type": "string",
+              "description": "EOD date in YYYY-MM-DD format used to look up the analytics snapshot (default: latest available trading day)"
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by option side: \"call\" (compra) or \"put\" (venda). Omit to return both"
+            },
+            "minStrike": {
+              "type": "number",
+              "description": "Minimum strike price to include"
+            },
+            "maxStrike": {
+              "type": "number",
+              "description": "Maximum strike price to include"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Maximum number of option series to return"
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Greeks",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_analytics_history",
+        "title": "Option Greeks History",
+        "description": "Get the daily EOD implied volatility and Greeks time series for a single Brazilian option series identified by symbol and expiration date.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Option symbol (e.g., \"PETRE370\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date in YYYY-MM-DD format"
+            },
+            "strike": {
+              "type": "number",
+              "description": "Strike price. Required when the same symbol appears more than once within the same expiration"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order for the analytics array: \"asc\" (oldest first) or \"desc\" (newest first, default)"
+            }
+          },
+          "required": [
+            "symbol",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Greeks History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_positions",
+        "title": "Option Open Interest",
+        "description": "Get open interest (open contracts) per option series for a Brazilian underlying asset on a specific expiration date. Includes the covered, uncovered and blocked position breakdown. Open interest counts contracts still alive, unlike volume, which counts contracts traded during the session.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying symbol (stock, ETF, or index) to fetch open positions for (e.g., \"PETR4\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date in YYYY-MM-DD format. Use get_option_expirations to discover available dates"
+            },
+            "date": {
+              "type": "string",
+              "description": "Date in YYYY-MM-DD format. Returns the most recent position report on or before it (default: latest available)"
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by option side: \"call\" (compra) or \"put\" (venda). Omit to return both"
+            },
+            "minStrike": {
+              "type": "number",
+              "description": "Minimum strike price to include"
+            },
+            "maxStrike": {
+              "type": "number",
+              "description": "Maximum strike price to include"
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Open Interest",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_option_positions_history",
+        "title": "Option Open Interest History",
+        "description": "Get the daily open interest time series for a single Brazilian option series identified by symbol and expiration date. Use it to see a position being built up or unwound over time.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Option symbol (e.g., \"PETRE370\")"
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date in YYYY-MM-DD format"
+            },
+            "strike": {
+              "type": "number",
+              "description": "Strike price. Required when the same symbol appears more than once within the same expiration"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order for the positions array: \"asc\" (oldest first) or \"desc\" (newest first, default)"
+            }
+          },
+          "required": [
+            "symbol",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Option Open Interest History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_list",
+        "title": "List Futures Contracts",
+        "description": "List available Brazilian futures contracts (mini Ibovespa, mini Dolar, full index/dollar, DI rate, agribusiness: boi, café, milho, soja). Paginated with filters by underlying asset and segment.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "asset": {
+              "type": "string",
+              "description": "Underlying asset code to filter by (e.g., \"WIN\", \"WDO\", \"BGI\", \"DI1\"). Exact match."
+            },
+            "segment": {
+              "type": "string",
+              "enum": [
+                "financial",
+                "agribusiness"
+              ],
+              "description": "Segment filter: \"financial\" = mini Ibov, mini Dolar, DI, etc. \"agribusiness\" = boi, café, milho, soja."
+            },
+            "includeExpired": {
+              "type": "boolean",
+              "description": "Include contracts that have already expired (default: false)"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page number, 1-indexed (default: 1)"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Items per page (default: 50, max: 100)"
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "symbol",
+                "expirationDate",
+                "underlyingAsset"
+              ],
+              "description": "Sort key (default: \"expirationDate\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order (default: \"asc\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Futures Contracts",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_quote",
+        "title": "Futures Quote",
+        "description": "Get EOD snapshot quote for one or more Brazilian futures contracts. Returns OHLC, daily settlement price (AdjstdQt), settlement rate (AdjstdQtTax - populated for DI/rate-quoted contracts only), oscillation, number of trades, contract quantity, and financial volume.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated contract symbols, max 20 (e.g., \"WINM26,BGIF27,DI1F27\"). The contract symbol = asset code + month letter + 2-digit year."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Quote",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_specs",
+        "title": "Futures Contract Specs",
+        "description": "Get contract specifications (without pricing) for one or more Brazilian futures: expiration date, contract multiplier (e.g., WIN = 0.2, BGI = 330 arrobas, DI1 = 1), allocation round lot, ISIN, CFI, trading currency, delivery type, and quotation type (price vs rate).\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated contract symbols, max 20 (e.g., \"WINM26,BGIF27,DI1F27\")."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Contract Specs",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_historical",
+        "title": "Futures Price History",
+        "description": "Get daily EOD time series for a single Brazilian futures contract. Each point has OHLC, settlement price, settlement rate (DI/DAP only), reference price, oscillation, trades, contract quantity and financial volume. For DI1/DAP/DI contracts, close/high/low fields hold the rate in %a.a., and settlement holds the PU in BRL.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Contract symbol (e.g., \"WINM26\", \"BGIF27\", \"DI1F27\"). One contract per request."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date YYYY-MM-DD (default: 12 months ago)."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date YYYY-MM-DD (default: today)."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order by date. Default \"desc\" (newest first)."
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Price History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_term_structure",
+        "title": "Futures Term Structure",
+        "description": "Get the full term structure (all live contracts) for a Brazilian futures underlying asset. Returns one row per expiration, ordered by date ascending, each with the latest EOD pricing. Useful for plotting the DI yield curve, contango/backwardation in commodities, or the mini-Ibov forward curve.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "asset": {
+              "type": "string",
+              "description": "Underlying asset code (e.g., \"DI1\" for DI rate curve, \"WIN\" for mini Ibovespa expirations, \"BGI\" for live cattle). Exact match."
+            },
+            "includeExpired": {
+              "type": "boolean",
+              "description": "Include contracts that have already expired (default: false)."
+            }
+          },
+          "required": [
+            "asset"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Term Structure",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_expirations",
+        "title": "Futures Option Expirations",
+        "description": "List available option expiration dates for a Brazilian futures underlying (options on futures: e.g., options on BGI live cattle, ICF coffee, CCM corn, SJC soybean). These options have their own expiration calendar, often different from the underlying future.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying asset code (e.g., \"BGI\", \"ICF\", \"CCM\", \"SJC\")."
+            },
+            "includeExpired": {
+              "type": "boolean",
+              "description": "Include expirations already past (default: false)."
+            }
+          },
+          "required": [
+            "underlying"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Expirations",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_strikes",
+        "title": "Futures Option Strikes",
+        "description": "List available strike prices for options on a Brazilian futures contract at a given expiration. Pair with get_futures_option_chain to fetch traded series with prices.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying asset code (e.g., \"BGI\", \"ICF\", \"CCM\")."
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date YYYY-MM-DD. Use get_futures_option_expirations to discover."
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by \"call\" or \"put\". Omit to return both."
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Strikes",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_chain",
+        "title": "Futures Option Chain",
+        "description": "Get the option chain (traded series with last EOD prices) for a Brazilian futures underlying at a specific expiration. Each series carries optionStyle (american/european), strike, contractMultiplier, allocationRoundLot, plus OHLC/volume/oscillation from the latest pregão.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying asset code (e.g., \"BGI\", \"ICF\")."
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date YYYY-MM-DD."
+            },
+            "date": {
+              "type": "string",
+              "description": "EOD reference date YYYY-MM-DD for the pricing snapshot (default: latest available)."
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by \"call\" or \"put\". Omit for both."
+            },
+            "minStrike": {
+              "type": "number",
+              "description": "Minimum strike price to include."
+            },
+            "maxStrike": {
+              "type": "number",
+              "description": "Maximum strike price to include."
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Chain",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_historical",
+        "title": "Futures Option Price History",
+        "description": "Get the daily EOD historical OHLC time series for a single option on a Brazilian futures contract. Returns the option specs (strike, optionStyle, expiration, multiplier) plus traded-day points (referencePrice + OHLC + oscillation + trades + financial volume). Days where the option didn't trade aren't included - most futures options have sparse history.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Option symbol (e.g., \"BGIK26C034300\" = BGI call expiring K26 at strike 343.00). Pattern: {asset}{month_letter}{year}{C|P}{strike*100}."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date YYYY-MM-DD (default: 12 months ago)."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date YYYY-MM-DD (default: today)."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order. Default \"desc\" (newest first)."
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Price History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_analytics",
+        "title": "Futures Option Greeks",
+        "description": "Get EOD implied volatility and Greeks for options on Brazilian futures for an underlying asset at a specific expiration. European options use Black-76; American options use a binomial futures model. Fields are null with nullReason when the calculation cannot be produced from observed data.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying futures asset code (e.g., \"BGI\", \"ICF\")."
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date YYYY-MM-DD."
+            },
+            "date": {
+              "type": "string",
+              "description": "EOD reference date YYYY-MM-DD for the analytics snapshot (default: latest available)."
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by \"call\" or \"put\". Omit for both."
+            },
+            "minStrike": {
+              "type": "number",
+              "description": "Minimum strike price to include."
+            },
+            "maxStrike": {
+              "type": "number",
+              "description": "Maximum strike price to include."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "description": "Maximum number of option series to return."
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Greeks",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_analytics_history",
+        "title": "Futures Option Greeks History",
+        "description": "Get the daily EOD implied volatility and Greeks time series for a single option on a Brazilian futures contract.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Option symbol (e.g., \"BGIK26C034300\" = BGI call expiring K26 at strike 343.00). Pattern: {asset}{month_letter}{year}{C|P}{strike*100}."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date YYYY-MM-DD (default: 12 months ago)."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date YYYY-MM-DD (default: today)."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order. Default \"desc\" (newest first)."
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Greeks History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_positions",
+        "title": "Futures Option Open Interest",
+        "description": "Get open interest (open contracts) per option series for a Brazilian futures underlying at a specific expiration. Open interest counts contracts still alive, unlike volume, which counts contracts traded during the session. The covered/uncovered/blocked breakdown is null for most futures segments.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "underlying": {
+              "type": "string",
+              "description": "Underlying asset code (e.g., \"BGI\", \"ICF\")."
+            },
+            "expirationDate": {
+              "type": "string",
+              "description": "Expiration date YYYY-MM-DD."
+            },
+            "date": {
+              "type": "string",
+              "description": "Reference date YYYY-MM-DD. Returns the most recent position report on or before it (default: latest available)."
+            },
+            "side": {
+              "type": "string",
+              "enum": [
+                "call",
+                "put"
+              ],
+              "description": "Filter by \"call\" or \"put\". Omit for both."
+            },
+            "minStrike": {
+              "type": "number",
+              "description": "Minimum strike price to include."
+            },
+            "maxStrike": {
+              "type": "number",
+              "description": "Maximum strike price to include."
+            }
+          },
+          "required": [
+            "underlying",
+            "expirationDate"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Open Interest",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_futures_option_positions_history",
+        "title": "Futures Option Open Interest History",
+        "description": "Get the daily open interest time series for a single option on a Brazilian futures contract. Use it to see a position being built up or unwound over time.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbol": {
+              "type": "string",
+              "description": "Option symbol (e.g., \"BGIK26C034300\" = BGI call expiring K26 at strike 343.00). Pattern: {asset}{month_letter}{year}{C|P}{strike*100}."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date YYYY-MM-DD (default: 12 months ago)."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date YYYY-MM-DD (default: today)."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order. Default \"desc\" (newest first)."
+            }
+          },
+          "required": [
+            "symbol"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Futures Option Open Interest History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_list",
+        "title": "List FIIs",
+        "description": "List Brazilian Real Estate Investment Funds (FIIs) with optional filters by symbols, CNPJs, segment type, sector, mandate and management type. Returns paginated results with current indicators (price, P/VP, dividend yield) and administrator info. Use get_funds_list for FI-Infra/FIF, FIAGRO, FIDC and FIP funds such as JURO11.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number (1-based, default: 1)"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page (default: 20)"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: symbol, name, segmentoAtuacao, mandate, price, navPerShare, priceToNav, dividendYield12m, totalInvestors (default: \"totalInvestors\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")"
+            },
+            "search": {
+              "type": "string",
+              "description": "Search by name or symbol (e.g., \"hglg\" matches HGLG11)"
+            },
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols to filter by (max 20)"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated FII CNPJs to filter by, formatted or digits-only (max 20)"
+            },
+            "segmentType": {
+              "type": "string",
+              "enum": [
+                "papel",
+                "tijolo",
+                "hibrido",
+                "fof"
+              ],
+              "description": "Filter by segment type: papel (paper/CRI), tijolo (real estate), hibrido (mixed), fof (fund of funds)"
+            },
+            "segmentoAtuacao": {
+              "type": "string",
+              "description": "Filter by sector (e.g., \"Logística\", \"Shoppings\", \"Lajes Corporativas\", \"Títulos e Val. Mob.\", \"Residencial\")"
+            },
+            "mandate": {
+              "type": "string",
+              "description": "Filter by mandate type (e.g., \"Renda\", \"Ganho de Capital\")"
+            },
+            "tipoGestao": {
+              "type": "string",
+              "description": "Filter by management type (e.g., \"Ativa\", \"Definida\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List FIIs",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_indicators",
+        "title": "FII Indicators",
+        "description": "Get current fundamental indicators for one or more Brazilian Real Estate Investment Funds (FIIs). Returns P/VP (price-to-NAV), dividend yield (12m and 1m), monthly return, equity, total assets, total investors, and administrator info.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"MXRF11,HGLG11,KNCR11\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Indicators",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_indicators_history",
+        "title": "FII Indicator History",
+        "description": "Get monthly historical evolution of fundamental indicators (price, P/VP, dividend yield, monthly return, total investors, equity, total assets) for one or more Brazilian FIIs. Useful for charting trends and comparing periods.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"MXRF11,HGLG11\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: referenceDate, symbol, price, navPerShare, priceToNav, dividendYield12m, dividendYield1m, monthlyReturn, totalInvestors (default: \"referenceDate\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Indicator History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_historical",
+        "title": "FII Price History",
+        "description": "Get daily OHLCV historical price data for one or more Brazilian Real Estate Investment Funds (FIIs). Returns open, high, low, close, volume and adjusted close per day, grouped by symbol.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"MXRF11,HGLG11\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order for the price points within each FII: \"asc\" (oldest first) or \"desc\" (newest first, default)"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Price History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_properties",
+        "title": "FII Properties",
+        "description": "Get FII physical properties with vacancy first-class: area, address, unit count, vacancy rate, delinquency rate, revenue share and consolidated area-weighted vacancy. Rate fields are decimal ratios (0.0328 = 3.28%). Best endpoint for brick-and-mortar FII vacancy analysis.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"HGLG11,MXRF11\""
+            },
+            "referenceDate": {
+              "type": "string",
+              "description": "Quarter reference date in YYYY-MM-DD format. Defaults to latest available quarter per FII."
+            },
+            "allVersions": {
+              "type": "boolean",
+              "description": "Include amended report versions (default: false; latest version only)."
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "revenueShare",
+                "area",
+                "vacancyRate",
+                "name"
+              ],
+              "description": "Sort properties by \"revenueShare\", \"area\", \"vacancyRate\" or \"name\" (default: \"revenueShare\")."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Properties",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_properties_history",
+        "title": "FII Property History",
+        "description": "Get quarterly time series of FII physical-property summaries: property count, total area, area-weighted vacancy, average vacancy and number of properties with vacancy data. Best for charting vacancy trends before drilling into get_fii_properties.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"HGLG11,XPLG11\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format. Defaults to 12 months ago."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format. Defaults to today."
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: referenceDate, symbol, count, totalArea, vacancyRate, averageVacancyRate, propertiesWithVacancy (default: \"referenceDate\")."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")."
+            },
+            "allVersions": {
+              "type": "boolean",
+              "description": "Include amended report versions for each quarter (default: false; latest version only)."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Property History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_portfolio",
+        "title": "FII Portfolio",
+        "description": "Get normalized FII portfolio composition grouped by fund: summary, allocations, CRIs, FII fund holdings, properties, lands and rights. Best for FoFs, paper FIIs, issuer concentration and full holdings analysis.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"HGLG11,MXRF11\""
+            },
+            "referenceDate": {
+              "type": "string",
+              "description": "Quarter reference date in YYYY-MM-DD format. Defaults to latest available quarter per FII."
+            },
+            "include": {
+              "type": "string",
+              "description": "Comma-separated sections: \"summary,allocations,properties,financialAssets,fundHoldings,lands,rights\". Defaults to all sections."
+            },
+            "allVersions": {
+              "type": "boolean",
+              "description": "Include amended report versions (default: false; latest version only)."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Portfolio",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_portfolio_history",
+        "title": "FII Portfolio History",
+        "description": "Get quarterly time series of normalized FII portfolio summaries: total items, declared value, property summary, financial-asset summary and allocations by asset class. Best for charting portfolio composition before drilling into get_fii_portfolio.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"HGLG11,MXRF11\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format. Defaults to 12 months ago."
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format. Defaults to today."
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: referenceDate, symbol, totalItems, declaredValue, propertyCount, vacancyRate, financialAssetsDeclaredValue (default: \"referenceDate\")."
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")."
+            },
+            "allVersions": {
+              "type": "boolean",
+              "description": "Include amended report versions for each quarter (default: false; latest version only)."
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Portfolio History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_reports",
+        "title": "FII Monthly Reports",
+        "description": "Get monthly CVM management reports for Brazilian FIIs with full asset composition (real estate, CRI, LCI, fund holdings, cash, government/private bonds), profitability (monthly return, monthly dividend yield), fees and liabilities. Most comprehensive endpoint for due diligence.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"HGLG11,MXRF11\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: referenceDate, symbol, totalAssets, equity, navPerShare, monthlyReturn, monthlyDividendYield, totalInvestors, version (default: \"referenceDate\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number (1-based, default: 1)"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page (default: 20)"
+            },
+            "allVersions": {
+              "type": "boolean",
+              "description": "Include retroactively amended report versions (default: false; only the latest version per referenceDate is returned)"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Monthly Reports",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_dividends",
+        "title": "FII Dividends",
+        "description": "Get historical dividends (rendimentos and amortizações) for one or more Brazilian FIIs. Returns rate per share, cum-dividend date (lastDatePrior), payment date and label. Actual dates from the maintained FII dividend source take precedence; CVM competence dates are used only as fallback for funds without sourced payment history.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated FII symbols (max 20). Example: \"MXRF11,HGLG11\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: no limit, so announced future payments are included)"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field: paymentDate, lastDatePrior, rate, symbol, approvedOn (default: \"paymentDate\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Dividends",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_funds_list",
+        "title": "List Investment Funds",
+        "description": "List Brazilian funds across FIIs, FIAGROs, FI-Infra/FIFs, FIDCs and FIPs. Use for discovery by symbol, CNPJ, search text or asset type.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "search": {
+              "type": "string",
+              "description": "Search by symbol, name, CNPJ or ISIN"
+            },
+            "assetType": {
+              "type": "string",
+              "enum": [
+                "fii",
+                "fiagro",
+                "fiinfra",
+                "fif",
+                "fidc",
+                "fip",
+                "etf",
+                "other"
+              ],
+              "description": "Canonical fund asset type"
+            },
+            "status": {
+              "type": "string",
+              "description": "Normalized CVM/B3 status"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field supported by endpoint"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Investment Funds",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_funds_indicators",
+        "title": "Fund Indicators",
+        "description": "Get current indicators for specific Brazilian funds. Requires symbols or cnpjs; returns market price, NAV per share, P/NAV, equity, assets and investor count.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "assetType": {
+              "type": "string",
+              "enum": [
+                "fii",
+                "fiagro",
+                "fiinfra",
+                "fif",
+                "fidc",
+                "fip",
+                "etf",
+                "other"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fund Indicators",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_funds_nav_history",
+        "title": "Fund NAV History",
+        "description": "Get NAV history for specific funds. FI/FIF data is daily; FIDC data is monthly by quota class or series and includes official monthly return. Requires symbols or cnpjs; market OHLCV price is separate from NAV.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fund NAV History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_funds_profile",
+        "title": "Fund Profile",
+        "description": "Get monthly profile sections for specific FI/FIF funds. Requires symbols or cnpjs; includes investor breakdown, risk, liquidity, concentration and private-credit exposure.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "referenceDate": {
+              "type": "string",
+              "description": "Reference date in YYYY-MM-DD"
+            },
+            "include": {
+              "type": "string",
+              "description": "Comma-separated sections to include"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fund Profile",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_funds_portfolio",
+        "title": "Fund Portfolio",
+        "description": "Get holdings for specific FI/FIF funds grouped into public bonds, fund holdings, credit assets, listed securities, receivables and payables. Requires symbols or cnpjs.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "referenceDate": {
+              "type": "string",
+              "description": "Reference date in YYYY-MM-DD"
+            },
+            "include": {
+              "type": "string",
+              "description": "Comma-separated portfolio sections"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fund Portfolio",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_funds_dividends",
+        "title": "Fund Distributions",
+        "description": "Get exact official dividend events for non-FII listed funds such as FIAGRO, FI-Infra/FIF, FIDC and FIP. Returns declared date, ex-date (lastDatePrior), payment date, rate and label. Use get_fii_dividends for FIIs.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "assetType": {
+              "type": "string",
+              "enum": [
+                "fiagro",
+                "fiinfra",
+                "fif",
+                "fidc",
+                "fip",
+                "other"
+              ],
+              "description": "Dividend asset type. FIIs are intentionally excluded."
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "lastDatePrior",
+                "paymentDate",
+                "declaredDate",
+                "symbol",
+                "rate"
+              ]
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fund Distributions",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fiagro_reports",
+        "title": "Fiagro Reports",
+        "description": "Get monthly FIAGRO reports for specific funds by symbol or CNPJ, including PL, NAV, investors and monthly DY.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "allVersions": {
+              "type": "boolean"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field supported by endpoint"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fiagro Reports",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fiagro_portfolio",
+        "title": "Fiagro Portfolio",
+        "description": "Get grouped FIAGRO allocation sections for specific funds. Requires symbols or cnpjs; includes agro credit, maturity, liabilities and investor breakdown.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "referenceDate": {
+              "type": "string"
+            },
+            "allVersions": {
+              "type": "boolean"
+            },
+            "include": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Fiagro Portfolio",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fidc_reports",
+        "title": "FIDC Reports",
+        "description": "Get monthly FIDC report rows for specific funds by CNPJ, or by symbol when listed mapping exists.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field supported by endpoint"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FIDC Reports",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fidc_portfolio",
+        "title": "FIDC Portfolio",
+        "description": "Get FIDC grouped portfolio/risk sections for specific funds. Requires symbols or cnpjs; includes sectors, maturity, delinquency, risk, quota classes and investors.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "referenceDate": {
+              "type": "string"
+            },
+            "include": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FIDC Portfolio",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fip_reports",
+        "title": "FIP Reports",
+        "description": "Get structured FIP report rows for specific funds. Requires symbols or cnpjs; CNPJ is the canonical lookup key for most FIPs.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "reportType": {
+              "type": "string",
+              "enum": [
+                "trimestral",
+                "quadrimestral"
+              ]
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field supported by endpoint"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FIP Reports",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_financials",
+        "title": "FII Financial Statements",
+        "description": "Get FII DFIN financial reports by symbol or CNPJ. Does not include FIAGRO, FI-Infra, FIDC or FIP rows.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "year": {
+              "type": "integer"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field supported by endpoint"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Financial Statements",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_fii_annual_reports",
+        "title": "FII Annual Reports",
+        "description": "Get FII annual report rows by symbol or CNPJ. These are separate from monthly reports and quarterly portfolio/properties endpoints.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated B3 fund symbols, max 20. Example: JURO11,XPCA11"
+            },
+            "cnpjs": {
+              "type": "string",
+              "description": "Comma-separated CNPJs, formatted or digits-only, max 20"
+            },
+            "year": {
+              "type": "integer"
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format"
+            },
+            "include": {
+              "type": "string"
+            },
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number, default 1"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page, default 20"
+            },
+            "sortBy": {
+              "type": "string",
+              "description": "Sort field supported by endpoint"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "FII Annual Reports",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_treasury_list",
+        "title": "List Treasury Bonds",
+        "description": "List Tesouro Direto public bonds with current indicative rates and prices. Supports filtering by public symbol/name, indexer (selic, prefixado, ipca, igpm), coupon type, sorting and pagination.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Page number (1-based, default: 1)"
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Items per page (default: 20)"
+            },
+            "search": {
+              "type": "string",
+              "description": "Search by public treasury symbol or bond name. Example: \"tesouro-selic-01032031\""
+            },
+            "indexer": {
+              "type": "string",
+              "enum": [
+                "selic",
+                "prefixado",
+                "ipca",
+                "igpm"
+              ],
+              "description": "Filter by bond indexer"
+            },
+            "couponType": {
+              "type": "string",
+              "enum": [
+                "zero",
+                "semestral"
+              ],
+              "description": "Filter by coupon type: zero or semestral"
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "symbol",
+                "bondType",
+                "maturityDate",
+                "durationDays",
+                "baseDate",
+                "buyRate",
+                "sellRate",
+                "buyPrice",
+                "sellPrice",
+                "basePrice"
+              ],
+              "description": "Sort field (default: \"maturityDate\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"asc\")"
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "List Treasury Bonds",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_treasury_indicators",
+        "title": "Treasury Bond Rates",
+        "description": "Get the latest indicative rates and prices for one or more Tesouro Direto public bonds. Symbols are public brapi slugs like tesouro-selic-01032031.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated treasury symbols (max 20). Example: \"tesouro-selic-01032031,tesouro-ipca-15052035\""
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Treasury Bond Rates",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      },
+      {
+        "name": "get_treasury_indicators_history",
+        "title": "Treasury Bond Rate History",
+        "description": "Get daily historical Tesouro Direto rates and unit prices for one or more public bonds. When dates are omitted, returns the last 12 months.\n\nAuthentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.\n\nPlan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.\n\nUse the exact parameter names and formats shown in inputSchema.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "symbols": {
+              "type": "string",
+              "description": "Comma-separated treasury symbols (max 20). Example: \"tesouro-selic-01032031\""
+            },
+            "startDate": {
+              "type": "string",
+              "description": "Start date in YYYY-MM-DD format (default: 12 months ago)"
+            },
+            "endDate": {
+              "type": "string",
+              "description": "End date in YYYY-MM-DD format (default: today)"
+            },
+            "sortBy": {
+              "type": "string",
+              "enum": [
+                "baseDate",
+                "buyRate",
+                "sellRate",
+                "buyPrice",
+                "sellPrice",
+                "basePrice"
+              ],
+              "description": "Sort field (default: \"baseDate\")"
+            },
+            "sortOrder": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "description": "Sort order: \"asc\" or \"desc\" (default: \"desc\")"
+            }
+          },
+          "required": [
+            "symbols"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "annotations": {
+          "title": "Treasury Bond Rate History",
+          "readOnlyHint": true,
+          "destructiveHint": false,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "execution": {
+          "taskSupport": "forbidden"
+        }
+      }
+    ]
+  }
+}
