@@ -54,3 +54,893 @@ tool_quality:
   scored: false
   note: Facts from the saved tools/list capture (mcp_tool_quality.py); recorded, not scored. Checks learned
     from Glimind's agent-readiness audit.
+tools:
+- name: get_available_stocks
+  description: 'Get list of available Brazilian stocks, indexes, and financial instruments with advanced
+    filtering options
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_available_currencies
+  description: 'Get list of available currency pairs for exchange rates
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_available_cryptocurrencies
+  description: 'Get list of available cryptocurrencies
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_available_inflation_countries
+  description: 'Get list of countries with available inflation data
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_tickers
+  description: 'Search and filter available B3 tickers in brapi. Use for autocomplete, ticker validation,
+    and discovering stocks, FIIs, ETFs, BDRs, units, and indexes.
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_ticker_renames
+  description: 'List known B3 ticker renames with old ticker, current canonical ticker, and effective
+    date.
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: resolve_tickers
+  description: 'Resolve old B3 tickers to the current ticker recommended by brapi. Current tickers are
+    returned unchanged.
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_ticker_coverage
+  description: 'Check which brapi data surfaces are available for B3 tickers and get recommended endpoints.
+    Accepts up to 20 comma-separated symbols per call.
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_macro_series_available
+  description: 'List macroeconomic series available in brapi (slug, name, unit, frequency, category).
+    Public - no auth required. Use this for discovery before calling get_macro_series. Optional `q` does
+    case-insensitive substring search across slug, alias, name and description, with results ranked by
+    relevance. Optional `category` filters by category. FX pairs are intentionally excluded - they live
+    under the currency endpoints.
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_dictionary
+  description: 'Explain brapi API fields with the Portuguese label, description, calculation, endpoint
+    references, type, and unit. Use this tool when a response field is unclear instead of guessing. Filter
+    by search term or category.
+
+
+    Authentication: not required.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_account_capabilities
+  description: 'Get the authenticated brapi account plan, request limits, valid historical ranges, and
+    feature access. Call this once when a protected tool''s limits are unclear.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_quotes
+  description: 'Get current and historical data for Brazilian stocks, indexes, or ETFs including price
+    quotes, financial statements, and dividends
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_quote
+  description: 'Get v2 stock quote snapshots from /api/v2/stocks/quote: price, change, volume, market
+    cap, day range, 52-week range, and logo.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_historical
+  description: 'Get v2 OHLCV historical prices from /api/v2/stocks/historical for one or more B3 tickers.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_dividends
+  description: 'Get v2 dividends/JCP for stock-like B3 tickers from /api/v2/stocks/dividends. Use get_fii_dividends
+    for FIIs.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_insider_transactions
+  description: 'Get monthly CVM insider transaction reports from /api/v2/stocks/insider-transactions.
+    Rows group controllers, board members, directors, fiscal council, and other statutory bodies with
+    related persons. Rows do not name each person or the traded ticker. The ticker selects the reporting
+    company, so PETR3 and PETR4 return the same reports. credit and debit also include transfers, loans,
+    and grants; use movementType for purchases and sales. quantity, unitPrice, and volume are exact decimal
+    strings. The default window is the last 365 days. Pro plan.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_profile
+  description: 'Get v2 company/profile fundamentals from /api/v2/stocks/profile.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_statistics
+  description: 'Get v2 stock statistics from /api/v2/stocks/statistics, either current or historical.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_financial_data
+  description: 'Get v2 stock financial data from /api/v2/stocks/financial-data, either current or historical.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_balance_sheet
+  description: 'Get v2 balance sheet statements from /api/v2/stocks/balance-sheet.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_income_statement
+  description: 'Get v2 income statements from /api/v2/stocks/income-statement.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_cash_flow
+  description: 'Get v2 cash-flow statements from /api/v2/stocks/cash-flow.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_value_added
+  description: 'Get v2 value-added statements from /api/v2/stocks/value-added.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_stock_screener
+  description: 'Filter and rank B3 stocks by price and fundamentals from /api/v2/stocks/screener: P/L,
+    P/VP, dividend yield, ROE, margins, debt, growth, and more. One call scans every asset. Each metric
+    accepts {metric}Min and {metric}Max, inclusive, in the units of the response: fractions use 0.06 for
+    6% (dividendYield, returnOnEquity, margins, growth); changePercent uses 2.81 for 2.81%; prices and
+    amounts are BRL. A filter drops assets without that value. Companies with a loss have a negative trailingPE,
+    so for "P/L below 8" send trailingPEMin=0 and trailingPEMax=8. sortBy accepts any metric key, symbol,
+    or name (default marketCap, desc); nulls sort last. page starts at 1; limit max 200, default 20. Startup
+    and Pro plans. Pro metrics (returnOnEquity, returnOnAssets, grossMargin, ebitdaMargin, operatingMargin,
+    debtToEquity, netDebtToEbitda, currentRatio, quickRatio, revenueGrowth, earningsGrowth, revenueGrowthAnnual,
+    earningsGrowthAnnual, totalRevenue, ebitda, freeCashflow, totalDebt, totalCash) need the Pro plan:
+    a filter or sort with them on Startup returns PLAN_LIMIT, and Startup results omit them. The free
+    plan has no access.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_currency_rates
+  description: 'Get current exchange rates for currency pairs
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_crypto_prices
+  description: 'Get current and historical cryptocurrency prices with market data
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_macro_series
+  description: 'Get historical observations for Brazilian macroeconomic series (Selic, IPCA, IGP-M, CDI,
+    IBC-Br, etc.). Pass slugs in `symbols` (comma-separated, e.g. `selic,ipca,igpm`). Use get_macro_series_available
+    to discover slugs. Currency pairs (USD-BRL etc.) are NOT served here - use the currency endpoints
+    for FX series including inverses and cross-rates.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_macro_series_latest
+  description: 'Get only the most recent observation for each requested macroeconomic series. Lighter
+    than get_macro_series when you just need the current Selic / IPCA / CDI value. FX pairs are not served
+    here - use the currency endpoints.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_inflation_data
+  description: 'Get inflation data for Brazil (IPCA, IGPM) with period filtering options
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_prime_rate_data
+  description: 'Get Brazil''s prime rate (SELIC) data with period and sorting options
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_expirations
+  description: 'List available option expiration dates for a given Brazilian underlying asset (stock,
+    ETF, or index)
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_strikes
+  description: 'List available option strike prices for a given Brazilian underlying asset on a specific
+    expiration date
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_chain
+  description: 'Get the option chain (traded series with OHLCV snapshot) for a Brazilian underlying asset
+    on a specific expiration date
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_historical
+  description: 'Get daily EOD historical price data (OHLCV, bid/ask, trades, financial volume) for a single
+    option series identified by its symbol and expiration date
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_analytics
+  description: 'Get EOD implied volatility and Greeks for traded Brazilian option series for an underlying
+    asset on a specific expiration date. Fields are null with nullReason when the calculation cannot be
+    produced from observed data.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_analytics_history
+  description: 'Get the daily EOD implied volatility and Greeks time series for a single Brazilian option
+    series identified by symbol and expiration date.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_positions
+  description: 'Get open interest (open contracts) per option series for a Brazilian underlying asset
+    on a specific expiration date. Includes the covered, uncovered and blocked position breakdown. Open
+    interest counts contracts still alive, unlike volume, which counts contracts traded during the session.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_option_positions_history
+  description: 'Get the daily open interest time series for a single Brazilian option series identified
+    by symbol and expiration date. Use it to see a position being built up or unwound over time.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_list
+  description: 'List available Brazilian futures contracts (mini Ibovespa, mini Dolar, full index/dollar,
+    DI rate, agribusiness: boi, café, milho, soja). Paginated with filters by underlying asset and segment.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_quote
+  description: 'Get EOD snapshot quote for one or more Brazilian futures contracts. Returns OHLC, daily
+    settlement price (AdjstdQt), settlement rate (AdjstdQtTax - populated for DI/rate-quoted contracts
+    only), oscillation, number of trades, contract quantity, and financial volume.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_specs
+  description: 'Get contract specifications (without pricing) for one or more Brazilian futures: expiration
+    date, contract multiplier (e.g., WIN = 0.2, BGI = 330 arrobas, DI1 = 1), allocation round lot, ISIN,
+    CFI, trading currency, delivery type, and quotation type (price vs rate).
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_historical
+  description: 'Get daily EOD time series for a single Brazilian futures contract. Each point has OHLC,
+    settlement price, settlement rate (DI/DAP only), reference price, oscillation, trades, contract quantity
+    and financial volume. For DI1/DAP/DI contracts, close/high/low fields hold the rate in %a.a., and
+    settlement holds the PU in BRL.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_term_structure
+  description: 'Get the full term structure (all live contracts) for a Brazilian futures underlying asset.
+    Returns one row per expiration, ordered by date ascending, each with the latest EOD pricing. Useful
+    for plotting the DI yield curve, contango/backwardation in commodities, or the mini-Ibov forward curve.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_expirations
+  description: 'List available option expiration dates for a Brazilian futures underlying (options on
+    futures: e.g., options on BGI live cattle, ICF coffee, CCM corn, SJC soybean). These options have
+    their own expiration calendar, often different from the underlying future.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_strikes
+  description: 'List available strike prices for options on a Brazilian futures contract at a given expiration.
+    Pair with get_futures_option_chain to fetch traded series with prices.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_chain
+  description: 'Get the option chain (traded series with last EOD prices) for a Brazilian futures underlying
+    at a specific expiration. Each series carries optionStyle (american/european), strike, contractMultiplier,
+    allocationRoundLot, plus OHLC/volume/oscillation from the latest pregão.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_historical
+  description: 'Get the daily EOD historical OHLC time series for a single option on a Brazilian futures
+    contract. Returns the option specs (strike, optionStyle, expiration, multiplier) plus traded-day points
+    (referencePrice + OHLC + oscillation + trades + financial volume). Days where the option didn''t trade
+    aren''t included - most futures options have sparse history.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_analytics
+  description: 'Get EOD implied volatility and Greeks for options on Brazilian futures for an underlying
+    asset at a specific expiration. European options use Black-76; American options use a binomial futures
+    model. Fields are null with nullReason when the calculation cannot be produced from observed data.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_analytics_history
+  description: 'Get the daily EOD implied volatility and Greeks time series for a single option on a Brazilian
+    futures contract.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_positions
+  description: 'Get open interest (open contracts) per option series for a Brazilian futures underlying
+    at a specific expiration. Open interest counts contracts still alive, unlike volume, which counts
+    contracts traded during the session. The covered/uncovered/blocked breakdown is null for most futures
+    segments.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_futures_option_positions_history
+  description: 'Get the daily open interest time series for a single option on a Brazilian futures contract.
+    Use it to see a position being built up or unwound over time.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_list
+  description: 'List Brazilian Real Estate Investment Funds (FIIs) with optional filters by symbols, CNPJs,
+    segment type, sector, mandate and management type. Returns paginated results with current indicators
+    (price, P/VP, dividend yield) and administrator info. Use get_funds_list for FI-Infra/FIF, FIAGRO,
+    FIDC and FIP funds such as JURO11.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_indicators
+  description: 'Get current fundamental indicators for one or more Brazilian Real Estate Investment Funds
+    (FIIs). Returns P/VP (price-to-NAV), dividend yield (12m and 1m), monthly return, equity, total assets,
+    total investors, and administrator info.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_indicators_history
+  description: 'Get monthly historical evolution of fundamental indicators (price, P/VP, dividend yield,
+    monthly return, total investors, equity, total assets) for one or more Brazilian FIIs. Useful for
+    charting trends and comparing periods.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_historical
+  description: 'Get daily OHLCV historical price data for one or more Brazilian Real Estate Investment
+    Funds (FIIs). Returns open, high, low, close, volume and adjusted close per day, grouped by symbol.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_properties
+  description: 'Get FII physical properties with vacancy first-class: area, address, unit count, vacancy
+    rate, delinquency rate, revenue share and consolidated area-weighted vacancy. Rate fields are decimal
+    ratios (0.0328 = 3.28%). Best endpoint for brick-and-mortar FII vacancy analysis.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_properties_history
+  description: 'Get quarterly time series of FII physical-property summaries: property count, total area,
+    area-weighted vacancy, average vacancy and number of properties with vacancy data. Best for charting
+    vacancy trends before drilling into get_fii_properties.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_portfolio
+  description: 'Get normalized FII portfolio composition grouped by fund: summary, allocations, CRIs,
+    FII fund holdings, properties, lands and rights. Best for FoFs, paper FIIs, issuer concentration and
+    full holdings analysis.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_portfolio_history
+  description: 'Get quarterly time series of normalized FII portfolio summaries: total items, declared
+    value, property summary, financial-asset summary and allocations by asset class. Best for charting
+    portfolio composition before drilling into get_fii_portfolio.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_reports
+  description: 'Get monthly CVM management reports for Brazilian FIIs with full asset composition (real
+    estate, CRI, LCI, fund holdings, cash, government/private bonds), profitability (monthly return, monthly
+    dividend yield), fees and liabilities. Most comprehensive endpoint for due diligence.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_dividends
+  description: 'Get historical dividends (rendimentos and amortizações) for one or more Brazilian FIIs.
+    Returns rate per share, cum-dividend date (lastDatePrior), payment date and label. Actual dates from
+    the maintained FII dividend source take precedence; CVM competence dates are used only as fallback
+    for funds without sourced payment history.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_funds_list
+  description: 'List Brazilian funds across FIIs, FIAGROs, FI-Infra/FIFs, FIDCs and FIPs. Use for discovery
+    by symbol, CNPJ, search text or asset type.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_funds_indicators
+  description: 'Get current indicators for specific Brazilian funds. Requires symbols or cnpjs; returns
+    market price, NAV per share, P/NAV, equity, assets and investor count.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_funds_nav_history
+  description: 'Get NAV history for specific funds. FI/FIF data is daily; FIDC data is monthly by quota
+    class or series and includes official monthly return. Requires symbols or cnpjs; market OHLCV price
+    is separate from NAV.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_funds_profile
+  description: 'Get monthly profile sections for specific FI/FIF funds. Requires symbols or cnpjs; includes
+    investor breakdown, risk, liquidity, concentration and private-credit exposure.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_funds_portfolio
+  description: 'Get holdings for specific FI/FIF funds grouped into public bonds, fund holdings, credit
+    assets, listed securities, receivables and payables. Requires symbols or cnpjs.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_funds_dividends
+  description: 'Get exact official dividend events for non-FII listed funds such as FIAGRO, FI-Infra/FIF,
+    FIDC and FIP. Returns declared date, ex-date (lastDatePrior), payment date, rate and label. Use get_fii_dividends
+    for FIIs.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fiagro_reports
+  description: 'Get monthly FIAGRO reports for specific funds by symbol or CNPJ, including PL, NAV, investors
+    and monthly DY.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fiagro_portfolio
+  description: 'Get grouped FIAGRO allocation sections for specific funds. Requires symbols or cnpjs;
+    includes agro credit, maturity, liabilities and investor breakdown.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fidc_reports
+  description: 'Get monthly FIDC report rows for specific funds by CNPJ, or by symbol when listed mapping
+    exists.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fidc_portfolio
+  description: 'Get FIDC grouped portfolio/risk sections for specific funds. Requires symbols or cnpjs;
+    includes sectors, maturity, delinquency, risk, quota classes and investors.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fip_reports
+  description: 'Get structured FIP report rows for specific funds. Requires symbols or cnpjs; CNPJ is
+    the canonical lookup key for most FIPs.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_financials
+  description: 'Get FII DFIN financial reports by symbol or CNPJ. Does not include FIAGRO, FI-Infra, FIDC
+    or FIP rows.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_fii_annual_reports
+  description: 'Get FII annual report rows by symbol or CNPJ. These are separate from monthly reports
+    and quarterly portfolio/properties endpoints.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_treasury_list
+  description: 'List Tesouro Direto public bonds with current indicative rates and prices. Supports filtering
+    by public symbol/name, indexer (selic, prefixado, ipca, igpm), coupon type, sorting and pagination.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_treasury_indicators
+  description: 'Get the latest indicative rates and prices for one or more Tesouro Direto public bonds.
+    Symbols are public brapi slugs like tesouro-selic-01032031.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+- name: get_treasury_indicators_history
+  description: 'Get daily historical Tesouro Direto rates and unit prices for one or more public bonds.
+    When dates are omitted, returns the last 12 months.
+
+
+    Authentication: required. Sign in to brapi or provide a valid Bearer token before calling this tool.
+
+
+    Plan access: this dataset may require a paid plan. Call get_account_capabilities when limits are unclear.
+
+
+    Use the exact parameter names and formats shown in inputSchema.'
+tools_count: 77
