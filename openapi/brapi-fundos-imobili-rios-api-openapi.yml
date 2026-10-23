@@ -3271,3 +3271,9 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: Token de API obtido no dashboard em brapi.dev/dashboard
+x-provenance:
+  method: harvested
+  publisher: brapi
+  source: https://brapi.dev/openapi.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
