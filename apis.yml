@@ -205,6 +205,8 @@ apis:
   description: The Ações API from brapi — 12 operation(s) for ações.
   humanURL: https://brapi.dev/docs
   tags:
+  - AES
+  tags_raw:
   - Ações
   properties:
   - type: OpenAPI
