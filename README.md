@@ -1,4 +1,4 @@
-# brapi (brapi)
+# brapi
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -66,153 +66,142 @@
 
 brapi.dev is a Brazilian financial data REST API aggregating public market data from B3 (stock exchange), CVM (securities commission), and Banco Central (central bank). It provides real-time and historical stock quotes, fundamentals, dividends, cryptocurrency prices in BRL, foreign exchange rates, and economic indicators such as IPCA, IGPM, and SELIC. With over 20,000 active developers, brapi.dev offers tiered subscription plans from free to Pro, with up to 500,000 requests per month and data updated every 5 minutes.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/brapi/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/brapi/refs/heads/main/apis.yml)
+**Areas:** Finance · Brazilian Financial Data · Stock Market · Investment · Economic Indicators · Cryptocurrency
 
-## Scope
+## brapi on APIs.io
 
-- **Type:** Index
-- **Position:** Consumer
-- **Access:** 3rd-Party
+Everything profiled for brapi is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/brapi/](https://apis.io/providers/brapi/)** — or go straight to one of the APIs or properties below.
 
-## Tags
+### APIs (12)
 
-- Finance
-- Brazilian Financial Data
-- Stock Market
-- Investments
-- Economic Indicators
-- Cryptocurrency
+- [brapi Fundamentals API](https://apis.io/apis/brapi/fundamentals-api/) — Access structured financial statement data for Brazilian listed companies including balance sheets (BP), income statements (DRE), cash flow (DFC), and value…
+- [brapi Dividends API](https://apis.io/apis/brapi/dividends-api/) — Retrieve complete dividend and earnings distribution history for B3-listed securities, enabling portfolio yield analysis and income tracking.
+- [brapi Cryptocurrency API](https://apis.io/apis/brapi/crypto-api/) — Access cryptocurrency prices denominated in Brazilian Reals (BRL), supporting investment analysis and portfolio management for Brazilian digital asset…
+- [brapi Exchange Rates API](https://apis.io/apis/brapi/exchange-api/) — Retrieve Brazilian Real (BRL) exchange rates against major global currencies, sourced from Banco Central do Brasil data.
+- [brapi Economic Indicators API](https://apis.io/apis/brapi/indicators-api/) — Access Brazilian macroeconomic indicators including IPCA (consumer price index), IGPM (market general price index), INPC, and SELIC interest rate data…
+- [brapi Criptomoedas API](https://apis.io/apis/brapi/brapi-criptomoedas-api/) — The Criptomoedas API from brapi — 2 operation(s) for criptomoedas.
+- [brapi Fiis API](https://apis.io/apis/brapi/brapi-fiis-api/) — The Fiis API from brapi — 6 operation(s) for fiis.
+- [brapi Inflacao API](https://apis.io/apis/brapi/brapi-inflacao-api/) — The Inflacao API from brapi — 2 operation(s) for inflacao.
+- [brapi Moedas API](https://apis.io/apis/brapi/brapi-moedas-api/) — The Moedas API from brapi — 2 operation(s) for moedas.
+- [brapi Opcoes API](https://apis.io/apis/brapi/brapi-opcoes-api/) — The Opcoes API from brapi — 4 operation(s) for opcoes.
+- [brapi Quote API](https://apis.io/apis/brapi/brapi-quote-api/) — The Quote API from brapi — 2 operation(s) for quote.
+- [brapi Taxa Basica De Juros API](https://apis.io/apis/brapi/brapi-taxa-basica-de-juros-api/) — The Taxa Basica De Juros API from brapi — 2 operation(s) for taxa basica de juros.
 
-## Timestamps
+### Published properties
 
-- **Created:** 2025-03-01
-- **Modified:** 2026-05-19
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## APIs
+#### MCP servers (1)
 
-### brapi Quotes API
+Model Context Protocol servers that expose the API to agents.
 
-Retrieve real-time and historical OHLCV (Open, High, Low, Close, Volume) quote data for securities listed on the B3 Brazilian stock exchange. Supports bulk asset requests and returns standardized JSON without web scraping.
+- [Moved to /providers/brapi/](https://apis.io/servers/brapi/brapi/)
 
-- **Human URL:** [https://brapi.dev/docs](https://brapi.dev/docs)
+#### Agentic access (1)
 
-#### Tags
+Which operations an agent can call, which act, and which need a human in the loop.
 
-- Stock Quotes
-- B3
-- Real-Time Data
-- Historical Data
+- [Brapi Agentic Access](https://apis.io/agentic-access/brapi/brapi-agentic-access/)
 
-#### Properties
+#### Collections (8)
 
-- [Documentation](https://brapi.dev/docs)
-- [OpenAPI](openapi/brapi-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [Postman Collection](collections/brapi.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/brapi.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+Postman and Open Collection request collections.
 
-### brapi Fundamentals API
+- [brapi API](https://apis.io/collections/brapi/open-brapi/)
+- [brapi Criptomoedas API](https://apis.io/collections/brapi/open-brapi-criptomoedas-api/)
+- [brapi Criptomoedas Fiis API](https://apis.io/collections/brapi/open-brapi-fiis-api/)
+- [brapi Criptomoedas Inflacao API](https://apis.io/collections/brapi/open-brapi-inflacao-api/)
+- [brapi Criptomoedas Moedas API](https://apis.io/collections/brapi/open-brapi-moedas-api/)
+- [brapi Criptomoedas Opcoes API](https://apis.io/collections/brapi/open-brapi-opcoes-api/)
+- [brapi Criptomoedas Quote API](https://apis.io/collections/brapi/open-brapi-quote-api/)
+- [brapi Criptomoedas Taxa Basica De Juros API](https://apis.io/collections/brapi/open-brapi-taxa-basica-de-juros-api/)
 
-Access structured financial statement data for Brazilian listed companies including balance sheets (BP), income statements (DRE), cash flow (DFC), and value added statements (DVA). Historical data available from 2009.
+#### Security (2)
 
-- **Human URL:** [https://brapi.dev/docs](https://brapi.dev/docs)
+Authentication, trust centre, and vulnerability disclosure.
 
-#### Tags
+- [Brapi Domain Security](https://apis.io/security/brapi/brapi-domain-security/)
+- [Brapi Vulnerability Disclosure](https://apis.io/security/brapi/brapi-vulnerability-disclosure/)
 
-- Fundamentals
-- Balance Sheet
-- Income Statement
-- Financial Statements
+#### Plans and pricing (1)
 
-#### Properties
+Published plans, tiers and prices.
 
-- [Documentation](https://brapi.dev/docs)
-- [Postman Collection](collections/brapi.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/brapi.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+- [Brapi Plans Pricing](https://apis.io/plans/brapi/brapi-plans-pricing/)
 
-### brapi Dividends API
+#### Rate limits (1)
 
-Retrieve complete dividend and earnings distribution history for B3-listed securities, enabling portfolio yield analysis and income tracking.
+Published request limits.
 
-- **Human URL:** [https://brapi.dev/docs](https://brapi.dev/docs)
+- [Brapi Rate Limits](https://apis.io/rate-limits/brapi/brapi-rate-limits/)
 
-#### Tags
+#### FinOps (1)
 
-- Dividends
-- Distributions
-- Corporate Actions
+What the API costs to run, by operation.
 
-#### Properties
+- [Brapi Finops](https://apis.io/finops/brapi/brapi-finops/)
 
-- [Documentation](https://brapi.dev/docs)
-- [Postman Collection](collections/brapi.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/brapi.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+## Where to find this API
 
-### brapi Cryptocurrency API
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
-Access cryptocurrency prices denominated in Brazilian Reals (BRL), supporting investment analysis and portfolio management for Brazilian digital asset investors.
-
-- **Human URL:** [https://brapi.dev/docs](https://brapi.dev/docs)
-
-#### Tags
-
-- Cryptocurrency
-- BRL
-- Digital Assets
-
-#### Properties
-
-- [Documentation](https://brapi.dev/docs)
-- [Postman Collection](collections/brapi.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/brapi.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### brapi Exchange Rates API
-
-Retrieve Brazilian Real (BRL) exchange rates against major global currencies, sourced from Banco Central do Brasil data.
-
-- **Human URL:** [https://brapi.dev/docs](https://brapi.dev/docs)
-
-#### Tags
-
-- Foreign Exchange
-- Currency
-- BRL
-
-#### Properties
-
-- [Documentation](https://brapi.dev/docs)
-- [Postman Collection](collections/brapi.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/brapi.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-### brapi Economic Indicators API
-
-Access Brazilian macroeconomic indicators including IPCA (consumer price index), IGPM (market general price index), INPC, and SELIC interest rate data published by Banco Central do Brasil.
-
-- **Human URL:** [https://brapi.dev/docs](https://brapi.dev/docs)
-
-#### Tags
-
-- Inflation
-- Interest Rates
-- Economic Data
-- SELIC
-
-#### Properties
-
-- [Documentation](https://brapi.dev/docs)
-- [Postman Collection](collections/brapi.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/brapi.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
-
-## Common Properties
-
-- [GitHub Organization](https://github.com/brapi-dev)
 - [Website](https://brapi.dev)
 - [Documentation](https://brapi.dev/docs)
 - [Pricing](https://brapi.dev/pricing)
-- [Authentication](https://brapi.dev/docs)
-- [Sign Up](https://brapi.dev/register)
-- [L L Ms Txt](https://brapi.dev/llms.txt)
+- [Blog](https://brapi.dev/blog)
+- [GitHub](https://github.com/brapi-dev)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** info@apievangelist.com
+**Kin Score 33.0** — thin · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 66.7 |
+| Contract quality | 48.4 |
+| Contract governance | 0.0 |
+| Operational transparency | 21.1 |
+| Developer ergonomics | 23.8 |
+| Access clarity | 31.6 |
+
+**Agent readiness 42.9** — agent-native
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | na |
+| MCP Server | verified |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | na |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | derived (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | na |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | — |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 17.6** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/brapi/](https://apis.io/providers/brapi/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for brapi: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/brapi/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
